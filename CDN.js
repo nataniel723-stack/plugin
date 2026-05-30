@@ -162,3 +162,71 @@
                 var card = $(`
                     <div class="simple-button selector">
                         <div class="simple-button__text">
+                            ${video.title}
+                        </div>
+                    </div>
+                `);
+
+                card.on('hover:enter', function () {
+                    Lampa.Player.play({
+                        title: object.movie.title,
+                        url: video.url
+                    });
+                });
+
+                html.append(card);
+            });
+        }
+    }
+
+    function addButton(movie) {
+        if ($('.cdnmovies-ultralite-btn').length) return;
+
+        var button = $(`
+            <div class="full-start__button selector cdnmovies-ultralite-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                        d="M8 5v14l11-7z"/>
+                </svg>
+                <span>CDNMovies</span>
+            </div>
+        `);
+
+        button.on('hover:enter', function () {
+            Lampa.Activity.push({
+                url: '',
+                title: 'CDNMovies',
+                component: 'cdnmovies_ultralite',
+                movie: movie,
+                page: 1
+            });
+        });
+
+        $('.full-start-new__buttons').append(button);
+    }
+
+    function init() {
+        Lampa.Component.add(
+            'cdnmovies_ultralite',
+            component
+        );
+
+        Lampa.Listener.follow('full', function (e) {
+            if (!e || !e.data || !e.data.movie) return;
+
+            setTimeout(function () {
+                addButton(e.data.movie);
+            }, 0);
+        });
+
+        console.log('CDNMovies Ultra Lite loaded');
+    }
+
+    if (window.appready) {
+        init();
+    } else {
+        Lampa.Listener.follow('app', function (e) {
+            if (e.type === 'ready') init();
+        });
+    }
+})();
