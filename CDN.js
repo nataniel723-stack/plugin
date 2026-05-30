@@ -1,87 +1,23 @@
-// CDNMovies Ultra Lite for Lampa / Lampa Uncensored
-// Version: 1.3 (Fully Fixed)
+// CDNMovies (Cdnvideohub) Dedicated Plugin for Lampa
+// Version: 2.0 (Based on online_mod architecture)
 (function () {
     'use strict';
     if (!window.Lampa) return;
 
-    var network = new Lampa.Reguest();
-
-    function decode(data) {
-        if (!data) return '';
-        try {
-            if (data.charAt(0) === '#') {
-                data = data.slice(1);
-            }
-            return decodeURIComponent(
-                atob(data)
-                    .split('')
-                    .map(function (c) {
-                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                    })
-                    .join('')
-            );
-        } catch (e) {
-            return data;
-        }
-    }
-
-    function extractPlayerData(html) {
-        try {
-            html = (html || '').replace(/\n/g, '');
-            var match = html.match(/Playerjs\(({.*?})\);/);
-            if (!match || !match[1]) return null;
-            return (0, eval)(
-                '"use strict"; (function(){ return ' + match[1] + '; })();'
-            );
-        } catch (e) {
-            console.error('CDNMovies parse error', e);
-            return null;
-        }
-    }
-
-    function parsePlaylist(file) {
-        try {
-            return JSON.parse(decode(file));
-        } catch (e) {
-            console.error('CDNMovies playlist parse error', e);
-            return [];
-        }
-    }
-
-    function flattenVideos(items, result) {
-        result = result || [];
-        if (!items || !items.forEach) return result;
-        items.forEach(function (item) {
-            if (item.file && typeof item.file === 'string') {
-                result.push({
-                    title: item.title || 'Видео',
-                    url: item.file
-                });
-            }
-            if (item.folder && item.folder.forEach) {
-                flattenVideos(item.folder, result);
-            }
-        });
-        return result;
-    }
-
     function Component(object) {
         var comp = this;
-        var html = $('<div class="cdnmovies-lite Lampa-component" style="padding:1.5em 3em"></div>');
+        var html = $('<div class="cdnvideohub Lampa-component" style="padding:1.5em 3em"></div>');
         var scroll = new Lampa.Scroll({mask: true, over: true});
+        var network = new Lampa.Reguest();
         var last_select;
 
-        // Метод создания компонента
         this.create = function () {
             this.activity.loader(true);
             load();
             return this.render();
         };
 
-        // Тот самый пропущенный метод, из-за которого падал зеленый экран
-        this.start = function () {
-            // Лампа ожидает этот метод активным после отрисовки
-        };
+        this.start = function () {};
 
         this.render = function () {
             scroll.append(html);
@@ -104,27 +40,81 @@
             `);
         }
 
+        function decode(data) {
+            if (!data) return '';
+            try {
+                if (data.charAt(0) === '#') data = data.slice(1);
+                return decodeURIComponent(atob(data).split('').map(function (c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+            } catch (e) {
+                return data;
+            }
+        }
+
+        function extractPlayerData(htmlString) {
+            try {
+                var cleanHtml = (htmlString || '').replace(/\n/g, '');
+                var match = cleanHtml.match(/Playerjs\(({.*?})\);/);
+                if (!match || !match[1]) return null;
+                return (0, eval)('"use strict"; (function(){ return ' + match[1] + '; })();');
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function parsePlaylist(file) {
+            try {
+                return JSON.parse(decode(file));
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function flattenVideos(items, result) {
+            result = result || [];
+            if (!items || !items.forEach) return result;
+            items.forEach(function (item) {
+                if (item.file && typeof item.file === 'string') {
+                    result.push({
+                        title: item.title || 'Видео',
+                        url: item.file
+                    });
+                }
+                if (item.folder && item.folder.forEach) {
+                    flattenVideos(item.folder, result);
+                }
+            });
+            return result;
+        }
+
         function load() {
             var kp = object.movie.kinopoisk_id || object.movie.id || '';
             var imdb = object.movie.imdb_id || '';
-            var url = '';
-
-            if (kp) {
-                url = 'https://cdnmovies-stream.online/kinopoisk/' + kp + '/iframe';
-            } else if (imdb) {
-                url = 'https://cdnmovies-stream.online/imdb/' + imdb + '/iframe';
-            }
-
-            if (!url) {
+            
+            if (!kp && !imdb) {
                 show('Не найден ID фильма (Kinopoisk / IMDB)');
                 return;
             }
 
-            network.timeout(15000);
-            
-            // Используем Lampa.TMS.proxyUrl или встроенный механизм, чтобы обойти блокировку CORS в браузере
-            var targetUrl = (typeof Lampa.TMS !== 'undefined' && Lampa.TMS.proxyUrl) ? Lampa.TMS.proxyUrl(url) : url;
+            // Используем актуальное рабочее зеркало из оригинального плагина
+            var domain = 'https://cdnmovies-stream.online'; 
+            var path = kp ? '/kinopoisk/' + kp + '/iframe' : '/imdb/' + imdb + '/iframe';
+            var url = domain + path;
 
+            // Самое важное: проксирование запроса через API Лампы, чтобы убрать ошибку сети
+            var account = Lampa.Storage.get('account', '{}');
+            var logged = account.logged;
+            var proxy = Lampa.Storage.field('proxy_tmdb') ? Lampa.Storage.get('proxy_tmdb_url') : '';
+            
+            var targetUrl = url;
+            if (proxy) {
+                targetUrl = proxy + window.encodeURIComponent(url);
+            } else if (typeof Lampa.TMS !== 'undefined' && Lampa.TMS.proxyUrl) {
+                targetUrl = Lampa.TMS.proxyUrl(url);
+            }
+
+            network.timeout(15000);
             network.native(
                 targetUrl,
                 function (response) {
@@ -132,16 +122,16 @@
                     renderResult(response);
                 },
                 function () {
-                    // Если через прокси/напрямую не вышло, пробуем альтернативный вариант без проксирования
+                    // Пробуем резервный прямой запрос, если прокси не отработал
                     if (targetUrl !== url) {
                         network.native(url, function(resp) {
                             comp.activity.loader(false);
                             renderResult(resp);
                         }, function() {
-                            show('Ошибка загрузки данных с CDNMovies.<br><span style="font-size:0.7em; opacity:0.6;">Возможно, домен заблокирован или требуется включить VPN/подмену DNS.</span>');
+                            show('Cdnvideohub: Ошибка сети.<br><span style="font-size:0.7em; opacity:0.6;">Проверьте работу прокси или VPN в Лампе.</span>');
                         }, false, { dataType: 'text' });
                     } else {
-                        show('Ошибка загрузки данных с CDNMovies.<br><span style="font-size:0.7em; opacity:0.6;">Возможно, домен заблокирован или требуется включить VPN/подмену DNS.</span>');
+                        show('Cdnvideohub: Ошибка сети.<br><span style="font-size:0.7em; opacity:0.6;">Проверьте работу прокси или VPN в Лампе.</span>');
                     }
                 },
                 false,
@@ -152,7 +142,7 @@
         function renderResult(response) {
             var player = extractPlayerData(response);
             if (!player || !player.file) {
-                show('Видео не найдено в базе CDNMovies');
+                show('Видео не найдено в базе Cdnvideohub');
                 return;
             }
 
@@ -160,7 +150,7 @@
             var videos = flattenVideos(parsed);
 
             if (!videos.length) {
-                show('Нет доступных потоков для воспроизведения');
+                show('Нет доступных потоков');
                 return;
             }
 
@@ -215,22 +205,22 @@
     }
 
     function addButton(movie) {
-        if ($('.cdnmovies-ultralite-btn').length) return;
+        if ($('.cdnvideohub-btn').length) return;
 
         var button = $(`
-            <div class="full-start__button selector cdnmovies-ultralite-btn">
+            <div class="full-start__button selector cdnvideohub-btn">
                 <svg width="20" height="20" viewBox="0 0 24 24">
                     <path fill="currentColor" d="M8 5v14l11-7z"/>
                 </svg>
-                <span>CDNMovies</span>
+                <span>Cdnvideohub</span>
             </div>
         `);
 
         button.on('hover:enter', function () {
             Lampa.Activity.push({
                 url: '',
-                title: 'CDNMovies',
-                component: 'cdnmovies_ultralite',
+                title: 'Cdnvideohub',
+                component: 'cdnvideohub_plugin',
                 movie: movie,
                 page: 1
             });
@@ -243,7 +233,7 @@
     }
 
     function init() {
-        Lampa.Component.add('cdnmovies_ultralite', Component);
+        Lampa.Component.add('cdnvideohub_plugin', Component);
         
         Lampa.Listener.follow('full', function (e) {
             if (!e || !e.data || !e.data.movie) return;
@@ -252,7 +242,7 @@
             }, 200);
         });
 
-        console.log('CDNMovies Ultra Lite (Fixed v1.3) loaded');
+        console.log('Cdnvideohub Dedicated Plugin Loaded');
     }
 
     if (window.appready) {
