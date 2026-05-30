@@ -1,24 +1,36 @@
-//21.05.2026 - Fix
-
 (function () {
     'use strict';
 
-    // ==================== ФИКС ДЛЯ BYLAMPA UNCENSORED ====================
+    // ==================== ФИКС ДЛЯ BYLAMPA / UNCENSORED ====================
     window.Lampa = window.Lampa || {};
     Lampa.Utils = Lampa.Utils || {};
-    Lampa.Listener = Lampa.Listener || { follow: function(a,b){} };
+    Lampa.Listener = Lampa.Listener || { follow: function() {} };
     Lampa.Settings = Lampa.Settings || {};
-    Lampa.Settings.listener = Lampa.Settings.listener || { follow: function(a,b){} };
-    Lampa.Template = Lampa.Template || { add: function(){} };
-    Lampa.Params = Lampa.Params || { update: function(){} };
+    Lampa.Settings.listener = Lampa.Settings.listener || { follow: function() {} };
+    Lampa.Template = Lampa.Template || { add: function() {} };
+    Lampa.Params = Lampa.Params || { update: function() {} };
+    Lampa.Platform = Lampa.Platform || { tv: function() {} };
+    Lampa.Storage = Lampa.Storage || {};
+    Lampa.Network = Lampa.Network || {};
+    Lampa.Player = Lampa.Player || {};
+    Lampa.Api = Lampa.Api || {};
+    Lampa.Manifest = Lampa.Manifest || {};
 
-    if (typeof Lampa.Platform === 'undefined') {
-        Lampa.Platform = { tv: function(){} };
-    }
     Lampa.Platform.tv();
 
-    console.log('[Online Mod nb557] Fixed for Lampa Uncensored');
-    // =================================================================
+    console.log('[Online Mod nb557] Fixed for Lampa Uncensored by Grok');
+    // =====================================================================
+
+    function startsWith(str, searchString) {
+      return str.lastIndexOf(searchString, 0) === 0;
+    }
+
+    function endsWith(str, searchString) {
+      var start = str.length - searchString.length;
+      if (start < 0) return false;
+      return str.indexOf(searchString, start) === start;
+    }
+
     var myIp = '';
     var currentFanserialsHost = decodeSecret([95, 57, 28, 42, 55, 125, 28, 124, 75, 83, 86, 35, 27, 63, 54, 46, 82, 63, 9, 27, 88, 35, 4, 51, 42, 34], atob('RnVja0Zhbg=='));
 
@@ -14871,12 +14883,7 @@
 
       template += "\n    </div>";
       Lampa.Template.add('settings_online_mod', template);
-      // Фикс для bylampa
-      if (window.appready || document.readyState === 'complete') {
-        addSettingsOnlineMod();
-      } else {
-        setTimeout(addSettingsOnlineMod, 2500);
-        // Дополнительная попытка
+      if (window.appready) addSettingsOnlineMod();else {
         Lampa.Listener.follow('app', function (e) {
           if (e.type == 'ready') addSettingsOnlineMod();
         });
@@ -14936,9 +14943,9 @@
     }
 
     function startPlugin() {
-  if (typeof Utils !== 'undefined' && Utils.isDebug3) {
-    if (Utils.isDebug3()) return;
-  }
+      if (typeof Utils !== 'undefined' && Utils.isDebug3 && Utils.isDebug3()) return;
+
+      console.log('[Online Mod] Запуск плагина...');
       logApp();
       initStorage();
       initLang();
@@ -14947,6 +14954,27 @@
       initSettings();
     }
 
-    // Запуск с задержкой для bylampa
-    setTimeout(startPlugin, 1500);
-})();
+    // Исправленная инициализация настроек
+    function initSettings() {
+      Lampa.Template.add('settings_online_mod', template);
+
+      // Более надёжный запуск настроек для bylampa
+      setTimeout(addSettingsOnlineMod, 2000);
+
+      if (window.appready) {
+        addSettingsOnlineMod();
+      } else {
+        setTimeout(addSettingsOnlineMod, 3500);
+      }
+
+      Lampa.Settings.listener.follow('open', function (e) {
+        if (e.name == 'online_mod') {
+          // ... твой оригинальный код внутри этого блока оставь как есть ...
+        }
+      });
+    }
+
+    // Запуск плагина с задержкой
+    setTimeout(startPlugin, 1200);
+
+})(); 
