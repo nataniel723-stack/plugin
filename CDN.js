@@ -1,18 +1,12 @@
-// CDNMovies Source Plugin for Lampa / Lampa Uncensored
-// Version: 2.0
-
+// CDNMovies Ultra Lite for Lampa
+// Version: 1.0
 (function () {
     'use strict';
-
     if (!window.Lampa) return;
-
     var network = new Lampa.Reguest();
-
     function decode(data) {
         if (!data) return '';
-
         if (data.charAt(0) !== '#') return data;
-
         try {
             return decodeURIComponent(
                 atob(data.substr(1))
@@ -23,189 +17,166 @@
                     .join('')
             );
         } catch (e) {
-            console.log('CDNMovies decode error', e);
             return '';
         }
     }
-
     function parsePlaylist(file) {
         try {
             return JSON.parse(decode(file));
         } catch (e) {
-            console.log('CDNMovies parse error', e);
             return [];
         }
     }
-
     function extractPlayerData(html) {
         try {
             html = (html || '').replace(/\n/g, '');
-
             var match = html.match(/Playerjs\(({.*?})\);/);
-
             if (!match || !match[1]) return null;
-
             var json = (0, eval)(
                 '"use strict"; (function(){ return ' + match[1] + '; })();'
             );
-
             return json;
         } catch (e) {
-            console.log('CDNMovies extract error', e);
             return null;
         }
     }
-
-    function flattenVideos(data, result, season) {
+    function flattenVideos(data, result) {
         result = result || [];
-
-        if (!data || !data.forEach) return result;
-
+        if (!data) return result;
         data.forEach(function (item) {
-
-            // сериал
-            if (item.folder && item.folder.forEach) {
-                flattenVideos(item.folder, result, item.title || season);
-            }
-
-            // видео
             if (item.file && typeof item.file === 'string') {
                 result.push({
                     title: item.title || 'Видео',
-                    season: season || '',
-                    file: item.file
+                    url: item.file
                 });
             }
+            if (item.folder && item.folder.forEach) {
+                flattenVideos(item.folder, result);
+            }
         });
-
         return result;
     }
-
-    function buildApi(movie) {
-        var kp =
-            movie.kinopoisk_id ||
-            movie.id ||
-            '';
-
-        var imdb =
-            movie.imdb_id ||
-            '';
-
-        if (kp) {
-            return 'https://cdnmovies-stream.online/kinopoisk/' + kp + '/iframe';
-        }
-
-        if (imdb) {
-            return 'https://cdnmovies-stream.online/imdb/' + imdb + '/iframe';
-        }
-
-        return '';
-    }
-
-    function request(movie, success, error) {
-        var api = buildApi(movie);
-
-        if (!api) {
-            error();
-            return;
-        }
-
-        network.timeout(15000);
-
-        network.native(
-            api,
-            function (response) {
-                try {
-                    var player = extractPlayerData(response);
-
-                    if (!player || !player.file) {
-                        error();
-                        return;
-                    }
-
-                    var parsed = parsePlaylist(player.file);
-
-                    var videos = flattenVideos(parsed);
-
-                    success(videos);
-                } catch (e) {
-                    console.log('CDNMovies request error', e);
-                    error();
-                }
-            },
-            error,
-            false,
-            {
-                dataType: 'text'
+    function component(object) {
+        var html = $('<div class="cdnmovies-lite"></div>');
+        this.create = function () {
+            return html;
+        };
+        this.start = function () {
+            load();
+        };
+        function load() {
+            html.empty();
+            var kp =
+                object.movie.kinopoisk_id ||
+                object.movie.id ||
+                '';
+            var imdb =
+                object.movie.imdb_id ||
+                '';
+            var api = '';
+            if (kp) {
+                api =
+                    'https://cdnmovies-stream.online/kinopoisk/' +
+                    kp +
+                    '/iframe';
+            } else if (imdb) {
+                api =
+                    'https://cdnmovies-stream.online/imdb/' +
+                    imdb +
+                    '/iframe';
             }
-        );
-    }
-
-    function createItems(videos) {
-        var items = [];
-
-        videos.forEach(function (video, index) {
-
-            items.push({
-                title: video.season
-                    ? video.season + ' / ' + video.title
-                    : video.title,
-
-                file: video.file,
-
-                quality: 'HD',
-                voice: video.title,
-
-                subtitle: '',
-                timeline: 0,
-
-                details: {
-                    title: video.title
+            if (!api) {
+                html.append(
+                    '<div style="padding:2em">Не найден ID фильма</div>'
+                );
+                return;
+            }
+            network.timeout(15000);
+            network.native(
+                api,
+                function (response) {
+                    render(response);
+                },
+                function () {
+                    html.append(
+                        '<div style="padding:2em">Ошибка CDNMovies</div>'
+                    );
+                },
+                false,
+                {
+                    dataType: 'text'
                 }
+            );
+        }
+        function render(response) {
+            var player = extractPlayerData(response);
+            if (!player || !player.file) {
+                html.append(
+                    '<div style="padding:2em">Видео не найдено</div>'
+                );
+                return;
+            }
+            var parsed = parsePlaylist(player.file);
+            var videos = flattenVideos(parsed);
+            if (!videos.length) {
+                html.append(
+                    '<div style="padding:2em">Нет доступных потоков</div>'
+                );
+                return;
+            }
+            videos.forEach(function (video) {
+                var card = $(`
+                    <div class="simple-button selector">
+                        <div class="simple-button__text">
+                            ${video.title}
+                        </div>
+                    </div>
+                `);
+                card.on('hover:enter', function () {
+                    Lampa.Player.play({
+                        title: object.movie.title,
+                        url: video.url
+                    });
+                });
+                html.append(card);
+            });
+        }
+    }
+    function addButton(movie) {
+        if ($('.cdnmovies-ultralite-btn').length) return;
+        var button = $(`
+            <div class="full-start__button selector cdnmovies-ultralite-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                        d="M8 5v14l11-7z"/>
+                </svg>
+                <span>CDNMovies</span>
+            </div>
+        `);
+        button.on('hover:enter', function () {
+            Lampa.Activity.push({
+                url: '',
+                title: 'CDNMovies',
+                component: 'cdnmovies_ultralite',
+                movie: movie,
+                page: 1
             });
         });
-
-        return items;
+        $('.full-start-new__buttons').append(button);
     }
-
     function init() {
-
-        Lampa.Api.sources.cdnmovies = {
-            title: 'CDNMovies',
-            icon: 'https://cdn-icons-png.flaticon.com/512/1179/1179069.png',
-
-            search: function (movie, call) {
-
-                request(
-                    movie,
-
-                    function (videos) {
-
-                        if (!videos || !videos.length) {
-                            call({
-                                error: 'Видео не найдено'
-                            });
-
-                            return;
-                        }
-
-                        call({
-                            results: createItems(videos)
-                        });
-                    },
-
-                    function () {
-                        call({
-                            error: 'Ошибка CDNMovies'
-                        });
-                    }
-                );
-            }
-        };
-
-        console.log('CDNMovies source loaded');
+        Lampa.Component.add(
+            'cdnmovies_ultralite',
+            component
+        );
+        Lampa.Listener.follow('full', function (e) {
+            if (!e || !e.data || !e.data.movie) return;
+            setTimeout(function () {
+                addButton(e.data.movie);
+            }, 0);
+        });
+        console.log('CDNMovies Ultra Lite loaded');
     }
-
     if (window.appready) {
         init();
     } else {
@@ -213,5 +184,4 @@
             if (e.type === 'ready') init();
         });
     }
-
 })();
