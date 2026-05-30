@@ -1,5 +1,5 @@
 // CDNMovies Ultra Lite for Lampa / Lampa Uncensored
-// Version: 1.2 (Fixed)
+// Version: 1.3 (Fully Fixed)
 (function () {
     'use strict';
     if (!window.Lampa) return;
@@ -65,17 +65,22 @@
         return result;
     }
 
-    // Правильная структура компонента Lampa
     function Component(object) {
         var comp = this;
         var html = $('<div class="cdnmovies-lite Lampa-component" style="padding:1.5em 3em"></div>');
         var scroll = new Lampa.Scroll({mask: true, over: true});
         var last_select;
 
+        // Метод создания компонента
         this.create = function () {
             this.activity.loader(true);
             load();
             return this.render();
+        };
+
+        // Тот самый пропущенный метод, из-за которого падал зеленый экран
+        this.start = function () {
+            // Лампа ожидает этот метод активным после отрисовки
         };
 
         this.render = function () {
@@ -116,14 +121,28 @@
             }
 
             network.timeout(15000);
+            
+            // Используем Lampa.TMS.proxyUrl или встроенный механизм, чтобы обойти блокировку CORS в браузере
+            var targetUrl = (typeof Lampa.TMS !== 'undefined' && Lampa.TMS.proxyUrl) ? Lampa.TMS.proxyUrl(url) : url;
+
             network.native(
-                url,
+                targetUrl,
                 function (response) {
                     comp.activity.loader(false);
                     renderResult(response);
                 },
                 function () {
-                    show('Ошибка загрузки данных с CDNMovies');
+                    // Если через прокси/напрямую не вышло, пробуем альтернативный вариант без проксирования
+                    if (targetUrl !== url) {
+                        network.native(url, function(resp) {
+                            comp.activity.loader(false);
+                            renderResult(resp);
+                        }, function() {
+                            show('Ошибка загрузки данных с CDNMovies.<br><span style="font-size:0.7em; opacity:0.6;">Возможно, домен заблокирован или требуется включить VPN/подмену DNS.</span>');
+                        }, false, { dataType: 'text' });
+                    } else {
+                        show('Ошибка загрузки данных с CDNMovies.<br><span style="font-size:0.7em; opacity:0.6;">Возможно, домен заблокирован или требуется включить VPN/подмену DNS.</span>');
+                    }
                 },
                 false,
                 { dataType: 'text' }
@@ -168,7 +187,6 @@
                 html.append(card);
             });
 
-            // Включаем навигацию пультом по списку серий/файлов
             comp.toggle();
         }
 
@@ -218,7 +236,6 @@
             });
         });
 
-        // Пытаемся встроить кнопку в стандартные блоки кнопок карточки фильма
         var container = $('.full-start-new__buttons, .full-start__buttons');
         if (container.length) {
             container.append(button);
@@ -230,13 +247,12 @@
         
         Lampa.Listener.follow('full', function (e) {
             if (!e || !e.data || !e.data.movie) return;
-            // Небольшой таймаут, чтобы дождаться отрисовки интерфейса карточки фильма
             setTimeout(function () {
                 addButton(e.data.movie);
             }, 200);
         });
 
-        console.log('CDNMovies Ultra Lite (Fixed) loaded');
+        console.log('CDNMovies Ultra Lite (Fixed v1.3) loaded');
     }
 
     if (window.appready) {
