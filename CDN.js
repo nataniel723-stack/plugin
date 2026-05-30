@@ -1,15 +1,17 @@
-// CDNMovies Ultra Lite for Lampa
-// Version: 1.0
+// CDNMovies Ultra Lite for Lampa / Lampa Uncensored
+// Version: 1.1
 (function () {
     'use strict';
     if (!window.Lampa) return;
     var network = new Lampa.Reguest();
     function decode(data) {
         if (!data) return '';
-        if (data.charAt(0) !== '#') return data;
         try {
+            if (data.charAt(0) === '#') {
+                data = data.slice(1);
+            }
             return decodeURIComponent(
-                atob(data.substr(1))
+                atob(data)
                     .split('')
                     .map(function (c) {
                         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
@@ -17,14 +19,7 @@
                     .join('')
             );
         } catch (e) {
-            return '';
-        }
-    }
-    function parsePlaylist(file) {
-        try {
-            return JSON.parse(decode(file));
-        } catch (e) {
-            return [];
+            return data;
         }
     }
     function extractPlayerData(html) {
@@ -32,18 +27,26 @@
             html = (html || '').replace(/\n/g, '');
             var match = html.match(/Playerjs\(({.*?})\);/);
             if (!match || !match[1]) return null;
-            var json = (0, eval)(
+            return (0, eval)(
                 '"use strict"; (function(){ return ' + match[1] + '; })();'
             );
-            return json;
         } catch (e) {
+            console.error('CDNMovies parse error', e);
             return null;
         }
     }
-    function flattenVideos(data, result) {
+    function parsePlaylist(file) {
+        try {
+            return JSON.parse(decode(file));
+        } catch (e) {
+            console.error('CDNMovies playlist parse error', e);
+            return [];
+        }
+    }
+    function flattenVideos(items, result) {
         result = result || [];
-        if (!data) return result;
-        data.forEach(function (item) {
+        if (!items || !items.forEach) return result;
+        items.forEach(function (item) {
             if (item.file && typeof item.file === 'string') {
                 result.push({
                     title: item.title || 'Видео',
@@ -57,15 +60,31 @@
         return result;
     }
     function component(object) {
-        var html = $('<div class="cdnmovies-lite"></div>');
-        this.create = function () {
+        var html = $('<div class="cdnmovies-lite" style="padding:1.5em"></div>');
+        this.render = function () {
             return html;
+        };
+        this.destroy = function () {
+            network.clear();
+            html.remove();
         };
         this.start = function () {
             load();
         };
-        function load() {
+        function show(message) {
             html.empty();
+            html.append(`
+                <div style="
+                    padding: 2em;
+                    font-size: 1.4em;
+                    opacity: 0.8;
+                ">
+                    ${message}
+                </div>
+            `);
+        }
+        function load() {
+            show('Загрузка...');
             var kp =
                 object.movie.kinopoisk_id ||
                 object.movie.id ||
@@ -73,34 +92,30 @@
             var imdb =
                 object.movie.imdb_id ||
                 '';
-            var api = '';
+            var url = '';
             if (kp) {
-                api =
+                url =
                     'https://cdnmovies-stream.online/kinopoisk/' +
                     kp +
                     '/iframe';
             } else if (imdb) {
-                api =
+                url =
                     'https://cdnmovies-stream.online/imdb/' +
                     imdb +
                     '/iframe';
             }
-            if (!api) {
-                html.append(
-                    '<div style="padding:2em">Не найден ID фильма</div>'
-                );
+            if (!url) {
+                show('Не найден ID фильма');
                 return;
             }
             network.timeout(15000);
             network.native(
-                api,
+                url,
                 function (response) {
-                    render(response);
+                    renderResult(response);
                 },
                 function () {
-                    html.append(
-                        '<div style="padding:2em">Ошибка CDNMovies</div>'
-                    );
+                    show('Ошибка загрузки CDNMovies');
                 },
                 false,
                 {
@@ -108,25 +123,22 @@
                 }
             );
         }
-        function render(response) {
+        function renderResult(response) {
             var player = extractPlayerData(response);
             if (!player || !player.file) {
-                html.append(
-                    '<div style="padding:2em">Видео не найдено</div>'
-                );
+                show('Видео не найдено');
                 return;
             }
             var parsed = parsePlaylist(player.file);
             var videos = flattenVideos(parsed);
             if (!videos.length) {
-                html.append(
-                    '<div style="padding:2em">Нет доступных потоков</div>'
-                );
+                show('Нет доступных потоков');
                 return;
             }
+            html.empty();
             videos.forEach(function (video) {
                 var card = $(`
-                    <div class="simple-button selector">
+                    <div class="simple-button selector" style="margin-bottom:1em">
                         <div class="simple-button__text">
                             ${video.title}
                         </div>
@@ -173,7 +185,7 @@
             if (!e || !e.data || !e.data.movie) return;
             setTimeout(function () {
                 addButton(e.data.movie);
-            }, 0);
+            }, 100);
         });
         console.log('CDNMovies Ultra Lite loaded');
     }
@@ -181,7 +193,9 @@
         init();
     } else {
         Lampa.Listener.follow('app', function (e) {
-            if (e.type === 'ready') init();
+            if (e.type === 'ready') {
+                init();
+            }
         });
     }
 })();
