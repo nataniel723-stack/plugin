@@ -3,16 +3,22 @@
 (function () {
     'use strict';
 
-    function startsWith(str, searchString) {
-      return str.lastIndexOf(searchString, 0) === 0;
-    }
+    // ==================== ФИКС ДЛЯ BYLAMPA UNCENSORED ====================
+    window.Lampa = window.Lampa || {};
+    Lampa.Utils = Lampa.Utils || {};
+    Lampa.Listener = Lampa.Listener || { follow: function(a,b){} };
+    Lampa.Settings = Lampa.Settings || {};
+    Lampa.Settings.listener = Lampa.Settings.listener || { follow: function(a,b){} };
+    Lampa.Template = Lampa.Template || { add: function(){} };
+    Lampa.Params = Lampa.Params || { update: function(){} };
 
-    function endsWith(str, searchString) {
-      var start = str.length - searchString.length;
-      if (start < 0) return false;
-      return str.indexOf(searchString, start) === start;
+    if (typeof Lampa.Platform === 'undefined') {
+        Lampa.Platform = { tv: function(){} };
     }
+    Lampa.Platform.tv();
 
+    console.log('[Online Mod nb557] Fixed for Lampa Uncensored');
+    // =================================================================
     var myIp = '';
     var currentFanserialsHost = decodeSecret([95, 57, 28, 42, 55, 125, 28, 124, 75, 83, 86, 35, 27, 63, 54, 46, 82, 63, 9, 27, 88, 35, 4, 51, 42, 34], atob('RnVja0Zhbg=='));
 
@@ -14865,7 +14871,12 @@
 
       template += "\n    </div>";
       Lampa.Template.add('settings_online_mod', template);
-      if (window.appready) addSettingsOnlineMod();else {
+      // Фикс для bylampa
+      if (window.appready || document.readyState === 'complete') {
+        addSettingsOnlineMod();
+      } else {
+        setTimeout(addSettingsOnlineMod, 2500);
+        // Дополнительная попытка
         Lampa.Listener.follow('app', function (e) {
           if (e.type == 'ready') addSettingsOnlineMod();
         });
@@ -14925,7 +14936,9 @@
     }
 
     function startPlugin() {
-      if (Utils.isDebug3()) return;
+  if (typeof Utils !== 'undefined' && Utils.isDebug3) {
+    if (Utils.isDebug3()) return;
+  }
       logApp();
       initStorage();
       initLang();
@@ -14934,6 +14947,6 @@
       initSettings();
     }
 
-    startPlugin();
-
+    // Запуск с задержкой для bylampa
+    setTimeout(startPlugin, 1500);
 })();
