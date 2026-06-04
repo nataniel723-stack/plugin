@@ -12,7 +12,7 @@
   // Функция для поиска на сайте hdrezka
   async function searchRezka(name, ye) {
     let fc = await fetch(
-        "https://rezka.ag/search/?do=search&subaction=search&q=" +
+        "https://hdrezka-home.tv/search/?do=search&subaction=search&q=" +
         name +
         (ye ? "+" + ye : ""),
       { method: "GET", headers: { "Content-Type": "text/html" } },
