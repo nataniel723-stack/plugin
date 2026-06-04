@@ -1,5 +1,4 @@
 (function () {
-  //BDVBuriлk.github.io
   //2025
   ("use strict");
 
@@ -7,13 +6,11 @@
   let namemovie;
   let savedHTML = null;
 
-  let kp_prox = "https://worker-patient-dream-26d8.bdvburik.workers.dev:8443/";
   let url = "https://rezka.ag/ajax/get_comments/?t=1714093694732&news_id=";
 
   // Функция для поиска на сайте hdrezka
   async function searchRezka(name, ye) {
     let fc = await fetch(
-      kp_prox +
         "https://hdrezka-home.tv/search/?do=search&subaction=search&q=" +
         name +
         (ye ? "+" + ye : ""),
@@ -153,7 +150,6 @@
     (async () => {
       try {
         let fc = await fetch(
-          kp_prox +
             url +
             (id ? id : "1") +
             "&cstart=1&type=0&comment_id=0&skin=hdrezka",
