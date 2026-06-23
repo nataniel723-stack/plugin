@@ -74,6 +74,76 @@
         });
     }
 
+    // Получение списка сезонов сериала
+    function getSeasons(seriesId, callback) {
+        const url = `${getUrl().replace(/\/$/, '')}/Shows/${seriesId}/Seasons?api_key=${getApiKey()}`;
+        apiRequest(url, callback);
+    }
+
+    // Получение списка эпизодов сезона
+    function getEpisodes(seriesId, seasonNumber, callback) {
+        const url = `${getUrl().replace(/\/$/, '')}/Shows/${seriesId}/Seasons/${seasonNumber}/Episodes?api_key=${getApiKey()}`;
+        apiRequest(url, callback);
+    }
+
+    // Формирование прямой ссылки на потоковое видео
+    function getStreamingUrl(itemId, seriesId, seasonNumber, episodeNumber, callback) {
+        if (!isConfigured()) {
+            notify('Настройте Emby в параметрах');
+            return callback(null);
+        }
+
+        const url = `${getUrl().replace(/\/$/, '')}/Shows/${seriesId}/Seasons/${seasonNumber}/Episodes/${episodeNumber}/stream.mp4?static=true&api_key=${getApiKey()}`;
+        callback(url);
+    }
+
+    // Выбор сезона
+    function chooseSeason(seasons, currentSeason) {
+        const options = seasons.map(s => ({label: `Сезон ${s.IndexNumber}`, value: s.IndexNumber}));
+        Lampa.Select.show({
+            title: 'Выбор сезона',
+            options: options,
+            defaultValue: currentSeason,
+            onChange: (newSeason) => {
+                Lampa.Storage.set('emby_selected_season', newSeason);
+                getEpisodes(currentSerieId, newSeason, (episodes) => {
+                    chooseEpisode(episodes);
+                });
+            }
+        });
+    }
+
+    // Выбор эпизода
+    function chooseEpisode(episodes, currentEpisode) {
+        const options = episodes.map(e => ({label: `Эпизод ${e.IndexNumber}: ${e.Name}`, value: e.IndexNumber}));
+        Lampa.Select.show({
+            title: 'Выбор эпизода',
+            options: options,
+            defaultValue: currentEpisode,
+            onChange: (newEpisode) => {
+                Lampa.Storage.set('emby_selected_episode', newEpisode);
+                playEpisode(currentSerieId, currentSeason, newEpisode);
+            }
+        });
+    }
+
+    // Воспроизведение эпизода
+    function playEpisode(seriesId, seasonNumber, episodeNumber) {
+        getStreamingUrl('', seriesId, seasonNumber, episodeNumber, (streamingUrl) => {
+            if (!streamingUrl) {
+                notify('Ссылка на эпизод не найдена.');
+                return;
+            }
+
+            Lampa.Player.play({
+                title: `Сезон ${seasonNumber}, Эпизод ${episodeNumber}`,
+                url: streamingUrl,
+                poster: `${getUrl()}/Shows/${seriesId}/Images/Primary`,
+                timeline: Lampa.Timeline.view(Lampa.Utils.hash(`${seriesId}_${seasonNumber}_${episodeNumber}`))
+            });
+        });
+    }
+
     // Обработчик нажатия на кнопку Emby
     function handleEmbyClick(movie) {
         if (!isConfigured()) {
@@ -83,18 +153,26 @@
 
         findInEmby(movie, (item) => {
             if (!item) {
-                notify('Фильм не найден в библиотеке Emby.');
+                notify('Контент не найден в библиотеке Emby.');
                 return;
             }
 
-            const streamingUrl = `${getUrl().replace(/\/$/, '')}/Videos/${item.Id}/stream.mp4?static=true&api_key=${getApiKey()}`;
+            if (item.Type === 'Series') {
+                // Обработка сериала
+                getSeasons(item.Id, (seasons) => {
+                    chooseSeason(seasons, Lampa.Storage.get('emby_selected_season', seasons[0]?.IndexNumber));
+                });
+            } else {
+                // Обработка фильма
+                const streamingUrl = `${getUrl().replace(/\/$/, '')}/Videos/${item.Id}/stream.mp4?static=true&api_key=${getApiKey()}`;
 
-            Lampa.Player.play({
-                title: item.Name,
-                url: streamingUrl,
-                poster: item.PrimaryImageTag ? `${getUrl()}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
-                timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id))
-            });
+                Lampa.Player.play({
+                    title: item.Name,
+                    url: streamingUrl,
+                    poster: item.PrimaryImageTag ? `${getUrl()}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
+                    timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id))
+                });
+            }
         });
     }
 
