@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '2.4.0';
+    const PLUGIN_VERSION = '2.5.0';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -74,27 +74,86 @@
         });
     }
 
-    // Получение списка сезонов сериала
+    // Вспомогательные функции для работы с сериалами
     function getSeasons(seriesId, callback) {
         const url = `${getUrl().replace(/\/$/, '')}/Shows/${seriesId}/Seasons?api_key=${getApiKey()}`;
         apiRequest(url, callback);
     }
 
-    // Получение списка эпизодов сезона
     function getEpisodes(seriesId, seasonNumber, callback) {
         const url = `${getUrl().replace(/\/$/, '')}/Shows/${seriesId}/Seasons/${seasonNumber}/Episodes?api_key=${getApiKey()}`;
         apiRequest(url, callback);
     }
 
-    // Формирование прямой ссылки на потоковое видео
-    function getStreamingUrl(itemId, seriesId, seasonNumber, episodeNumber, callback) {
-        if (!isConfigured()) {
-            notify('Настройте Emby в параметрах');
-            return callback(null);
-        }
+    function getAudioStreams(episodeId, callback) {
+        const url = `${getUrl().replace(/\/$/, '')}/Videos/${episodeId}/MediaSources?api_key=${getApiKey()}`;
+        apiRequest(url, callback);
+    }
 
-        const url = `${getUrl().replace(/\/$/, '')}/Shows/${seriesId}/Seasons/${seasonNumber}/Episodes/${episodeNumber}/stream.mp4?static=true&api_key=${getApiKey()}`;
+    function getSubtitleStreams(episodeId, callback) {
+        const url = `${getUrl().replace(/\/$/, '')}/Videos/${episodeId}/Subtitles?api_key=${getApiKey()}`;
+        apiRequest(url, callback);
+    }
+
+    function getStreamingUrl(episodeId, callback) {
+        const url = `${getUrl().replace(/\/$/, '')}/Videos/${episodeId}/stream.mp4?static=true&api_key=${getApiKey()}`;
         callback(url);
+    }
+
+    // Компонент для воспроизведения видео из Emby
+    function embyPlayer(component, object) {
+        let network = new Lampa.Reguest();
+        let scroll = new Lampa.Scroll({mask: true, over: true});
+        let files = new Lampa.Explorer(object);
+        
+        this.initialize = function() {
+            files.appendFiles(scroll.render());
+            files.appendHead($('<div/>'));
+            scroll.body().addClass('torrent-list');
+            this.search();
+        };
+
+        this.search = function() {
+            this.activity.loader(true);
+            this.find();
+        };
+
+        this.find = function() {
+            let movie = object.movie;
+            if (!movie) return this.doesNotAnswer();
+
+            findInEmby(movie, (item) => {
+                if (!item) return this.doesNotAnswer();
+                
+                if (item.Type === 'Series') {
+                    // Обработка сериала
+                    getSeasons(item.Id, (seasons) => {
+                        chooseSeason(seasons, Lampa.Storage.get('emby_selected_season', seasons[0]?.IndexNumber));
+                    });
+                } else {
+                    // Обработка фильма
+                    getStreamingUrl(item.Id, (streamingUrl) => {
+                        if (!streamingUrl) return this.doesNotAnswer();
+                        
+                        Lampa.Player.play({
+                            title: item.Name,
+                            url: streamingUrl,
+                            poster: item.PrimaryImageTag ? `${getUrl()}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
+                            timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id))
+                        });
+                        
+                        this.activity.loader(false);
+                        this.activity.toggle();
+                    });
+                }
+            });
+        };
+
+        this.doesNotAnswer = function() {
+            this.activity.loader(false);
+            this.activity.toggle();
+            notify('Контент не найден в библиотеке Emby.');
+        };
     }
 
     // Выбор сезона
@@ -122,24 +181,56 @@
             defaultValue: currentEpisode,
             onChange: (newEpisode) => {
                 Lampa.Storage.set('emby_selected_episode', newEpisode);
-                playEpisode(currentSerieId, currentSeason, newEpisode);
+                getAudioStreams(currentEpisodeId, (audioStreams) => {
+                    chooseAudio(audioStreams);
+                });
+            }
+        });
+    }
+
+    // Выбор аудиопотока (озвучки)
+    function chooseAudio(audioStreams, currentAudio) {
+        const options = audioStreams.map(stream => ({label: stream.DisplayTitle, value: stream.Index}));
+        Lampa.Select.show({
+            title: 'Выбор аудио дорожки',
+            options: options,
+            defaultValue: currentAudio,
+            onChange: (newAudio) => {
+                Lampa.Storage.set('emby_selected_audio', newAudio);
+                getSubtitleStreams(currentEpisodeId, (subtitleStreams) => {
+                    chooseSubtitle(subtitleStreams);
+                });
+            }
+        });
+    }
+
+    // Выбор субтитров
+    function chooseSubtitle(subtitleStreams, currentSubtitle) {
+        const options = subtitleStreams.map(stream => ({label: stream.Language, value: stream.Index}));
+        Lampa.Select.show({
+            title: 'Выбор субтитров',
+            options: options,
+            defaultValue: currentSubtitle,
+            onChange: (newSubtitle) => {
+                Lampa.Storage.set('emby_selected_subtitle', newSubtitle);
+                playEpisode(currentEpisodeId);
             }
         });
     }
 
     // Воспроизведение эпизода
-    function playEpisode(seriesId, seasonNumber, episodeNumber) {
-        getStreamingUrl('', seriesId, seasonNumber, episodeNumber, (streamingUrl) => {
+    function playEpisode(episodeId) {
+        getStreamingUrl(episodeId, (streamingUrl) => {
             if (!streamingUrl) {
                 notify('Ссылка на эпизод не найдена.');
                 return;
             }
 
             Lampa.Player.play({
-                title: `Сезон ${seasonNumber}, Эпизод ${episodeNumber}`,
+                title: `Эпизод ${Lampa.Storage.get('emby_selected_episode')}`,
                 url: streamingUrl,
-                poster: `${getUrl()}/Shows/${seriesId}/Images/Primary`,
-                timeline: Lampa.Timeline.view(Lampa.Utils.hash(`${seriesId}_${seasonNumber}_${episodeNumber}`))
+                poster: `${getUrl()}/Shows/${currentSerieId}/Images/Primary`,
+                timeline: Lampa.Timeline.view(Lampa.Utils.hash(`${currentSerieId}_${Lampa.Storage.get('emby_selected_season')}_${Lampa.Storage.get('emby_selected_episode')}`))
             });
         });
     }
@@ -159,6 +250,7 @@
 
             if (item.Type === 'Series') {
                 // Обработка сериала
+                currentSerieId = item.Id;
                 getSeasons(item.Id, (seasons) => {
                     chooseSeason(seasons, Lampa.Storage.get('emby_selected_season', seasons[0]?.IndexNumber));
                 });
