@@ -2,50 +2,82 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '1.5.0';
+    const PLUGIN_VERSION = '1.6.0';
 
-    let config = {
-        server: Lampa.Storage.get('emby_server', 'http://127.0.0.1:8096'),
-        apikey: Lampa.Storage.get('emby_apikey', '')
-    };
+    const STORAGE_URL = 'emby_url';
+    const STORAGE_TOKEN = 'emby_token';
 
-    function saveConfig() {
-        Lampa.Storage.set('emby_server', config.server);
-        Lampa.Storage.set('emby_apikey', config.apikey);
+    const network = new Lampa.Reguest();
+
+    function getUrl() {
+        return (Lampa.Storage.get(STORAGE_URL, 'http://127.0.0.1:8096') || '').trim();
+    }
+
+    function getToken() {
+        return (Lampa.Storage.get(STORAGE_TOKEN, '') || '').trim();
     }
 
     function isConfigured() {
-        return config.server && config.apikey && config.server.length > 10;
+        const url = getUrl();
+        const token = getToken();
+        return url.length > 10 && token.length > 5;
     }
 
-    function apiRequest(url, success, error) {
+    function notify(msg) {
+        Lampa.Noty.show(msg);
+    }
+
+    function editField(title, value, callback) {
+        Lampa.Input.edit({
+            title: title,
+            value: value,
+            free: true,
+            nosave: true
+        }, callback);
+    }
+
+    function apiRequest(endpoint, success, error) {
         if (!isConfigured()) {
-            Lampa.Noty.show('Emby: Настройте плагин');
-            showSettings();
+            notify('Сначала настройте Emby');
             return;
         }
 
-        const fullUrl = config.server.replace(/\/$/, '') + '/emby' + url + 
-                       (url.includes('?') ? '&' : '?') + 'api_key=' + config.apikey;
+        const base = getUrl().replace(/\/$/, '');
+        const url = base + '/emby' + endpoint + 
+                   (endpoint.includes('?') ? '&' : '?') + 'api_key=' + getToken();
 
-        new Lampa.Reguest().silent(fullUrl, success, error || (() => {}));
+        network.silent(url, success, error || (() => {}), false, {
+            headers: { 'Accept': 'application/json' }
+        });
     }
 
-    function findInEmby(movie, cb) {
-        if (!movie) return cb(null);
+    function findInEmby(movie, callback) {
+        if (!movie) return callback(null);
 
-        const query = '&Recursive=true&IncludeItemTypes=Movie,Series,Episode&Fields=Path,ProviderIds,Name';
+        const query = '&Recursive=true&IncludeItemTypes=Movie,Series,Episode&Fields=Path,ProviderIds,Name,Id';
 
+        // Приоритет по ID
         if (movie.imdb_id || movie.imdbid) {
-            const id = (movie.imdb_id || movie.imdbid).replace('tt','');
-            apiRequest(`/Items?AnyProviderIdEquals=imdb.${id}${query}`, (data) => cb(data?.Items?.[0]));
-        } else if (movie.tmdb_id || movie.id) {
-            const id = movie.tmdb_id || movie.id;
-            apiRequest(`/Items?AnyProviderIdEquals=tmdb.${id}${query}`, (data) => cb(data?.Items?.[0]));
-        } else {
-            const title = encodeURIComponent(movie.title || movie.name || '');
-            apiRequest(`/Items?SearchTerm=${title}&Limit=5${query}`, (data) => cb(data?.Items?.[0]));
+            const id = (movie.imdb_id || movie.imdbid).replace('tt', '');
+            apiRequest(`/Items?AnyProviderIdEquals=imdb.${id}${query}`, (data) => {
+                callback(data && data.Items && data.Items[0]);
+            });
+            return;
         }
+
+        if (movie.tmdb_id || movie.id) {
+            const id = movie.tmdb_id || movie.id;
+            apiRequest(`/Items?AnyProviderIdEquals=tmdb.${id}${query}`, (data) => {
+                callback(data && data.Items && data.Items[0]);
+            });
+            return;
+        }
+
+        // Поиск по названию
+        const title = encodeURIComponent(movie.title || movie.name || '');
+        apiRequest(`/Items?SearchTerm=${title}&Limit=5${query}`, (data) => {
+            callback(data && data.Items && data.Items[0]);
+        });
     }
 
     function createEmbyButton(activity) {
@@ -63,82 +95,88 @@
 
         btn.on('hover:enter', function() {
             if (!isConfigured()) {
-                Lampa.Noty.show('Сначала настройте Emby');
-                showSettings();
+                notify('Настройте Emby в параметрах');
                 return;
             }
 
             findInEmby(activity.movie || activity.card, (item) => {
                 if (item && item.Id) {
-                    window.open(`${config.server}/web/#/details?id=${item.Id}`, '_blank');
-                    Lampa.Noty.show(`Открыто: ${item.Name}`);
+                    const webUrl = getUrl().replace(/\/$/, '') + `/web/#/details?id=${item.Id}`;
+                    window.open(webUrl, '_blank');
+                    notify(`Открыто в Emby: ${item.Name}`);
                 } else {
-                    Lampa.Noty.show('Не найдено в Emby');
+                    notify('Не найдено в Emby. Проверьте название/ID в библиотеке.');
                 }
             });
         });
 
-        const playBtn = render.find('.button--play, .view--torrent, [data-action="play"]').first();
+        // Вставка после кнопки "Смотреть" (как в fx.js)
+        const playBtn = render.find('.button--play, .view--torrent, .full__btn, [data-action="play"]').first();
         if (playBtn.length) {
             playBtn.after(btn);
         } else {
-            render.find('.buttons').append(btn);
+            render.find('.buttons, .activity__body').append(btn);
         }
     }
 
-    function showSettings() {
-        const html = $(`
-            <div class="modal__content">
-                <div class="settings-param">
-                    <div class="settings-param__name">Адрес сервера Emby</div>
-                    <input type="text" id="emby_server" class="settings-param__value" value="${config.server}" placeholder="http://192.168.1.100:8096"/>
-                </div>
-                <div class="settings-param">
-                    <div class="settings-param__name">API Key</div>
-                    <input type="text" id="emby_apikey" class="settings-param__value" value="${config.apikey}" placeholder="Вставьте ваш API-ключ"/>
-                </div>
-                <button class="button selector" id="emby_save">Сохранить настройки</button>
+    function renderSettings(body) {
+        body.empty();
+
+        const url = getUrl();
+        const token = getToken();
+
+        const wrap = $('<div class="settings-container"></div>');
+
+        wrap.append('<div class="settings-param-title">Настройки Emby</div>');
+
+        // URL
+        const urlRow = $(`
+            <div class="settings-param selector">
+                <div class="settings-param__name">Emby Server URL</div>
+                <div class="settings-param__value">${url || 'Не задано'}</div>
             </div>
         `);
-
-        Lampa.Modal.open({
-            title: 'Emby',
-            html: html,
-            size: 'large',
-            onBack: () => Lampa.Modal.close()
+        urlRow.on('hover:enter', () => {
+            editField('Emby Server URL (например: http://192.168.1.100:8096)', url, (val) => {
+                Lampa.Storage.set(STORAGE_URL, val);
+                urlRow.find('.settings-param__value').text(val || 'Не задано');
+            });
         });
 
-        html.find('#emby_save').on('hover:enter click', () => {
-            config.server = html.find('#emby_server').val().trim();
-            config.apikey = html.find('#emby_apikey').val().trim();
-            saveConfig();
-            Lampa.Noty.show('Настройки Emby сохранены');
-            Lampa.Modal.close();
+        // API Key
+        const tokenRow = $(`
+            <div class="settings-param selector">
+                <div class="settings-param__name">API Key</div>
+                <div class="settings-param__value">${token ? '********' : 'Не задано'}</div>
+            </div>
+        `);
+        tokenRow.on('hover:enter', () => {
+            editField('API Key Emby', token, (val) => {
+                Lampa.Storage.set(STORAGE_TOKEN, val);
+                tokenRow.find('.settings-param__value').text(val ? '********' : 'Не задано');
+            });
+        });
+
+        wrap.append(urlRow);
+        wrap.append(tokenRow);
+        body.append(wrap);
+    }
+
+    function initSettings() {
+        Lampa.SettingsApi.addComponent({
+            component: 'emby',
+            name: 'Emby',
+            icon: '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#3498db"/><text x="50%" y="55%" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>'
+        });
+
+        Lampa.Settings.listener.follow('open', function(e) {
+            if (e.name !== 'emby') return;
+            renderSettings(e.body);
         });
     }
 
-    function start() {
-        // Добавляем в основные настройки
-        Lampa.SettingsApi.addParam({
-            component: 'main',
-            param: { type: 'button' },
-            field: {
-                name: PLUGIN_NAME,
-                description: 'Подключение к Emby / Jellyfin'
-            },
-            onChange: showSettings
-        });
-
-        // Добавляем запасной вариант в "Интерфейс"
-        Lampa.SettingsApi.addParam({
-            component: 'interface',
-            param: { type: 'button' },
-            field: {
-                name: PLUGIN_NAME,
-                description: 'Emby'
-            },
-            onChange: showSettings
-        });
+    function startPlugin() {
+        initSettings();
 
         Lampa.Listener.follow('full', (e) => {
             if (e.type === 'complite') {
@@ -146,10 +184,12 @@
             }
         });
 
-        console.log(`%c${PLUGIN_NAME} v${PLUGIN_VERSION} — загружен`, 'color: #00ff88; font-weight: bold');
+        console.log(`%c${PLUGIN_NAME} v${PLUGIN_VERSION} загружен`, 'color: #00ff88; font-weight: bold');
     }
 
-    if (window.appready) start();
-    else Lampa.Listener.follow('app', (e) => { if (e.type === 'ready') start(); });
+    if (window.appready) startPlugin();
+    else Lampa.Listener.follow('app', (e) => {
+        if (e.type === 'ready') startPlugin();
+    });
 
 })();
