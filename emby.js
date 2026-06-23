@@ -1,51 +1,74 @@
 (function () {
     'use strict';
+(function () {
+    'use strict';
 
-    // Главный объект плагина
     var EmbyIntegration = {
         name: 'Emby Local Source',
-        version: '1.0.0',
+        version: '1.0.1',
         
-        // Метод инициализации
         init: function () {
-            console.log('Emby Plugin: Initialized v' + this.version);
+            console.log('Emby Plugin: Try Initialize...');
+            
+            // Железобетонный способ дождаться полной загрузки Lampa
+            var timer = setInterval(function() {
+                if (window.Lampa && window.Lampa.Settings) {
+                    clearInterval(timer);
+                    EmbyIntegration.ready();
+                }
+            }, 200);
+        },
+
+        ready: function () {
+            console.log('Emby Plugin: Ready and loading components');
             this.setupSettings();
             this.listenCardOpen();
         },
 
-        // Создание полей в настройках Lampa
         setupSettings: function () {
-            var self = this;
+            // Добавляем пункт меню в настройки плагинов
             Lampa.Settings.listener.follow('open', function (e) {
                 if (e.name === 'plugins') {
-                    var box = $('<div class="settings-folder"><div class="settings-param title">Локальный Emby Server</div></div>');
+                    // Проверяем, нет ли уже наших настроек, чтобы не дублировать
+                    if (e.body.find('.emby-settings-block').length) return;
+
+                    var box = $('<div class="settings-folder emby-settings-block"><div class="settings-param title">Локальный Emby Server</div></div>');
                     
-                    // Поле ввода URL сервера
-                    var serverInput = Lampa.Template.get('settings_input', {
-                        title: 'Адрес сервера',
-                        placeholder: 'Например: http://192.168.1.100:8096',
-                        value: Lampa.Storage.get('emby_server_url', '')
-                    });
-                    serverInput.find('input').on('change', function () {
-                        var val = $(this).val().replace(/\/$/, ""); // убираем слеш на конце
+                    // Упрощенный html-шаблон полей, который не зависит от внутренней кухни Lampa
+                    var htmlServer = '<div class="settings-param selector">' +
+                                        '<div class="settings-param__name">Адрес сервера Emby</div>' +
+                                        '<div class="settings-param__value"></div>' +
+                                        '<input type="text" class="settings-param__input" style="background:transparent; border:none; color:#fff; width:100%;" placeholder="http://192.168.1.100:8096" value="' + Lampa.Storage.get('emby_server_url', '') + '">' +
+                                     '</div>';
+
+                    var htmlToken = '<div class="settings-param selector">' +
+                                        '<div class="settings-param__name">API Ключ (Токен)</div>' +
+                                        '<div class="settings-param__value"></div>' +
+                                        '<input type="text" class="settings-param__input" style="background:transparent; border:none; color:#fff; width:100%;" placeholder="Токен из админки Emby" value="' + Lampa.Storage.get('emby_api_token', '') + '">' +
+                                    '</div>';
+
+                    var $server = $(htmlServer);
+                    var $token = $(htmlToken);
+
+                    $server.find('input').on('change input', function () {
+                        var val = $(this).val().trim().replace(/\/$/, "");
                         Lampa.Storage.set('emby_server_url', val);
                     });
 
-                    // Поле ввода API ключа
-                    var tokenInput = Lampa.Template.get('settings_input', {
-                        title: 'API Ключ (Токен)',
-                        placeholder: 'Создайте в админке Emby -> API Ключи',
-                        value: Lampa.Storage.get('emby_api_token', '')
-                    });
-                    tokenInput.find('input').on('change', function () {
-                        Lampa.Storage.set('emby_api_token', $(this).val());
+                    $token.find('input').on('change input', function () {
+                        Lampa.Storage.set('emby_api_token', $(this).val().trim());
                     });
 
-                    box.append(serverInput).append(tokenInput);
+                    box.append($server).append($token);
                     e.body.append(box);
+                    
+                    // Обновляем навигацию пульта в настройках
+                    if (window.Lampa.Controller) window.Lampa.Controller.toggle('settings');
                 }
             });
         },
+
+    
 // Слушаем открытие полной карточки контента
         listenCardOpen: function () {
             var self = this;
