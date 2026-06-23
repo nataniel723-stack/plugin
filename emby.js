@@ -7,80 +7,67 @@
         if (window.emby_plugin_initialized) return;
         window.emby_plugin_initialized = true;
 
-        // Показываем уведомление, что новая версия точно загрузилась
         setTimeout(function() {
-            Lampa.Noty.show('✅ ' + plugin_name + ' успешно загружен');
-        }, 1500);
+            Lampa.Noty.show('✅ ' + plugin_name + ' установлен (Fx-архитектура)');
+        }, 1000);
 
         if (!Lampa.Storage.get('emby_url')) Lampa.Storage.set('emby_url', '');
         if (!Lampa.Storage.get('emby_token')) Lampa.Storage.set('emby_token', '');
 
-        // --- 1. ДОБАВЛЕНИЕ СВОЕГО РАЗДЕЛА В КОРЕНЬ НАСТРОЕК ---
+        // --- 1. НАСТРОЙКИ (ЧЕРЕЗ НАТИВНЫЕ ШАБЛОНЫ LAMPA) ---
         Lampa.Settings.listener.follow('open', function (e) {
-            // Добавляем пункт в главное меню настроек
+            // Добавляем пункт в главное меню
             if (e.name == 'main') {
-                var my_folder = $(`
+                var item = $(`
                     <div class="settings-folder__item selector" data-component="emby_settings">
                         <div class="settings-folder__icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
-                                <line x1="7" y1="2" x2="7" y2="22"></line>
-                                <line x1="17" y1="2" x2="17" y2="22"></line>
-                                <line x1="2" y1="12" x2="22" y2="12"></line>
-                                <line x1="2" y1="7" x2="7" y2="7"></line>
-                                <line x1="2" y1="17" x2="7" y2="17"></line>
-                                <line x1="17" y1="17" x2="22" y2="17"></line>
-                                <line x1="17" y1="7" x2="22" y2="7"></line>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polygon points="10 8 16 12 10 16 10 8"></polygon>
                             </svg>
                         </div>
                         <div class="settings-folder__name">` + plugin_name + `</div>
                     </div>
                 `);
-                
-                e.body.find('.settings-folder').append(my_folder);
+                e.body.find('.settings-folder').append(item);
             }
 
-            // Рендерим саму страницу нашего раздела, когда на неё кликают
+            // Рендерим страницу настроек
             if (e.name == 'emby_settings') {
-                var page = $(`<div></div>`);
+                // Используем движок Lampa для сборки правильного HTML
+                var param_url = Lampa.Template.get('settings_input', {
+                    name: 'Адрес сервера Emby',
+                    value: Lampa.Storage.get('emby_url') || '',
+                    descr: 'Пример: http://192.168.1.145:8096 (без слэша)'
+                });
+                param_url.attr('data-name', 'emby_url');
 
-                var param_url = $(`
-                    <div class="settings-param selector" data-type="input" data-name="emby_url" placeholder="http://192.168.1.145:8096">
-                        <div class="settings-param__name">Адрес сервера Emby</div>
-                        <div class="settings-param__value">${Lampa.Storage.get('emby_url') || ''}</div>
-                        <div class="settings-param__descr">Пример: http://192.168.1.145:8096 (без слэша на конце)</div>
-                    </div>
-                `);
+                var param_token = Lampa.Template.get('settings_input', {
+                    name: 'API Ключ (Токен)',
+                    value: Lampa.Storage.get('emby_token') || '',
+                    descr: 'Ваш токен доступа из панели Emby'
+                });
+                param_token.attr('data-name', 'emby_token');
 
-                var param_token = $(`
-                    <div class="settings-param selector" data-type="input" data-name="emby_token" placeholder="Ваш API Токен">
-                        <div class="settings-param__name">API Ключ (Токен)</div>
-                        <div class="settings-param__value">${Lampa.Storage.get('emby_token') || ''}</div>
-                        <div class="settings-param__descr">Создается в панели управления Emby</div>
-                    </div>
-                `);
+                e.body.append(param_url);
+                e.body.append(param_token);
 
-                page.append(param_url);
-                page.append(param_token);
-
-                e.body.append(page);
-
-                // Инициализируем Lampa Builder, чтобы пульт/мышка могли кликать по полям
+                // Оживляем для мышки и пульта
                 Lampa.Settings.Builder.html(param_url, false, e.body);
                 Lampa.Settings.Builder.html(param_token, false, e.body);
             }
         });
 
-        // --- 2. ДОБАВЛЕНИЕ КНОПКИ В КАРТОЧКУ "СМОТРЕТЬ" ---
+        // --- 2. ДОБАВЛЕНИЕ КНОПКИ В КАРТОЧКУ ---
         Lampa.Listener.follow('full', function (e) {
             if (e.type == 'complite') {
-                // Создаем кнопку в стиле Filmix, но зеленую
+                // Создаем кнопку, мимикрирующую под встроенные плагины (класс view--torrent)
                 var btn = $(`
-                    <div class="button--emby selector full-start__button" style="background-color: #52B54B;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 7px;">
+                    <div class="full-start__button selector view--torrent" data-subtitle="Emby">
+                        <svg viewBox="0 0 24 24" style="fill: #52B54B; margin-right: 7px; width: 22px; height: 22px; vertical-align: middle;">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
                         </svg>
-                        <span style="color: white; font-weight: bold;">Смотреть в Emby</span>
+                        <span>Смотреть в Emby</span>
                     </div>
                 `);
 
@@ -88,24 +75,26 @@
                     playFromEmby(e.object.movie);
                 });
 
-                // Универсальный поиск блока с кнопками для любых версий Lampa
-                var wrap = e.object.activity.render().find('.info__buttons, .view--buttons, .full-start__buttons');
-                
-                if (wrap.length) {
-                    wrap.append(btn); // Добавляем кнопку
-                } else {
-                    console.log('Не удалось найти контейнер для кнопок в карточке фильма');
+                // Вставляем сразу после первой кнопки карточки
+                var buttonsContainer = e.object.activity.render().find('.info__buttons, .view--buttons, .full-start__buttons');
+                if (buttonsContainer.length) {
+                    var firstBtn = buttonsContainer.find('.selector').first();
+                    if (firstBtn.length) {
+                        btn.insertAfter(firstBtn);
+                    } else {
+                        buttonsContainer.append(btn);
+                    }
                 }
             }
         });
 
-        // --- 3. ЛОГИКА ПОИСКА И ВОСПРОИЗВЕДЕНИЯ ---
+        // --- 3. ПОИСК И ПЛЕЕР ---
         function playFromEmby(movie) {
             var server = Lampa.Storage.get('emby_url');
             var token = Lampa.Storage.get('emby_token');
             
             if (!server || !token) {
-                Lampa.Noty.show('Сначала зайдите в Настройки -> Emby Локальный и укажите данные!');
+                Lampa.Noty.show('Зайдите в Настройки -> Emby Локальный и укажите данные!');
                 return;
             }
 
@@ -113,7 +102,7 @@
             
             Lampa.Select.show({
                 title: 'Поиск в Emby',
-                items: [{title: 'Ищем в вашей медиатеке...', subtitle: titleToSearch}],
+                items: [{title: 'Ищем в медиатеке...', subtitle: titleToSearch}],
                 onSelect: function(){}, onBack: function(){}
             });
 
@@ -123,12 +112,10 @@
             var network = new Lampa.Reguest();
             network.silent(searchUrl, function (result) {
                 if (result && result.Items && result.Items.length > 0) {
-                    // Ищем точное совпадение имени или берем первый результат
                     var item = result.Items.find(function(i) {
                         return i.Name.toLowerCase() === titleToSearch.toLowerCase();
                     }) || result.Items[0];
 
-                    // Запускаем в зависимости от типа контента
                     if (item.Type === 'Series' || item.Type === 'TvChannel') {
                         loadSeasons(item.Id, server, token, titleToSearch);
                     } else {
@@ -136,11 +123,11 @@
                     }
                 } else {
                     Lampa.Select.close();
-                    Lampa.Noty.show('Файл с таким названием не найден в Emby.');
+                    Lampa.Noty.show('Файл с таким названием не найден.');
                 }
             }, function () {
                 Lampa.Select.close();
-                Lampa.Noty.show('Ошибка соединения. Проверьте адрес сервера и токен.');
+                Lampa.Noty.show('Нет связи с Emby. Проверьте адрес сервера.');
             });
         }
 
@@ -181,7 +168,6 @@
         }
     }
 
-    // Безопасный запуск плагина
     if (window.appready) {
         startPlugin();
     } else {
