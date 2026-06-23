@@ -4,54 +4,52 @@
     function EmbyPlugin() {
         var network = new Lampa.Reguest();
 
-        // 1. ПРАВИЛЬНАЯ ИНИЦИАЛИЗАЦИЯ НАСТРОЕК (как в fx.js)
-        // Добавляем новый пункт меню в настройки Lampa
-        Lampa.Settings.add({
-            title: 'Emby Локальный',
-            type: 'open',
-            Source: 'emby_settings', // Ключ компонента настроек
-            icon: `<svg height="24" viewBox="0 0 24 24" width="24" style="fill: currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>`
-        });
+        // Безопасно инициализируем дефолтные значения в хранилище Lampa, если их нет
+        if (!Lampa.Storage.get('emby_server')) Lampa.Storage.set('emby_server', '');
+        if (!Lampa.Storage.get('emby_api_key')) Lampa.Storage.set('emby_api_key', '');
 
-        // Создаем сам компонент настроек при его открытии
-        Lampa.Component.add('emby_settings', function (object) {
-            var comp = new Lampa.Interaction();
+        // 1. Встраивание настроек (Подход без использования падающих функций)
+        Lampa.Settings.listener.follow('open', function (e) {
+            if (e.name == 'other') { // Когда пользователь открывает раздел "Остальное"
+                
+                var emby_title = $(`
+                    <div class="settings-param-title"><span>Локальный сервер Emby</span></div>
+                `);
 
-            comp.create = function () {
-                var server = Lampa.Storage.get('emby_server', '');
-                var api_key = Lampa.Storage.get('emby_api_key', '');
-
-                var html = $(`
-                    <div class="settings-list">
-                        <div class="settings-param selector" data-type="input" data-name="emby_server" placeholder="http://192.168.1.X:8096">
-                            <div class="settings-param__name">Адрес сервера Emby</div>
-                            <div class="settings-param__value">${server || 'Не указан'}</div>
-                            <div class="settings-param__descr">Пример: http://192.168.1.50:8096</div>
-                        </div>
-                        <div class="settings-param selector" data-type="input" data-name="emby_api_key" placeholder="Ваш API Ключ">
-                            <div class="settings-param__name">API Ключ (Токен)</div>
-                            <div class="settings-param__value">${api_key || 'Не указан'}</div>
-                            <div class="settings-param__descr">Создается в панели управления Emby -> API-ключи</div>
-                        </div>
+                var emby_server_field = $(`
+                    <div class="settings-param selector" data-type="input" data-name="emby_server" placeholder="http://192.168.1.X:8096">
+                        <div class="settings-param__name">Адрес сервера Emby</div>
+                        <div class="settings-param__value">${Lampa.Storage.get('emby_server') || 'Не указан'}</div>
+                        <div class="settings-param__descr">Пример: http://192.168.1.50:8096 (без слэша на конце)</div>
                     </div>
                 `);
 
-                // Билдим элементы, чтобы они стали кликабельными и открывали клавиатуру ввода
-                Lampa.Settings.Builder.html(html, false, html);
-                return html;
-            };
+                var emby_key_field = $(`
+                    <div class="settings-param selector" data-type="input" data-name="emby_api_key" placeholder="Ваш API Ключ">
+                        <div class="settings-param__name">API Ключ (Токен)</div>
+                        <div class="settings-param__value">${Lampa.Storage.get('emby_api_key') || 'Не указан'}</div>
+                        <div class="settings-param__descr">Создается в панели Emby -> API-ключи</div>
+                    </div>
+                `);
 
-            return comp;
+                // Добавляем элементы на экран "Остальное"
+                e.body.append(emby_title);
+                e.body.append(emby_server_field);
+                e.body.append(emby_key_field);
+
+                // Заставляем Lampa «оживить» эти поля (обработать клики, ввод текста, сохранение в Storage)
+                Lampa.Settings.Builder.html(emby_server_field, false, e.body);
+                Lampa.Settings.Builder.html(emby_key_field, false, e.body);
+            }
         });
 
-
-        // Вспомогательная функция запросов к Emby
+        // Функция запросов к API Emby
         function embyRequest(endpoint, onsuccess, onerror) {
             var server = Lampa.Storage.get('emby_server');
             var api_key = Lampa.Storage.get('emby_api_key');
 
             if (!server || !api_key) {
-                Lampa.Noty.show("Зайдите в Настройки -> Emby Локальный и заполните данные!");
+                Lampa.Noty.show("Зайдите в Настройки -> Остальное и заполните данные Emby!");
                 return onerror ? onerror() : null;
             }
 
@@ -59,15 +57,12 @@
             network.silent(url, onsuccess, onerror);
         }
 
-
-        // 2. ДОБАВЛЕНИЕ КНОПКИ "EMBY" В КАРТОЧКУ (Под плашку смотреть)
+        // 2. Добавление кнопки под плашку "Смотреть"
         Lampa.Listener.follow('full', function (e) {
-            // Ждем пока карточка полностью отрендерится ('complite')
             if (e.type == 'complite') {
                 var movie = e.object.movie;
                 var body = e.object.activity.render();
 
-                // Исключаем дублирование кнопки
                 if (body.find('.button--emby').length == 0) {
                     var embyButton = $(`
                         <div class="full-start__button selector button--emby">
@@ -78,13 +73,12 @@
                         </div>
                     `);
 
-                    // Находим блок кнопок (Смотреть, Торренты, Трейлер)
                     var buttonsContainer = body.find('.full-start__buttons');
                     if (buttonsContainer.length) {
                         buttonsContainer.append(embyButton);
                     }
 
-                    // Обработчик клика пульта / мыши
+                    // Логика клика
                     embyButton.on('hover:enter', function () {
                         Lampa.Select.show({
                             title: 'Поиск в Emby',
@@ -112,15 +106,14 @@
                             }
                         }, function () {
                             Lampa.Select.close();
-                            Lampa.Noty.show("Ошибка связи с Emby. Проверьте адрес и API ключ.");
+                            Lampa.Noty.show("Ошибка связи с Emby. Проверьте настройки.");
                         });
                     });
                 }
             }
         });
 
-
-        // 3. ЛОГИКА СЕРИАЛОВ И ФИЛЬМОВ
+        // 3. Воспроизведение
         function loadEmbySeasons(seriesId, movie) {
             var server = Lampa.Storage.get('emby_server');
             var api_key = Lampa.Storage.get('emby_api_key');
@@ -135,7 +128,6 @@
                         };
                     });
 
-                    // Открываем встроенное модальное окно выбора серий Lampa
                     Lampa.Select.show({
                         title: movie.name || movie.title,
                         items: playlist,
@@ -169,7 +161,6 @@
         }
     }
 
-    // Регистрация запуска плагина
     if (window.appready) {
         EmbyPlugin();
     } else {
