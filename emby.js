@@ -2,10 +2,12 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '0.2.5';
+    const PLUGIN_VERSION = '0.2.6';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
+
+    let currentSerieId = ''; // Глобальная переменная для хранения ID сериала
 
     function getUrl() {
         return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim();
@@ -127,23 +129,19 @@
                 
                 if (item.Type === 'Series') {
                     // Обработка сериала
+                    currentSerieId = item.Id;
                     getSeasons(item.Id, (seasons) => {
                         chooseSeason(seasons, Lampa.Storage.get('emby_selected_season', seasons[0]?.IndexNumber));
                     });
                 } else {
                     // Обработка фильма
-                    getStreamingUrl(item.Id, (streamingUrl) => {
-                        if (!streamingUrl) return this.doesNotAnswer();
-                        
-                        Lampa.Player.play({
-                            title: item.Name,
-                            url: streamingUrl,
-                            poster: item.PrimaryImageTag ? `${getUrl()}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
-                            timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id))
-                        });
-                        
-                        this.activity.loader(false);
-                        this.activity.toggle();
+                    const streamingUrl = `${getUrl().replace(/\/$/, '')}/Videos/${item.Id}/stream.mp4?static=true&api_key=${getApiKey()}`;
+
+                    Lampa.Player.play({
+                        title: item.Name,
+                        url: streamingUrl,
+                        poster: item.PrimaryImageTag ? `${getUrl()}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
+                        timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id))
                     });
                 }
             });
