@@ -1,475 +1,518 @@
 /**
- * Emby Local Server Plugin for Lampa
- * Добавляет возможность просмотра контента с локального Emby сервера
+ * Emby Local Server Plugin for Lampa Web
+ * Версия 3.0 - Для bylampa.online / lampa.mx
+ * Загрузка через GitHub
  */
 
 (function() {
     'use strict';
 
-    // Стандартные настройки плагина
-    const defaultSettings = {
-        server_url: 'https://192.168.1.145:8096',
-        api_key: '9674d647ee934be680bbb2e2b0c23529',
+    console.log('[Emby Plugin] Starting initialization...');
+
+    // Настройки по умолчанию
+    const PLUGIN_KEY = 'emby_local_settings';
+    const PLUGIN_VERSION = '3.0.0';
+    
+    const defaults = {
+        server_url: '',
+        api_key: '',
         user_id: ''
     };
 
-    // Загрузка настроек
-    function loadSettings() {
-        try {
-            const saved = localStorage.getItem('emby_local_settings');
-            return saved ? JSON.parse(saved) : defaultSettings;
-        } catch (e) {
-            return defaultSettings;
-        }
-    }
-
-    // Сохранение настроек
-    function saveSettings(settings) {
-        localStorage.setItem('emby_local_settings', JSON.stringify(settings));
-    }
-
-    // Создание интерфейса настроек
-    function createSettingsUI() {
-        const settings = loadSettings();
-        
-        const container = document.createElement('div');
-        container.className = 'settings-container';
-        container.style.cssText = 'padding: 15px; color: #fff;';
-
-        const title = document.createElement('h3');
-        title.textContent = 'Настройки Emby сервера';
-        title.style.cssText = 'margin-bottom: 20px;';
-        container.appendChild(title);
-
-        // Server URL
-        const serverUrlLabel = document.createElement('label');
-        serverUrlLabel.textContent = 'URL сервера:';
-        serverUrlLabel.style.cssText = 'display: block; margin-bottom: 5px;';
-        container.appendChild(serverUrlLabel);
-
-        const serverUrlInput = document.createElement('input');
-        serverUrlInput.type = 'text';
-        serverUrlInput.value = settings.server_url;
-        serverUrlInput.placeholder = 'http://192.168.1.100:8096';
-        serverUrlInput.style.cssText = 'width: 100%; padding: 8px; margin-bottom: 15px; background: #1a1a1a; color: #fff; border: 1px solid #333; border-radius: 4px;';
-        container.appendChild(serverUrlInput);
-
-        // API Key
-        const apiKeyLabel = document.createElement('label');
-        apiKeyLabel.textContent = 'API ключ:';
-        apiKeyLabel.style.cssText = 'display: block; margin-bottom: 5px;';
-        container.appendChild(apiKeyLabel);
-
-        const apiKeyInput = document.createElement('input');
-        apiKeyInput.type = 'text';
-        apiKeyInput.value = settings.api_key;
-        apiKeyInput.placeholder = 'Ваш Emby API ключ';
-        apiKeyInput.style.cssText = 'width: 100%; padding: 8px; margin-bottom: 15px; background: #1a1a1a; color: #fff; border: 1px solid #333; border-radius: 4px;';
-        container.appendChild(apiKeyInput);
-
-        // User ID
-        const userIdLabel = document.createElement('label');
-        userIdLabel.textContent = 'User ID:';
-        userIdLabel.style.cssText = 'display: block; margin-bottom: 5px;';
-        container.appendChild(userIdLabel);
-
-        const userIdInput = document.createElement('input');
-        userIdInput.type = 'text';
-        userIdInput.value = settings.user_id;
-        userIdInput.placeholder = 'ID пользователя (опционально)';
-        userIdInput.style.cssText = 'width: 100%; padding: 8px; margin-bottom: 15px; background: #1a1a1a; color: #fff; border: 1px solid #333; border-radius: 4px;';
-        container.appendChild(userIdInput);
-
-        // Кнопка сохранения
-        const saveButton = document.createElement('button');
-        saveButton.textContent = 'Сохранить';
-        saveButton.style.cssText = 'padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;';
-        saveButton.onclick = () => {
-            const newSettings = {
-                server_url: serverUrlInput.value.trim(),
-                api_key: apiKeyInput.value.trim(),
-                user_id: userIdInput.value.trim()
-            };
-            saveSettings(newSettings);
-            showNotification('Настройки сохранены!');
-        };
-        container.appendChild(saveButton);
-
-        // Кнопка тестирования
-        const testButton = document.createElement('button');
-        testButton.textContent = 'Тест подключения';
-        testButton.style.cssText = 'padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;';
-        testButton.onclick = async () => {
-            const testSettings = {
-                server_url: serverUrlInput.value.trim(),
-                api_key: apiKeyInput.value.trim(),
-                user_id: userIdInput.value.trim()
-            };
-            
-            if (!testSettings.server_url || !testSettings.api_key) {
-                showNotification('Заполните URL и API ключ!', 'error');
-                return;
+    // Загрузка/сохранение настроек
+    const storage = {
+        get() {
+            try {
+                const data = Lampa.Storage.get(PLUGIN_KEY);
+                console.log('[Emby Plugin] Loaded settings:', data);
+                return data ? {...defaults, ...data} : {...defaults};
+            } catch (e) {
+                console.error('[Emby Plugin] Storage get error:', e);
+                return {...defaults};
             }
-            
-            testConnection(testSettings);
-        };
-        container.appendChild(testButton);
-
-        return container;
-    }
-
-    // Тестирование подключения
-    async function testConnection(settings) {
-        try {
-            const baseUrl = settings.server_url.replace(/\/$/, '');
-            const url = `${baseUrl}/System/Info?api_key=${settings.api_key}`;
-            
-            const response = await fetch(url);
-            if (response.ok) {
-                const data = await response.json();
-                showNotification(`Подключено! Сервер: ${data.ServerName || 'OK'}`, 'success');
-            } else {
-                showNotification('Ошибка подключения: ' + response.status, 'error');
+        },
+        set(data) {
+            try {
+                Lampa.Storage.set(PLUGIN_KEY, data);
+                console.log('[Emby Plugin] Settings saved');
+                return true;
+            } catch (e) {
+                console.error('[Emby Plugin] Storage set error:', e);
+                return false;
             }
-        } catch (e) {
-            showNotification('Ошибка: ' + e.message, 'error');
         }
-    }
+    };
 
-    // Поиск в Emby библиотеке
-    async function searchInEmby(title, year, type) {
-        const settings = loadSettings();
+    // Функция для поиска в Emby
+    async function searchEmby(title, year, type) {
+        const settings = storage.get();
         
         if (!settings.server_url || !settings.api_key) {
+            console.log('[Emby Plugin] Not configured');
             return [];
         }
 
-        try {
-            const baseUrl = settings.server_url.replace(/\/$/, '');
-            let searchUrl = `${baseUrl}/Items?api_key=${settings.api_key}&SearchTerm=${encodeURIComponent(title)}&Recursive=true&IncludeItemTypes=`;
-            
-            if (type === 'movie') {
-                searchUrl += 'Movie';
-            } else if (type === 'tv' || type === 'series') {
-                searchUrl += 'Series';
-            } else {
-                searchUrl += 'Movie,Series';
-            }
-            
-            if (year) {
-                searchUrl += `&Years=${year}`;
-            }
-            
-            if (settings.user_id) {
-                searchUrl += `&UserId=${settings.user_id}`;
-            }
+        const baseUrl = settings.server_url.replace(/\/$/, '');
+        let url = `${baseUrl}/Items?IncludeItemTypes=${type === 'movie' ? 'Movie' : 'Series'}`;
+        url += `&Recursive=true&SearchTerm=${encodeURIComponent(title)}`;
+        url += `&api_key=${settings.api_key}`;
+        url += `&Limit=20&SortBy=SearchScore&SortOrder=Descending`;
+        
+        if (year) url += `&Years=${year}`;
+        if (settings.user_id) url += `&UserId=${settings.user_id}`;
 
-            const response = await fetch(searchUrl);
+        console.log('[Emby Plugin] Search URL:', url);
+
+        try {
+            const response = await fetch(url);
             const data = await response.json();
             
             if (data.Items && data.Items.length > 0) {
+                console.log('[Emby Plugin] Found items:', data.Items.length);
+                
                 return data.Items.map(item => ({
                     id: item.Id,
                     title: item.Name,
                     year: item.ProductionYear,
                     type: item.Type === 'Movie' ? 'movie' : 'series',
-                    path: `${baseUrl}/Items/${item.Id}/PlaybackInfo?api_key=${settings.api_key}`,
-                    stream_url: `${baseUrl}/Videos/${item.Id}/stream?api_key=${settings.api_key}&Static=true`,
+                    overview: item.Overview,
+                    stream: `${baseUrl}/Videos/${item.Id}/stream?Static=true&api_key=${settings.api_key}`,
                     poster: item.ImageTags?.Primary ? 
-                        `${baseUrl}/Items/${item.Id}/Images/Primary?api_key=${settings.api_key}` : null
+                        `${baseUrl}/Items/${item.Id}/Images/Primary?api_key=${settings.api_key}&maxHeight=300` : 
+                        null
                 }));
             }
+            console.log('[Emby Plugin] Nothing found');
             return [];
         } catch (e) {
-            console.error('Emby search error:', e);
+            console.error('[Emby Plugin] Search error:', e);
             return [];
         }
     }
 
-    // Добавление пункта "Смотреть с Emby" в интерфейс
-    function addEmbyButton() {
-        // Ждем появления кнопки "Смотреть"
-        const observer = new MutationObserver((mutations, obs) => {
-            const watchButton = document.querySelector('.button--play, [data-action="play"], .watch-button');
-            
-            if (watchButton && !document.querySelector('.emby-local-button')) {
-                const embyButton = document.createElement('button');
-                embyButton.className = 'emby-local-button';
-                embyButton.textContent = 'Смотреть с Emby';
-                embyButton.style.cssText = `
-                    padding: 10px 20px;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    border: none;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    margin: 5px 0;
-                    font-size: 14px;
-                    transition: transform 0.2s;
-                `;
-                
-                embyButton.onmouseover = () => embyButton.style.transform = 'scale(1.05)';
-                embyButton.onmouseout = () => embyButton.style.transform = 'scale(1)';
-                
-                embyButton.onclick = async () => {
-                    await handleEmbyPlay();
-                };
-                
-                // Добавляем кнопку после существующей кнопки "Смотреть"
-                watchButton.parentNode.insertBefore(embyButton, watchButton.nextSibling);
-            }
-        });
+    // Тест подключения
+    async function testConnection(server_url, api_key) {
+        try {
+            const baseUrl = server_url.replace(/\/$/, '');
+            const response = await fetch(`${baseUrl}/System/Info?api_key=${api_key}`);
+            const data = await response.json();
+            return {
+                success: true,
+                name: data.ServerName || 'Emby Server',
+                version: data.Version || 'Unknown'
+            };
+        } catch (e) {
+            return {
+                success: false,
+                error: e.message
+            };
+        }
+    }
+
+    // Показать модальное окно с выбором
+    function showSelectionModal(items) {
+        const html = `
+            <div class="emby-modal-wrapper" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;">
+                <div class="emby-modal" style="background:#1c1c1e;border-radius:16px;width:90%;max-width:500px;max-height:80vh;overflow:hidden;display:flex;flex-direction:column;">
+                    <div style="padding:20px;border-bottom:1px solid #333;">
+                        <h3 style="margin:0;color:#fff;font-size:18px;">Найдено в Emby</h3>
+                    </div>
+                    <div style="overflow-y:auto;flex:1;padding:10px;" id="emby-items-list">
+                        ${items.map((item, i) => `
+                            <div class="emby-item" data-index="${i}" style="display:flex;padding:12px;margin:8px 0;background:#2c2c2e;border-radius:12px;cursor:pointer;transition:all 0.2s;align-items:center;">
+                                ${item.poster ? `
+                                    <div style="flex-shrink:0;width:50px;height:75px;margin-right:15px;border-radius:8px;overflow:hidden;background:#1c1c1e;">
+                                        <img src="${item.poster}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
+                                    </div>
+                                ` : `
+                                    <div style="flex-shrink:0;width:50px;height:75px;margin-right:15px;border-radius:8px;background:#1c1c1e;display:flex;align-items:center;justify-content:center;font-size:24px;">
+                                        ${item.type === 'movie' ? '🎬' : '📺'}
+                                    </div>
+                                `}
+                                <div style="flex:1;min-width:0;">
+                                    <div style="color:#fff;font-weight:500;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.title}</div>
+                                    <div style="color:#999;font-size:13px;margin-top:4px;">
+                                        ${item.year ? item.year + ' • ' : ''}${item.type === 'movie' ? 'Фильм' : 'Сериал'}
+                                    </div>
+                                </div>
+                                <div style="flex-shrink:0;margin-left:10px;color:#667eea;font-size:20px;">▶️</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="padding:15px;border-top:1px solid #333;">
+                        <button class="emby-close-btn" style="width:100%;padding:12px;background:#f44336;color:#fff;border:none;border-radius:8px;font-size:15px;cursor:pointer;">Закрыть</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = html;
+        document.body.appendChild(wrapper);
+
+        // Обработчики
+        const closeBtn = wrapper.querySelector('.emby-close-btn');
+        const modalWrapper = wrapper.querySelector('.emby-modal-wrapper');
         
+        closeBtn.addEventListener('click', () => wrapper.remove());
+        modalWrapper.addEventListener('click', (e) => {
+            if (e.target === modalWrapper) wrapper.remove();
+        });
+
+        // Выбор элемента
+        wrapper.querySelectorAll('.emby-item').forEach(el => {
+            el.addEventListener('click', () => {
+                const index = parseInt(el.dataset.index);
+                const item = items[index];
+                wrapper.remove();
+                playStream(item);
+            });
+
+            // Hover эффект
+            el.addEventListener('mouseenter', () => {
+                el.style.background = '#3a3a3c';
+                el.style.transform = 'scale(1.02)';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.background = '#2c2c2e';
+                el.style.transform = 'scale(1)';
+            });
+        });
+    }
+
+    // Воспроизведение
+    function playStream(item) {
+        console.log('[Emby Plugin] Playing:', item.title);
+        
+        Lampa.Noty.show(`🎬 Запускаем: ${item.title}`);
+        
+        // Используем встроенный плеер Lampa
+        if (Lampa.Player) {
+            Lampa.Player.play({
+                title: item.title,
+                url: item.stream,
+                poster: item.poster,
+                movie: item.type === 'movie',
+                serial: item.type === 'series'
+            });
+        } else {
+            // Fallback для старых версий
+            window.location.href = item.stream;
+        }
+    }
+
+    // Основная функция поиска и воспроизведения
+    async function playFromEmby() {
+        const settings = storage.get();
+        
+        if (!settings.server_url || !settings.api_key) {
+            Lampa.Noty.show('⚙️ Настройте Emby сервер в расширениях', {time: 5000});
+            return;
+        }
+
+        // Получаем данные о текущем контенте
+        let title = '';
+        let year = null;
+        let type = 'movie';
+
+        // Lampa хранит данные в разных местах
+        if (Lampa.Activity && Lampa.Activity.active) {
+            const active = Lampa.Activity.active();
+            if (active) {
+                if (active.movie) {
+                    title = active.movie.title || active.movie.name || '';
+                    year = active.movie.year || active.movie.release_date?.split('-')[0] || null;
+                    type = 'movie';
+                } else if (active.serial || active.season || active.episode) {
+                    title = active.serial?.title || active.serial?.name || '';
+                    year = active.serial?.year || active.serial?.first_air_date?.split('-')[0] || null;
+                    type = 'series';
+                }
+            }
+        }
+
+        // Альтернативные способы получить название
+        if (!title) {
+            const titleElement = document.querySelector('.head__title, [data-title], .movie-title, .serial-title');
+            if (titleElement) {
+                title = titleElement.textContent.trim();
+                if (titleElement.dataset.title) title = titleElement.dataset.title;
+            }
+        }
+
+        // Определяем тип по URL или элементам на странице
+        if (window.location.href.includes('/serial/') || 
+            document.querySelector('.seasons-selector, .episodes-list, .serial-poster')) {
+            type = 'series';
+        }
+
+        console.log('[Emby Plugin] Searching for:', {title, year, type});
+
+        if (!title) {
+            Lampa.Noty.show('❌ Не удалось определить название');
+            return;
+        }
+
+        Lampa.Noty.show(`🔍 Ищем "${title}" в Emby...`);
+
+        const items = await searchEmby(title, year, type);
+
+        if (items.length === 0) {
+            Lampa.Noty.show('😔 Не найдено в Emby библиотеке');
+            return;
+        }
+
+        if (items.length === 1) {
+            playStream(items[0]);
+        } else {
+            showSelectionModal(items);
+        }
+    }
+
+    // Компонент настроек
+    function createSettingsComponent() {
+        const settings = storage.get();
+
+        return {
+            title: 'Emby Server',
+            subtitle: 'Локальный медиа-сервер',
+            icon: '<svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M21,3H3C1.9,3 1,3.9 1,5V19C1,20.1 1.9,21 3,21H21C22.1,21 23,20.1 23,19V5C23,3.9 22.1,3 21,3M21,19H3V5H21V19M5,7H11V13H9V9H7V13H5V7M13,7H19V9H15V11H19V13H15V15H19V17H13V7Z"/></svg>',
+            onSelect: function() {
+                const container = Lampa.Settings.getContainer();
+                
+                container.innerHTML = '';
+                
+                const form = document.createElement('div');
+                form.style.cssText = 'padding: 20px; color: #fff;';
+                
+                form.innerHTML = `
+                    <div style="margin-bottom: 25px;">
+                        <h3 style="margin: 0 0 5px 0; font-size: 18px;">Emby Server</h3>
+                        <p style="margin: 0; color: #999; font-size: 13px;">Настройка подключения к локальному серверу</p>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #ccc;">URL сервера</label>
+                        <input type="text" 
+                               id="emby_server_url" 
+                               value="${settings.server_url}" 
+                               placeholder="http://192.168.1.100:8096"
+                               style="width: 100%; padding: 12px; background: #2c2c2e; color: #fff; border: 1px solid #444; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                        <p style="margin: 5px 0 0 0; font-size: 11px; color: #888;">Пример: http://192.168.1.100:8096</p>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #ccc;">API ключ</label>
+                        <input type="text" 
+                               id="emby_api_key" 
+                               value="${settings.api_key}" 
+                               placeholder="Введите API ключ"
+                               style="width: 100%; padding: 12px; background: #2c2c2e; color: #fff; border: 1px solid #444; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                        <p style="margin: 5px 0 0 0; font-size: 11px; color: #888;">Находится в настройках Emby → API Keys</p>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-size: 14px; color: #ccc;">User ID</label>
+                        <input type="text" 
+                               id="emby_user_id" 
+                               value="${settings.user_id}" 
+                               placeholder="Опционально"
+                               style="width: 100%; padding: 12px; background: #2c2c2e; color: #fff; border: 1px solid #444; border-radius: 8px; font-size: 14px; box-sizing: border-box;">
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button id="emby_test_btn" 
+                                style="flex: 1; padding: 12px; background: #2196F3; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">
+                            🔌 Проверить подключение
+                        </button>
+                        <button id="emby_save_btn" 
+                                style="flex: 1; padding: 12px; background: #4CAF50; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer;">
+                            💾 Сохранить
+                        </button>
+                    </div>
+
+                    <div id="emby_status" style="padding: 12px; border-radius: 8px; display: none; font-size: 13px;"></div>
+
+                    <div style="margin-top: 30px; padding: 15px; background: #2c2c2e; border-radius: 8px;">
+                        <h4 style="margin: 0 0 10px 0; font-size: 14px;">📝 Как получить API ключ?</h4>
+                        <ol style="margin: 0; padding-left: 20px; color: #999; font-size: 12px; line-height: 1.8;">
+                            <li>Откройте Emby в браузере</li>
+                            <li>Настройки → API Keys</li>
+                            <li>Нажмите "New Api Key"</li>
+                            <li>Скопируйте ключ</li>
+                        </ol>
+                    </div>
+                `;
+
+                container.appendChild(form);
+
+                // Функция для показа статуса
+                function showStatus(message, type) {
+                    const statusEl = document.getElementById('emby_status');
+                    statusEl.textContent = message;
+                    statusEl.style.display = 'block';
+                    
+                    switch(type) {
+                        case 'success':
+                            statusEl.style.background = 'rgba(76, 175, 80, 0.2)';
+                            statusEl.style.color = '#4CAF50';
+                            break;
+                        case 'error':
+                            statusEl.style.background = 'rgba(244, 67, 54, 0.2)';
+                            statusEl.style.color = '#f44336';
+                            break;
+                        case 'info':
+                            statusEl.style.background = 'rgba(33, 150, 243, 0.2)';
+                            statusEl.style.color = '#2196F3';
+                            break;
+                    }
+                }
+
+                // Обработчик теста подключения
+                document.getElementById('emby_test_btn').addEventListener('click', async function() {
+                    const url = document.getElementById('emby_server_url').value.trim();
+                    const key = document.getElementById('emby_api_key').value.trim();
+
+                    if (!url || !key) {
+                        showStatus('❌ Заполните URL и API ключ', 'error');
+                        return;
+                    }
+
+                    showStatus('⏳ Проверяем подключение...', 'info');
+
+                    const result = await testConnection(url, key);
+                    
+                    if (result.success) {
+                        showStatus(`✅ Подключено! Сервер: ${result.name} (${result.version})`, 'success');
+                    } else {
+                        showStatus(`❌ Ошибка: ${result.error}`, 'error');
+                    }
+                });
+
+                // Обработчик сохранения
+                document.getElementById('emby_save_btn').addEventListener('click', function() {
+                    const data = {
+                        server_url: document.getElementById('emby_server_url').value.trim(),
+                        api_key: document.getElementById('emby_api_key').value.trim(),
+                        user_id: document.getElementById('emby_user_id').value.trim()
+                    };
+
+                    if (storage.set(data)) {
+                        showStatus('✅ Настройки сохранены!', 'success');
+                    } else {
+                        showStatus('❌ Ошибка сохранения', 'error');
+                    }
+                });
+            }
+        };
+    }
+
+    // Создание кнопки "Смотреть с Emby"
+    function createEmbyButton() {
+        // Наблюдаем появление карточки фильма/сериала
+        const observer = new MutationObserver(() => {
+            // Ищем различные контейнеры кнопок в Lampa
+            const possibleContainers = [
+                '.view__actions',
+                '.movie__actions', 
+                '.serial__actions',
+                '.entity__actions',
+                '.actions__list'
+            ];
+
+            possibleContainers.forEach(selector => {
+                const containers = document.querySelectorAll(selector);
+                
+                containers.forEach(container => {
+                    // Проверяем, не добавлена ли уже кнопка
+                    if (container.querySelector('.emby-play-btn')) return;
+
+                    // Проверяем, что мы на странице контента
+                    const isMoviePage = window.location.href.includes('/movie/') || 
+                                      document.querySelector('.movie-page');
+                    const isSerialPage = window.location.href.includes('/serial/') || 
+                                       document.querySelector('.serial-page');
+
+                    if (isMoviePage || isSerialPage) {
+                        const button = document.createElement('div');
+                        button.className = 'emby-play-btn';
+                        button.innerHTML = '🎬 Смотреть с Emby';
+                        button.style.cssText = `
+                            padding: 12px 20px;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: white;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            text-align: center;
+                            font-size: 14px;
+                            font-weight: 500;
+                            margin: 5px 0;
+                            transition: transform 0.2s, box-shadow 0.2s;
+                            user-select: none;
+                        `;
+
+                        button.addEventListener('mouseenter', () => {
+                            button.style.transform = 'scale(1.02)';
+                            button.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
+                        });
+                        
+                        button.addEventListener('mouseleave', () => {
+                            button.style.transform = 'scale(1)';
+                            button.style.boxShadow = 'none';
+                        });
+
+                        button.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            playFromEmby();
+                        });
+
+                        container.appendChild(button);
+                        console.log('[Emby Plugin] Button added to', selector);
+                    }
+                });
+            });
+        });
+
         observer.observe(document.body, {
             childList: true,
             subtree: true
         });
+
+        console.log('[Emby Plugin] Button observer started');
     }
 
-    // Обработчик нажатия на кнопку Emby
-    async function handleEmbyPlay() {
-        // Получаем информацию о текущем контенте
-        const title = getCurrentTitle();
-        const year = getCurrentYear();
-        const type = getCurrentType();
+    // Регистрация плагина
+    function register() {
+        console.log('[Emby Plugin] Registering...');
         
-        if (!title) {
-            showNotification('Не удалось определить название контента', 'error');
-            return;
+        // Добавляем пункт в меню расширений
+        if (Lampa.Settings) {
+            Lampa.Settings.add(createSettingsComponent());
+            console.log('[Emby Plugin] Settings registered');
         }
-        
-        showNotification('Ищем в Emby библиотеке...', 'info');
-        
-        const results = await searchInEmby(title, year, type);
-        
-        if (results.length === 0) {
-            showNotification('Контент не найден в Emby библиотеке', 'error');
-            return;
-        }
-        
-        if (results.length === 1) {
-            playEmbyContent(results[0]);
-        } else {
-            showEmbySelector(results);
-        }
-    }
 
-    // Функции для получения информации о текущем контенте (зависят от источника)
-    function getCurrentTitle() {
-        // Пытаемся получить название из разных источников Lampa
-        const titleElement = document.querySelector('.entity__title, .movie-title, .series-title, h1');
-        if (titleElement) return titleElement.textContent.trim();
-        
-        // Если есть глобальная переменная с информацией о контенте
-        if (window.currentMovie?.title) return window.currentMovie.title;
-        if (window.currentSeries?.title) return window.currentSeries.title;
-        
-        return null;
-    }
+        // Запускаем создание кнопок
+        createEmbyButton();
 
-    function getCurrentYear() {
-        const yearElement = document.querySelector('.entity__year, .year');
-        if (yearElement) {
-            const yearText = yearElement.textContent.trim();
-            const yearMatch = yearText.match(/\d{4}/);
-            if (yearMatch) return parseInt(yearMatch[0]);
-        }
-        
-        if (window.currentMovie?.year) return window.currentMovie.year;
-        if (window.currentSeries?.year) return window.currentSeries.year;
-        
-        return null;
-    }
-
-    function getCurrentType() {
-        // Определяем тип контента
-        if (document.querySelector('.series-season, .episodes')) return 'series';
-        if (window.currentMovie) return 'movie';
-        if (window.currentSeries) return 'series';
-        return 'movie'; // по умолчанию
-    }
-
-    // Воспроизведение контента из Emby
-    function playEmbyContent(item) {
-        showNotification(`Воспроизведение: ${item.title}`, 'success');
-        
-        // Создаем iframe или video элемент для воспроизведения
-        const playerContainer = document.querySelector('.player, .video-container') || document.body;
-        
-        // Используем стандартный плеер Lampa с потоком из Emby
-        if (window.Lampa && window.Lampa.Player) {
-            window.Lampa.Player.play({
-                url: item.stream_url,
-                title: item.title,
-                poster: item.poster,
-                subtitles: [], // можно добавить поддержку субтитров
-                quality: 'auto'
-            });
-        } else {
-            // Fallback: создаем простой видеоплеер
-            const videoElement = document.createElement('video');
-            videoElement.src = item.stream_url;
-            videoElement.controls = true;
-            videoElement.autoplay = true;
-            videoElement.style.cssText = 'width: 100%; height: 100%;';
-            
-            playerContainer.innerHTML = '';
-            playerContainer.appendChild(videoElement);
-        }
-    }
-
-    // Показываем список найденного контента
-    function showEmbySelector(items) {
-        const modal = document.createElement('div');
-        modal.className = 'emby-selector-modal';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 10000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        `;
-        
-        const content = document.createElement('div');
-        content.style.cssText = `
-            background: #1a1a1a;
-            border-radius: 8px;
-            padding: 20px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        `;
-        
-        const title = document.createElement('h3');
-        title.textContent = 'Найдено в Emby:';
-        title.style.cssText = 'color: #fff; margin-bottom: 15px;';
-        content.appendChild(title);
-        
-        items.forEach(item => {
-            const itemElement = document.createElement('div');
-            itemElement.style.cssText = `
-                padding: 10px;
-                margin: 5px 0;
-                background: #2a2a2a;
-                border-radius: 4px;
-                cursor: pointer;
-                color: #fff;
-                transition: background 0.2s;
-            `;
-            itemElement.textContent = `${item.title} (${item.year || 'N/A'})`;
-            itemElement.onmouseover = () => itemElement.style.background = '#3a3a3a';
-            itemElement.onmouseout = () => itemElement.style.background = '#2a2a2a';
-            itemElement.onclick = () => {
-                modal.remove();
-                playEmbyContent(item);
-            };
-            content.appendChild(itemElement);
-        });
-        
-        const closeButton = document.createElement('button');
-        closeButton.textContent = 'Закрыть';
-        closeButton.style.cssText = `
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: #f44336;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-        `;
-        closeButton.onclick = () => modal.remove();
-        content.appendChild(closeButton);
-        
-        modal.appendChild(content);
-        document.body.appendChild(modal);
-    }
-
-    // Уведомления
-    function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            background: ${type === 'error' ? '#f44336' : type === 'success' ? '#4CAF50' : '#2196F3'};
-            color: white;
-            border-radius: 4px;
-            z-index: 10001;
-            animation: slideIn 0.3s ease;
-        `;
-        notification.textContent = message;
-        document.body.appendChild(notification);
-        
+        // Показываем уведомление о загрузке
         setTimeout(() => {
-            notification.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
+            Lampa.Noty.show('✅ Emby Plugin v' + PLUGIN_VERSION + ' загружен');
+        }, 1000);
     }
 
-    // Добавление стилей для анимаций
-    const styleSheet = document.createElement('style');
-    styleSheet.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-    `;
-    document.head.appendChild(styleSheet);
-
-    // Регистрация плагина в Lampa
-    function registerPlugin() {
-        // Добавляем настройки в меню Lampa
-        if (window.Lampa && window.Lampa.Settings) {
-            window.Lampa.Settings.add({
-                component: 'emby_settings',
-                title: 'Emby Server',
-                icon: '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M21,3H3C1.9,3 1,3.9 1,5V19C1,20.1 1.9,21 3,21H21C22.1,21 23,20.1 23,19V5C23,3.9 22.1,3 21,3M21,19H3V5H21V19M9,8H15V16H13V10H11V16H9V8Z"/></svg>',
-                onSelect: () => {
-                    const container = document.querySelector('.settings__content, .modal__content');
-                    if (container) {
-                        container.innerHTML = '';
-                        container.appendChild(createSettingsUI());
-                    }
-                }
-            });
-        }
-        
-        // Активируем кнопку Emby на страницах с контентом
-        addEmbyButton();
-    }
-
-    // Инициализация при загрузке
-    function init() {
-        if (window.Lampa) {
-            registerPlugin();
+    // Ожидание Lampa
+    function waitForLampa() {
+        if (typeof Lampa !== 'undefined') {
+            console.log('[Emby Plugin] Lampa found, registering...');
+            register();
         } else {
-            // Ждем загрузки Lampa
-            const checkLampa = setInterval(() => {
-                if (window.Lampa) {
-                    clearInterval(checkLampa);
-                    registerPlugin();
-                }
-            }, 500);
+            console.log('[Emby Plugin] Waiting for Lampa...');
+            setTimeout(waitForLampa, 1000);
         }
     }
 
-    // Запуск плагина
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
+    // Запуск
+    waitForLampa();
 
 })();
