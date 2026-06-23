@@ -1,61 +1,65 @@
 (function () {
     'use strict';
 
-    if (window.emby_plugin_initialized) return;
-    window.emby_plugin_initialized = true;
+    // Регистрируем наш раздел настроек
+    Lampa.Settings.add('emby_settings', {
+        name: 'Emby Локальный',
+        type: 'html',
+        onOpen: function (body) {
+            var page = $(`<div></div>`);
 
-    // Инициализация хранилища
-    if (!Lampa.Storage.get('emby_url')) Lampa.Storage.set('emby_url', '');
-    if (!Lampa.Storage.get('emby_token')) Lampa.Storage.set('emby_token', '');
-
-    // --- 1. НАСТРОЙКИ (Встраиваемся в родную вкладку "Сервер") ---
-    Lampa.Settings.listener.follow('open', function (e) {
-        if (e.name == 'server') {
-            e.body.append('<div class="settings-param-title"><span>Медиатека Emby</span></div>');
-            
-            // Настройка: Адрес
-            var prop_url = Lampa.Template.get('settings_input', {
+            // Поля ввода
+            var param_url = Lampa.Template.get('settings_input', {
                 name: 'Адрес сервера',
-                descr: 'Например: http://192.168.1.145:8096 (без слэша)',
-                value: Lampa.Storage.get('emby_url')
+                value: Lampa.Storage.get('emby_url') || ''
             });
-            
-            // Вызов родной клавиатуры Lampa при клике
-            prop_url.on('hover:enter', function () {
+            param_url.on('hover:enter', function () {
                 Lampa.Input.edit({
-                    title: 'Адрес сервера Emby',
+                    title: 'Адрес Emby',
                     value: Lampa.Storage.get('emby_url'),
-                    free: true,
-                    nosave: false
+                    free: true
                 }, function (new_val) {
                     Lampa.Storage.set('emby_url', new_val);
-                    prop_url.find('.settings-param__value').text(new_val);
-                });
-            });
-            
-            // Настройка: Токен
-            var prop_token = Lampa.Template.get('settings_input', {
-                name: 'API Токен',
-                descr: 'Сгенерируйте токен в админке Emby',
-                value: Lampa.Storage.get('emby_token')
-            });
-            
-            prop_token.on('hover:enter', function () {
-                Lampa.Input.edit({
-                    title: 'API Токен Emby',
-                    value: Lampa.Storage.get('emby_token'),
-                    free: true,
-                    nosave: false
-                }, function (new_val) {
-                    Lampa.Storage.set('emby_token', new_val);
-                    prop_token.find('.settings-param__value').text(new_val);
+                    param_url.find('.settings-param__value').text(new_val);
                 });
             });
 
-            e.body.append(prop_url);
-            e.body.append(prop_token);
+            var param_token = Lampa.Template.get('settings_input', {
+                name: 'API Токен',
+                value: Lampa.Storage.get('emby_token') || ''
+            });
+            param_token.on('hover:enter', function () {
+                Lampa.Input.edit({
+                    title: 'API Токен',
+                    value: Lampa.Storage.get('emby_token'),
+                    free: true
+                }, function (new_val) {
+                    Lampa.Storage.set('emby_token', new_val);
+                    param_token.find('.settings-param__value').text(new_val);
+                });
+            });
+
+            page.append(param_url);
+            page.append(param_token);
+            body.append(page);
         }
     });
+
+    // Добавляем ссылку на этот раздел в главный список настроек
+    Lampa.Settings.listener.follow('open', function (e) {
+        if (e.name == 'main') {
+            var btn = $(`
+                <div class="settings-folder__item selector" data-component="emby_settings">
+                    <div class="settings-folder__icon"><svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div>
+                    <div class="settings-folder__name">Emby Локальный</div>
+                </div>
+            `);
+            e.body.find('.settings-folder').append(btn);
+        }
+    });
+
+    // ... (код кнопки в карточке фильма остается таким же, как был ранее)
+})();
 
     // --- 2. ДОБАВЛЕНИЕ КНОПКИ В КАРТОЧКУ ---
     Lampa.Listener.follow('full', function (e) {
