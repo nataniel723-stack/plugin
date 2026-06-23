@@ -2,17 +2,21 @@
     'use strict';
 
     function EmbyPlugin() {
-        // Защита от двойного запуска плагина
         if (window.emby_plugin_initialized) return;
         window.emby_plugin_initialized = true;
 
-        // Создаем дефолтные значения в кэше Lampa
+        // ВСПЛЫВАЮЩЕЕ УВЕДОМЛЕНИЕ ДЛЯ ОТЛАДКИ (чтобы мы точно знали, что загрузился НОВЫЙ код)
+        setTimeout(function() {
+            Lampa.Noty.show('✅ Плагин Emby Локальный v1.1 успешно загружен!');
+            console.log('Emby Plugin v1.1 Loaded');
+        }, 2000);
+
         if (!Lampa.Storage.get('emby_url')) Lampa.Storage.set('emby_url', '');
         if (!Lampa.Storage.get('emby_token')) Lampa.Storage.set('emby_token', '');
 
-        // 1. ДОБАВЛЕНИЕ НАСТРОЕК (Вкладка "Сервер")
+        // 1. НАСТРОЙКИ (Вкладка "Сервер")
         Lampa.Settings.listener.follow('open', function (e) {
-            if (e.name == 'server') { // Вкладка "Сервер" надежнее всего
+            if (e.name == 'server') {
                 var settingsHtml = $(`
                     <div class="settings-param-title"><span>Локальная медиатека Emby</span></div>
                     <div class="settings-param selector" data-type="input" data-name="emby_url" placeholder="http://192.168.1.145:8096">
@@ -29,17 +33,14 @@
 
                 e.body.append(settingsHtml);
                 
-                // Оживляем поля для ввода через пульт
-                e.body.find('[data-name="emby_url"], [data-name="emby_token"]').each(function() {
-                    Lampa.Settings.Builder.html($(this), false, e.body);
-                });
+                Lampa.Settings.Builder.html(settingsHtml.filter('[data-name="emby_url"]'), false, e.body);
+                Lampa.Settings.Builder.html(settingsHtml.filter('[data-name="emby_token"]'), false, e.body);
             }
         });
 
-        // 2. ДОБАВЛЕНИЕ КНОПКИ (Используем хук 'build')
+        // 2. КНОПКА В КАРТОЧКЕ
         Lampa.Listener.follow('full', function (e) {
-            if (e.type == 'build') { // Срабатывает 100% при сборке карточки
-                // Делаем кнопку зеленой, в стиле Emby
+            if (e.type == 'build') {
                 var button = $(`
                     <div class="full-start__button selector button--emby" style="background: #52B54B;">
                         <svg height="24" viewBox="0 0 24 24" width="24" style="fill: #fff; margin-right: 5px; vertical-align: middle;">
@@ -49,10 +50,15 @@
                     </div>
                 `);
 
-                // Вставляем кнопку в список
-                e.object.activity.render().find('.full-start__buttons').append(button);
+                // Ищем контейнер с кнопками (охватываем разные версии интерфейса Lampa)
+                var buttonsContainer = e.object.activity.render().find('.full-start__buttons, .info__buttons, .view--buttons').first();
+                
+                if (buttonsContainer.length) {
+                    buttonsContainer.append(button);
+                } else {
+                    console.log('Emby: Контейнер для кнопок не найден!');
+                }
 
-                // Обработчик нажатия на кнопку
                 button.on('hover:enter', function () {
                     var movie = e.object.movie;
                     var titleToSearch = movie.title || movie.name || movie.original_title;
@@ -79,7 +85,6 @@
                     var network = new Lampa.Reguest();
                     network.silent(url, function (result) {
                         if (result && result.Items && result.Items.length > 0) {
-                            // Ищем точное совпадение имени или берем первое
                             var item = result.Items.find(function(i) {
                                 return i.Name.toLowerCase() === titleToSearch.toLowerCase();
                             }) || result.Items[0];
@@ -101,7 +106,7 @@
             }
         });
 
-        // 3. ФУНКЦИИ ВОСПРОИЗВЕДЕНИЯ
+        // 3. ВОСПРОИЗВЕДЕНИЕ
         function loadSeasons(seriesId, server, token, title) {
             var url = server + '/emby/Shows/' + seriesId + '/Episodes?Recursive=true&api_key=' + token;
             var network = new Lampa.Reguest();
@@ -139,7 +144,6 @@
         }
     }
 
-    // Правильный запуск при старте Lampa
     if (window.appready) {
         EmbyPlugin();
     } else {
@@ -147,5 +151,4 @@
             if (e.type == 'ready') EmbyPlugin();
         });
     }
-
 })();
