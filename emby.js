@@ -74,16 +74,103 @@
         });
     }
 
-    function openInEmby(movie) {
-        findInEmby(movie, (item) => {
-            if (item && item.Id) {
-                const link = `${getUrl().replace(/\/$/, '')}/web/#/details?id=${item.Id}`;
-                window.open(link, '_blank');
-                notify(`Открыто в Emby: ${item.Name}`);
-            } else {
-                notify('Не найдено в Emby');
-            }
+    // Получаем прямую ссылку на потоковое видео
+    function getStreamingUrl(itemId, callback) {
+        if (!isConfigured()) {
+            notify('Настройте Emby в параметрах');
+            return callback(null);
+        }
+
+        const url = `${getUrl().replace(/\/$/, '')}/Videos/${itemId}/stream.mp4?static=true&api_key=${getApiKey()}`;
+        callback(url);
+    }
+
+    // Компонент для воспроизведения видео из Emby
+    function embyPlayer(component, object) {
+        let network = new Lampa.Reguest();
+        let scroll = new Lampa.Scroll({mask: true, over: true});
+        let files = new Lampa.Explorer(object);
+        
+        this.initialize = function() {
+            files.appendFiles(scroll.render());
+            files.appendHead($('<div/>'));
+            scroll.body().addClass('torrent-list');
+            this.search();
+        };
+
+        this.search = function() {
+            this.activity.loader(true);
+            this.find();
+        };
+
+        this.find = function() {
+            let movie = object.movie;
+            if (!movie) return this.doesNotAnswer();
+
+            findInEmby(movie, (item) => {
+                if (!item) return this.doesNotAnswer();
+                
+                getStreamingUrl(item.Id, (streamUrl) => {
+                    if (!streamUrl) return this.doesNotAnswer();
+                    
+                    Lampa.Player.play({
+                        title: item.Name,
+                        url: streamUrl,
+                        poster: item.PrimaryImageTag ? `${getUrl()}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
+                        timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id))
+                    });
+                    
+                    this.activity.loader(false);
+                    this.activity.toggle();
+                });
+            });
+        };
+
+        this.doesNotAnswer = function() {
+            this.activity.loader(false);
+            this.activity.toggle();
+            notify('Фильм не найден в библиотеке Emby.');
+        };
+    }
+
+    // Обработчик нажатия на кнопку Emby
+    function handleEmbyClick(movie) {
+        if (!isConfigured()) {
+            notify('Настройте Emby в параметрах');
+            return;
+        }
+
+        Lampa.Component.add('emby_player', embyPlayer);
+        Lampa.Activity.push({
+            url: '',
+            title: 'Воспроизведение из Emby',
+            component: 'emby_player',
+            movie: movie
         });
+    }
+
+    // Добавление кнопки Emby
+    function addEmbyButton(data) {
+        if (!data || !data.render) return;
+        if (data.render.find('.emby-button').length) return;
+
+        const button = $(`
+            <div class="full-start__button selector view--emby" data-subtitle="${PLUGIN_NAME} v${PLUGIN_VERSION}">
+                <svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>
+                <span>${PLUGIN_NAME}</span>
+            </div>
+        `);
+
+        button.on('hover:enter', function() {
+            handleEmbyClick(data.movie || data.card);
+        });
+
+        const playButton = data.render.find('.button--play, .view--torrent').first();
+        if (playButton.length) {
+            playButton.after(button);
+        } else {
+            data.render.find('.buttons, .activity__body').append(button);
+        }
     }
 
     // Настройки
@@ -127,44 +214,19 @@
         });
     }
 
-    // Интеграция кнопки Emby
-    function integrateEmbyButton() {
-        Lampa.Listener.follow('full', function(e) {
-            if (e.type === 'complite') {
-                const activity = e.object.activity;
-                const movie = e.data.movie || e.data.card;
-                
-                // Проверка наличия фильма в Emby
-                findInEmby(movie, (item) => {
-                    if (item && item.Id) {
-                        // Создание кнопки Emby
-                        const buttonHtml = `<div class="full-start__button selector view--emby" data-subtitle="${PLUGIN_NAME} v${PLUGIN_VERSION}">
-                            <svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>
-                            <span>${PLUGIN_NAME}</span>
-                        </div>`;
-                        
-                        // Добавление кнопки рядом с торрентами
-                        const torrentButton = activity.render().find('.view--torrent');
-                        if (torrentButton.length) {
-                            torrentButton.after(buttonHtml);
-                            
-                            // Обработка клика по новой кнопке
-                            activity.render().find('.view--emby').on('hover:enter', function() {
-                                const link = `${getUrl().replace(/\/$/, '')}/web/#/details?id=${item.Id}`;
-                                window.open(link, '_blank');
-                                notify(`Открыто в Emby: ${item.Name}`);
-                            });
-                        }
-                    }
-                });
-            }
-        });
-    }
-
     function startPlugin() {
         initSettings();
-        integrateEmbyButton();
-        
+
+        Lampa.Listener.follow('full', function(e) {
+            if (e.type === 'complite') {
+                const data = {
+                    render: e.object.activity.render(),
+                    movie: e.data.movie || e.data.card
+                };
+                addEmbyButton(data);
+            }
+        });
+
         console.log(`%c${PLUGIN_NAME} v${PLUGIN_VERSION} загружен`, 'color: #00ff88; font-weight: bold');
     }
 
