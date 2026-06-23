@@ -1,24 +1,39 @@
 (function () {
     'use strict';
 
-    const STORAGE_URL   = 'emby_url';
-    const STORAGE_TOKEN = 'emby_token';
+    // =========================
+    //  Emby Local (в стиле Filmix FX)
+    // =========================
 
-    const network = new Lampa.Reguest();
+    var STORAGE_URL   = 'emby_local_url';
+    var STORAGE_TOKEN = 'emby_local_token';
+
+    var network = new Lampa.Reguest();
+    window.emby_local = {};
+
+    // ---------- Хелперы хранения ----------
 
     function getUrl() {
         return (Lampa.Storage.get(STORAGE_URL, '') || '').trim();
+    }
+
+    function setUrl(val) {
+        Lampa.Storage.set(STORAGE_URL, (val || '').trim());
     }
 
     function getToken() {
         return (Lampa.Storage.get(STORAGE_TOKEN, '') || '').trim();
     }
 
-    function notify(msg) {
+    function setToken(val) {
+        Lampa.Storage.set(STORAGE_TOKEN, (val || '').trim());
+    }
+
+    function noty(msg) {
         if (msg) Lampa.Noty.show(msg);
     }
 
-    function editField(title, value, cb) {
+    function edit(title, value, cb) {
         Lampa.Input.edit({
             title: title,
             value: value || '',
@@ -29,78 +44,87 @@
         });
     }
 
-    /**
-     * Рендер настроек Emby
-     * Сначала пытаемся использовать Template.get('settings_input'),
-     * если его нет — аккуратный fallback на простой HTML.
-     */
-    function renderSettings(body) {
-        if (!body) return;
+    // ---------- Настройки (как у Filmix FX) ----------
+
+    function renderSettings() {
+        var body = $('.settings-container').last();
+        if (!body.length) return;
 
         body.empty();
 
-        const url   = getUrl();
-        const token = getToken();
+        var wrap = $('<div class="settings-container"></div>');
 
-        const wrap = $('<div class="settings-container"></div>');
-        wrap.append('<div class="settings-param-title">Настройки Emby</div>');
+        wrap.append('<div class="settings-param-title">Emby Local</div>');
 
-        // --- URL ---
-        let urlItem = Lampa.Template.get('settings_input');
-        if (!urlItem || !urlItem.length) {
-            urlItem = $('<div class="settings-param selector"><div class="settings-param__name"></div><div class="settings-param__value"></div></div>');
-        }
+        var url = getUrl();
+        var token = getToken();
 
-        urlItem.find('.settings-param__name').text('Emby URL');
-        urlItem.find('.settings-param__value').text(url || 'Не задано');
+        // URL Emby
+        var urlRow = $(
+            '<div class="settings-param selector" data-name="emby_local_url">' +
+                '<div class="settings-param__name">Emby URL</div>' +
+                '<div class="settings-param__value">' + (url || 'Не задано') + '</div>' +
+            '</div>'
+        );
 
-        urlItem.on('hover:enter', function () {
-            editField('Введите URL Emby (например http://192.168.1.10:8096)', getUrl(), function (val) {
-                Lampa.Storage.set(STORAGE_URL, val);
-                urlItem.find('.settings-param__value').text(val || 'Не задано');
+        urlRow.on('hover:enter', function () {
+            edit('Введите URL Emby (например http://192.168.1.10:8096)', getUrl(), function (val) {
+                setUrl(val);
+                urlRow.find('.settings-param__value').text(val || 'Не задано');
             });
         });
 
-        // --- TOKEN ---
-        let tokenItem = Lampa.Template.get('settings_input');
-        if (!tokenItem || !tokenItem.length) {
-            tokenItem = $('<div class="settings-param selector"><div class="settings-param__name"></div><div class="settings-param__value"></div></div>');
-        }
+        // API Token
+        var tokenRow = $(
+            '<div class="settings-param selector" data-name="emby_local_token">' +
+                '<div class="settings-param__name">Emby API Token</div>' +
+                '<div class="settings-param__value">' + (token ? '********' : 'Не задано') + '</div>' +
+            '</div>'
+        );
 
-        tokenItem.find('.settings-param__name').text('Emby API Token');
-        tokenItem.find('.settings-param__value').text(token ? '********' : 'Не задано');
-
-        tokenItem.on('hover:enter', function () {
-            editField('Введите API Token Emby', getToken(), function (val) {
-                Lampa.Storage.set(STORAGE_TOKEN, val);
-                tokenItem.find('.settings-param__value').text(val ? '********' : 'Не задано');
+        tokenRow.on('hover:enter', function () {
+            edit('Введите API Token Emby', getToken(), function (val) {
+                setToken(val);
+                tokenRow.find('.settings-param__value').text(val ? '********' : 'Не задано');
             });
         });
 
-        wrap.append(urlItem);
-        wrap.append(tokenItem);
+        wrap.append(urlRow);
+        wrap.append(tokenRow);
 
         body.append(wrap);
     }
 
-    /**
-     * Поиск в Emby
-     */
-    function searchEmby(title, callback) {
-        const base  = getUrl();
-        const token = getToken();
+    function initSettings() {
+        Lampa.SettingsApi.addComponent({
+            component: 'emby_local',
+            name: 'Emby Local',
+            icon: '<svg width="40" height="40"><rect width="40" height="40" rx="6" fill="#0f0"/><text x="50%" y="55%" text-anchor="middle" fill="#000" font-size="20" font-weight="bold">E</text></svg>'
+        });
+
+        Lampa.Settings.listener.follow('open', function (e) {
+            if (!e || e.name !== 'emby_local') return;
+            renderSettings();
+        });
+    }
+
+    // ---------- Emby API ----------
+
+    function searchEmby(title, cb) {
+        var base  = getUrl();
+        var token = getToken();
 
         if (!base || !token) {
-            notify('Emby: укажите URL и API Token в настройках');
-            return callback && callback('no-config');
+            noty('Emby: укажите URL и API Token в настройках');
+            return cb && cb('no-config');
         }
 
         if (!title) {
-            notify('Emby: не удалось определить название');
-            return callback && callback('no-title');
+            noty('Emby: не удалось определить название');
+            return cb && cb('no-title');
         }
 
-        const url = base.replace(/\/+$/, '') +
+        var url = base.replace(/\/+$/, '') +
             '/emby/Items?SearchTerm=' + encodeURIComponent(title) +
             '&IncludeItemTypes=Movie,Series' +
             '&Limit=20' +
@@ -108,66 +132,66 @@
 
         network.native(url, function (json) {
             if (!json || !Array.isArray(json.Items)) {
-                return callback && callback('bad-response');
+                return cb && cb('bad-response');
             }
-            callback && callback(null, json.Items);
+            cb && cb(null, json.Items);
         }, function () {
-            notify('Emby: ошибка сети');
-            callback && callback('network-error');
+            noty('Emby: ошибка сети');
+            cb && cb('network-error');
         });
     }
 
-    function getSeasons(showId, callback) {
-        const base  = getUrl();
-        const token = getToken();
+    function getSeasons(showId, cb) {
+        var base  = getUrl();
+        var token = getToken();
 
-        const url = base.replace(/\/+$/, '') +
+        var url = base.replace(/\/+$/, '') +
             '/emby/Shows/' + encodeURIComponent(showId) +
             '/Seasons?api_key=' + encodeURIComponent(token);
 
         network.native(url, function (json) {
             if (!json || !Array.isArray(json.Items)) {
-                return callback && callback('bad-response');
+                return cb && cb('bad-response');
             }
-            callback && callback(null, json.Items);
+            cb && cb(null, json.Items);
         }, function () {
-            notify('Emby: ошибка загрузки сезонов');
-            callback && callback('network-error');
+            noty('Emby: ошибка загрузки сезонов');
+            cb && cb('network-error');
         });
     }
 
-    function getEpisodes(showId, seasonId, callback) {
-        const base  = getUrl();
-        const token = getToken();
+    function getEpisodes(showId, seasonId, cb) {
+        var base  = getUrl();
+        var token = getToken();
 
-        const url = base.replace(/\/+$/, '') +
+        var url = base.replace(/\/+$/, '') +
             '/emby/Shows/' + encodeURIComponent(showId) +
             '/Episodes?SeasonId=' + encodeURIComponent(seasonId) +
             '&api_key=' + encodeURIComponent(token);
 
         network.native(url, function (json) {
             if (!json || !Array.isArray(json.Items)) {
-                return callback && callback('bad-response');
+                return cb && cb('bad-response');
             }
-            callback && callback(null, json.Items);
+            cb && cb(null, json.Items);
         }, function () {
-            notify('Emby: ошибка загрузки эпизодов');
-            callback && callback('network-error');
+            noty('Emby: ошибка загрузки эпизодов');
+            cb && cb('network-error');
         });
     }
 
-    function buildStreamUrl(itemId) {
-        const base  = getUrl();
-        const token = getToken();
+    function buildStreamUrl(id) {
+        var base  = getUrl();
+        var token = getToken();
 
         return base.replace(/\/+$/, '') +
-            '/emby/Videos/' + encodeURIComponent(itemId) +
+            '/emby/Videos/' + encodeURIComponent(id) +
             '/stream?static=true&api_key=' + encodeURIComponent(token);
     }
 
     function playItem(item) {
         if (!item || !item.Id) {
-            notify('Emby: не удалось получить данные для воспроизведения');
+            noty('Emby: нет ID для воспроизведения');
             return;
         }
 
@@ -178,19 +202,19 @@
         });
     }
 
-    function showSeriesFlow(seriesItem) {
+    function openSeriesFlow(seriesItem) {
         if (!seriesItem || !seriesItem.Id) {
-            notify('Emby: некорректные данные сериала');
+            noty('Emby: некорректный сериал');
             return;
         }
 
         getSeasons(seriesItem.Id, function (err, seasons) {
             if (err || !seasons || !seasons.length) {
-                notify('Emby: сезоны не найдены');
+                noty('Emby: сезоны не найдены');
                 return;
             }
 
-            const seasonItems = seasons.map(function (s) {
+            var seasonItems = seasons.map(function (s) {
                 return {
                     title: s.Name || ('Сезон ' + (s.IndexNumber || '')),
                     id: s.Id,
@@ -206,22 +230,21 @@
 
                     getEpisodes(seriesItem.Id, season.id, function (errEp, episodes) {
                         if (errEp || !episodes || !episodes.length) {
-                            notify('Emby: эпизоды не найдены');
+                            noty('Emby: эпизоды не найдены');
                             return;
                         }
 
-                        const episodeItems = episodes.map(function (e) {
-                            let epTitle = '';
-
+                        var epItems = episodes.map(function (e) {
+                            var t = '';
                             if (typeof e.IndexNumber === 'number') {
-                                epTitle = 'S' + (e.ParentIndexNumber || 1) +
+                                t = 'S' + (e.ParentIndexNumber || 1) +
                                     'E' + e.IndexNumber + ' — ' + (e.Name || '');
                             } else {
-                                epTitle = e.Name || 'Эпизод';
+                                t = e.Name || 'Эпизод';
                             }
 
                             return {
-                                title: epTitle,
+                                title: t,
                                 id: e.Id,
                                 _raw: e
                             };
@@ -229,13 +252,13 @@
 
                         Lampa.Select.show({
                             title: 'Выберите эпизод',
-                            items: episodeItems,
+                            items: epItems,
                             onSelect: function (ep) {
                                 if (!ep || !ep._raw) return;
                                 playItem(ep._raw);
                             },
                             onBack: function () {
-                                showSeriesFlow(seriesItem);
+                                openSeriesFlow(seriesItem);
                             }
                         });
                     });
@@ -247,27 +270,27 @@
     function handleWatchInEmby(data) {
         if (!data) return;
 
-        const movie = data.movie || data.card || data;
-        let title = movie && (movie.name || movie.title || movie.original_title || movie.original_name);
+        var movie = data.movie || data.card || data;
+        var title = movie && (movie.name || movie.title || movie.original_title || movie.original_name);
 
         if (!title && data.card && data.card.data) {
-            const d = data.card.data;
+            var d = data.card.data;
             title = d.name || d.title || d.original_title || d.original_name;
         }
 
         if (!title) {
-            notify('Emby: не удалось определить название');
+            noty('Emby: не удалось определить название');
             return;
         }
 
         searchEmby(title, function (err, items) {
             if (err || !items || !items.length) {
-                notify('Emby: ничего не найдено');
+                noty('Emby: ничего не найдено');
                 return;
             }
 
-            const movies = [];
-            const series = [];
+            var movies = [];
+            var series = [];
 
             items.forEach(function (it) {
                 if (!it || !it.Type) return;
@@ -281,14 +304,14 @@
             }
 
             if (series.length === 1 && !movies.length) {
-                showSeriesFlow(series[0]);
+                openSeriesFlow(series[0]);
                 return;
             }
 
-            const selectItems = [];
+            var list = [];
 
             series.forEach(function (s) {
-                selectItems.push({
+                list.push({
                     title: '[Сериал] ' + (s.Name || ''),
                     type: 'series',
                     _raw: s
@@ -296,97 +319,71 @@
             });
 
             movies.forEach(function (m) {
-                selectItems.push({
+                list.push({
                     title: '[Фильм] ' + (m.Name || ''),
                     type: 'movie',
                     _raw: m
                 });
             });
 
-            if (!selectItems.length) {
-                notify('Emby: подходящих результатов нет');
+            if (!list.length) {
+                noty('Emby: подходящих результатов нет');
                 return;
             }
 
-            if (selectItems.length === 1) {
-                const only = selectItems[0];
+            if (list.length === 1) {
+                var only = list[0];
                 if (only.type === 'movie') playItem(only._raw);
-                else if (only.type === 'series') showSeriesFlow(only._raw);
+                else openSeriesFlow(only._raw);
                 return;
             }
 
             Lampa.Select.show({
                 title: 'Результаты Emby',
-                items: selectItems,
+                items: list,
                 onSelect: function (choice) {
                     if (!choice || !choice._raw) return;
                     if (choice.type === 'movie') playItem(choice._raw);
-                    else if (choice.type === 'series') showSeriesFlow(choice._raw);
+                    else openSeriesFlow(choice._raw);
                 }
             });
         });
     }
 
-    /**
-     * Кнопка "Смотреть в Emby" — максимально приближено к стилю онлайн‑плагинов (Filmix и т.п.)
-     */
-    function initFullCardButton() {
+    // ---------- Кнопка "Смотреть в Emby" (как в fx.js) ----------
+
+    function initFullButton() {
         Lampa.Listener.follow('full', function (event) {
             if (!event || event.type !== 'complite') return;
 
-            // Даем Lampa дорисовать карточку (как делают онлайн‑плагины)
+            // ждём дорисовку карточки, как делает Filmix FX
             setTimeout(function () {
-                let body = event.body;
+                var body = $('.full').last();
+                if (!body.length) return;
 
-                if (!body || !body.find) {
-                    // fallback — последний .full
-                    body = $('.full').last();
-                }
+                // основные контейнеры кнопок в lampa.mx / bylampa.online
+                var buttons = body.find('.full-start').eq(0);
+                if (!buttons.length) buttons = body.find('.full-actions').eq(0);
+                if (!buttons.length) return;
 
-                if (!body || !body.length) return;
+                if (buttons.find('.emby-local-btn').length) return;
 
-                // Ищем контейнер с кнопками "Смотреть"
-                let container = body.find('.info__buttons').eq(0);
-                if (!container.length) container = body.find('.view--buttons').eq(0);
-                if (!container.length) container = body.find('.full-start').eq(0);
-                if (!container.length) container = body.find('.full-actions').eq(0);
-                if (!container.length) container = body.find('.full__buttons').eq(0);
-
-                if (!container || !container.length) return;
-
-                // Проверяем, не добавляли ли уже кнопку
-                if (container.find('.emby-btn').length) return;
-
-                let firstButton = container.find('.button').eq(0);
-                if (!firstButton.length) firstButton = container;
-
-                const btn = $('<div class="button view--torrent emby-btn"><span>Смотреть в Emby</span></div>');
+                var btn = $('<div class="button selector emby-local-btn"><span>Смотреть в Emby</span></div>');
 
                 btn.on('hover:enter', function () {
                     handleWatchInEmby(event.data || {});
                 });
 
-                firstButton.after(btn);
-            }, 50);
+                buttons.append(btn);
+            }, 150);
         });
     }
 
-    function initSettings() {
-        Lampa.SettingsApi.addComponent({
-            component: 'emby',
-            name: 'Emby',
-            icon: '<svg width="40" height="40"><rect width="40" height="40" rx="6" fill="#0f0"/><text x="50%" y="55%" text-anchor="middle" fill="#000" font-size="22" font-weight="bold">E</text></svg>'
-        });
-
-        Lampa.Settings.listener.follow('open', function (e) {
-            if (!e || e.name !== 'emby') return;
-            renderSettings(e.body);
-        });
-    }
+    // ---------- Инициализация ----------
 
     function init() {
         initSettings();
-        initFullCardButton();
+        initFullButton();
     }
 
     init();
