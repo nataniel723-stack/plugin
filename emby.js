@@ -4,23 +4,19 @@
     function EmbyPlugin() {
         var network = new Lampa.Reguest();
 
-        // Безопасно инициализируем дефолтные значения в хранилище Lampa, если их нет
         if (!Lampa.Storage.get('emby_server')) Lampa.Storage.set('emby_server', '');
         if (!Lampa.Storage.get('emby_api_key')) Lampa.Storage.set('emby_api_key', '');
 
-        // 1. Встраивание настроек (Подход без использования падающих функций)
+        // 1. Встраивание настроек в раздел "Остальное"
         Lampa.Settings.listener.follow('open', function (e) {
-            if (e.name == 'other') { // Когда пользователь открывает раздел "Остальное"
-                
-                var emby_title = $(`
-                    <div class="settings-param-title"><span>Локальный сервер Emby</span></div>
-                `);
+            if (e.name == 'other') {
+                var emby_title = $('<div class="settings-param-title"><span>Локальный сервер Emby</span></div>');
 
                 var emby_server_field = $(`
-                    <div class="settings-param selector" data-type="input" data-name="emby_server" placeholder="http://192.168.1.X:8096">
+                    <div class="settings-param selector" data-type="input" data-name="emby_server" placeholder="http://192.168.1.145:8096">
                         <div class="settings-param__name">Адрес сервера Emby</div>
                         <div class="settings-param__value">${Lampa.Storage.get('emby_server') || 'Не указан'}</div>
-                        <div class="settings-param__descr">Пример: http://192.168.1.50:8096 (без слэша на конце)</div>
+                        <div class="settings-param__descr">Ваш адрес: http://192.168.1.145:8096 (без / на конце)</div>
                     </div>
                 `);
 
@@ -32,18 +28,16 @@
                     </div>
                 `);
 
-                // Добавляем элементы на экран "Остальное"
                 e.body.append(emby_title);
                 e.body.append(emby_server_field);
                 e.body.append(emby_key_field);
 
-                // Заставляем Lampa «оживить» эти поля (обработать клики, ввод текста, сохранение в Storage)
                 Lampa.Settings.Builder.html(emby_server_field, false, e.body);
                 Lampa.Settings.Builder.html(emby_key_field, false, e.body);
             }
         });
 
-        // Функция запросов к API Emby
+        // Функция запросов к API
         function embyRequest(endpoint, onsuccess, onerror) {
             var server = Lampa.Storage.get('emby_server');
             var api_key = Lampa.Storage.get('emby_api_key');
@@ -78,7 +72,7 @@
                         buttonsContainer.append(embyButton);
                     }
 
-                    // Логика клика
+                    // Клик по кнопке
                     embyButton.on('hover:enter', function () {
                         Lampa.Select.show({
                             title: 'Поиск в Emby',
@@ -87,33 +81,40 @@
                             onBack: function () {}
                         });
 
-                        var query = encodeURIComponent(movie.title || movie.name);
-                        var isSerial = (movie.number_of_seasons || movie.seasons || movie.first_air_date) ? true : false;
-                        var searchUrl = '/emby/Items?SearchTerm=' + query + '&IncludeItemTypes=' + (isSerial ? 'Series' : 'Movie') + '&Recursive=true';
+                        // Ищем по свойству Name (работает точнее для смешанных папок)
+                        var titleToSearch = movie.title || movie.name;
+                        var query = encodeURIComponent(titleToSearch);
+                        
+                        // Запрашиваем поиск без жесткой фильтрации типов контента
+                        var searchUrl = '/emby/Items?SearchTerm=' + query + '&Recursive=true&Fields=Path';
 
                         embyRequest(searchUrl, function (result) {
                             if (result && result.Items && result.Items.length > 0) {
-                                var item = result.Items[0];
+                                // Ищем наиболее точное совпадение по имени
+                                var item = result.Items.find(function(i) {
+                                    return i.Name.toLowerCase() === titleToSearch.toLowerCase();
+                                }) || result.Items[0];
                                 
-                                if (item.Type === 'Series') {
+                                // Emby сам скажет, Series это или Movie, независимо от настроек библиотеки
+                                if (item.Type === 'Series' || item.Type === 'TvChannel') {
                                     loadEmbySeasons(item.Id, movie);
                                 } else {
                                     playEmbyItem(item);
                                 }
                             } else {
                                 Lampa.Select.close();
-                                Lampa.Noty.show("Контент не найден на вашем сервере Emby.");
+                                Lampa.Noty.show("Контент не найден в вашей папке Emby.");
                             }
                         }, function () {
                             Lampa.Select.close();
-                            Lampa.Noty.show("Ошибка связи с Emby. Проверьте настройки.");
+                            Lampa.Noty.show("Ошибка связи с Emby. Проверьте адрес и токен.");
                         });
                     });
                 }
             }
         });
 
-        // 3. Воспроизведение
+        // 3. Работа с плеером
         function loadEmbySeasons(seriesId, movie) {
             var server = Lampa.Storage.get('emby_server');
             var api_key = Lampa.Storage.get('emby_api_key');
@@ -143,7 +144,7 @@
                     });
                 } else {
                     Lampa.Select.close();
-                    Lampa.Noty.show("Эпизоды сериала в Emby не найдены.");
+                    Lampa.Noty.show("Серии сериала в Emby не найдены.");
                 }
             }, function () { Lampa.Select.close(); });
         }
