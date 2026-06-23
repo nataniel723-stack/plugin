@@ -2,68 +2,69 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '1.2.0';
+    const PLUGIN_VERSION = '1.3.0';
 
-    let embyConfig = {
+    let config = {
         server: Lampa.Storage.get('emby_server', 'http://127.0.0.1:8096'),
-        apiKey: Lampa.Storage.get('emby_api_key', '')
+        apikey: Lampa.Storage.get('emby_apikey', '')
     };
 
     function saveConfig() {
-        Lampa.Storage.set('emby_server', embyConfig.server);
-        Lampa.Storage.set('emby_api_key', embyConfig.apiKey);
+        Lampa.Storage.set('emby_server', config.server);
+        Lampa.Storage.set('emby_apikey', config.apikey);
     }
 
     function isConfigured() {
-        return embyConfig.server && embyConfig.apiKey;
+        return config.server && config.apikey;
     }
 
-    function embyRequest(endpoint, onSuccess, onError) {
+    function apiRequest(url, success, error) {
         if (!isConfigured()) {
-            Lampa.Noty.show('Emby не настроен');
-            if (onError) onError();
+            Lampa.Noty.show('Emby: укажите адрес и API-ключ');
             return;
         }
 
-        const url = `${embyConfig.server}/emby${endpoint}${endpoint.includes('?') ? '&' : '?'}api_key=${embyConfig.apiKey}`;
+        const fullUrl = config.server + '/emby' + url + (url.includes('?') ? '&' : '?') + 'api_key=' + config.apikey;
 
-        new Lampa.Reguest().silent(url, onSuccess, onError || function(){}, false, {
+        new Lampa.Reguest().silent(fullUrl, success, error || (() => {}), false, {
             headers: { 'Accept': 'application/json' }
         });
     }
 
-    function searchInEmby(movie, callback) {
-        if (!movie) return callback(null);
+    function findInEmby(movie, cb) {
+        if (!movie) return cb(null);
 
-        let query = '&Recursive=true&IncludeItemTypes=Movie,Series,Episode&Fields=Path,ProviderIds,Overview';
+        let query = '&Recursive=true&IncludeItemTypes=Movie,Series,Episode&Fields=Path,ProviderIds';
 
-        const id = movie.imdb_id || movie.imdbid || movie.tmdb_id || movie.id;
-
-        if (id) {
-            const provider = movie.imdb_id || movie.imdbid ? `imdb.${id.replace('tt','')}` : `tmdb.${id}`;
-            embyRequest(`/Items?AnyProviderIdEquals=${provider}${query}`, 
-                (data) => callback(data && data.Items && data.Items[0]),
-                () => searchByName(movie, callback)
-            );
-        } else {
-            searchByName(movie, callback);
+        // По ID (лучший способ)
+        if (movie.imdb_id || movie.imdbid) {
+            const id = (movie.imdb_id || movie.imdbid).replace('tt', '');
+            apiRequest(`/Items?AnyProviderIdEquals=imdb.${id}${query}`, (data) => {
+                cb(data.Items && data.Items[0]);
+            }, () => cb(null));
+        } 
+        else if (movie.tmdb_id || movie.id) {
+            const id = movie.tmdb_id || movie.id;
+            apiRequest(`/Items?AnyProviderIdEquals=tmdb.${id}${query}`, (data) => {
+                cb(data.Items && data.Items[0]);
+            }, () => cb(null));
+        } 
+        else {
+            // По названию
+            const title = encodeURIComponent(movie.title || movie.name || '');
+            apiRequest(`/Items?SearchTerm=${title}&Limit=3${query}`, (data) => {
+                cb(data.Items && data.Items[0]);
+            }, () => cb(null));
         }
     }
 
-    function searchByName(movie, callback) {
-        const title = encodeURIComponent(movie.title || movie.name || '');
-        embyRequest(`/Items?SearchTerm=${title}&IncludeItemTypes=Movie,Series&Recursive=true&Limit=5`, 
-            (data) => callback(data && data.Items && data.Items[0]),
-            () => callback(null)
-        );
-    }
-
-    function addEmbyButton(activity) {
-        const render = activity.render();
+    function createEmbyButton(activity) {
+        const render = activity.render ? activity.render() : $('.activity__body');
         if (render.find('.emby-button').length) return;
 
         const btn = $(`
             <div class="button selector emby-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                 <span>Emby</span>
             </div>
         `);
@@ -77,39 +78,37 @@
 
             Lampa.Activity.loader(true);
 
-            searchInEmby(activity.movie || activity.card, (embyItem) => {
+            findInEmby(activity.movie || activity.card, (item) => {
                 Lampa.Activity.loader(false);
 
-                if (embyItem && embyItem.Id) {
-                    const url = `${embyConfig.server}/web/#/details?id=${embyItem.Id}`;
-                    window.open(url, '_blank');
-                    Lampa.Noty.show(`Открываем: ${embyItem.Name}`);
+                if (item && item.Id) {
+                    window.open(`${config.server}/web/#/details?id=${item.Id}`, '_blank');
+                    Lampa.Noty.show(`Открыто в Emby: ${item.Name}`);
                 } else {
                     Lampa.Noty.show('Не найдено в Emby');
                 }
             });
         });
 
-        // Вставляем после кнопки Play
         const playBtn = render.find('.button--play, .view--torrent, .full__btn').first();
         if (playBtn.length) {
             playBtn.after(btn);
         } else {
-            render.find('.activity__body .buttons').append(btn);
+            render.find('.buttons, .activity__body').append(btn);
         }
     }
 
     function showSettings() {
         const html = $(`
-            <div class="settings-param">
-                <div class="settings-param__name">Emby Server URL</div>
-                <input type="text" id="emby_server" class="settings-param__value" value="${embyConfig.server}" placeholder="http://192.168.0.100:8096"/>
-            </div>
-            <div class="settings-param">
-                <div class="settings-param__name">API Key</div>
-                <input type="text" id="emby_api_key" class="settings-param__value" value="${embyConfig.apiKey}" placeholder="xxxxxxxxxxxx"/>
-            </div>
-            <div class="settings-param">
+            <div>
+                <div class="settings-param">
+                    <div class="settings-param__name">Emby Server URL</div>
+                    <input type="text" id="emby_server" class="settings-param__value" value="${config.server}" placeholder="http://192.168.1.100:8096"/>
+                </div>
+                <div class="settings-param">
+                    <div class="settings-param__name">API Key</div>
+                    <input type="text" id="emby_apikey" class="settings-param__value" value="${config.apikey}" placeholder="Вставьте API ключ"/>
+                </div>
                 <button class="button selector" id="emby_save">Сохранить</button>
             </div>
         `);
@@ -122,52 +121,38 @@
         });
 
         html.find('#emby_save').on('hover:enter click', () => {
-            embyConfig.server = html.find('#emby_server').val().trim();
-            embyConfig.apiKey = html.find('#emby_api_key').val().trim();
+            config.server = html.find('#emby_server').val().trim();
+            config.apikey = html.find('#emby_apikey').val().trim();
             saveConfig();
-            Lampa.Noty.show('✅ Настройки Emby сохранены');
+            Lampa.Noty.show('Настройки Emby сохранены');
             Lampa.Modal.close();
         });
     }
 
-    function startPlugin() {
-        // Добавление в настройки (современный способ)
-        if (Lampa.SettingsApi && Lampa.SettingsApi.addParam) {
-            Lampa.SettingsApi.addParam({
-                component: 'interface',
-                param: { type: 'button' },
-                field: {
-                    name: PLUGIN_NAME,
-                    description: 'Интеграция с Emby/Jellyfin'
-                },
-                onChange: showSettings
-            });
-        } else if (Lampa.Settings && Lampa.Settings.add) {
-            // запасной вариант
-            Lampa.Settings.add({
+    function start() {
+        // Добавление в Настройки → Расширения / Интерфейс
+        Lampa.SettingsApi.addParam({
+            component: 'interface',
+            param: { type: 'button' },
+            field: {
                 name: PLUGIN_NAME,
-                description: 'Интеграция с Emby',
-                onSelect: showSettings
-            });
-        }
+                description: 'Локальный сервер Emby / Jellyfin'
+            },
+            onChange: showSettings
+        });
 
-        // Слушаем карточку
+        // Кнопка в карточке
         Lampa.Listener.follow('full', (e) => {
             if (e.type === 'complite') {
-                addEmbyButton(e.object.activity || e.data);
+                createEmbyButton(e.object.activity || e.data);
             }
         });
 
-        console.log(`%c${PLUGIN_NAME} v${PLUGIN_VERSION} загружен`, 'color: #00ff00; font-weight: bold');
+        console.log(`%c${PLUGIN_NAME} v${PLUGIN_VERSION} — загружен`, 'color: #00ff88; font-weight: bold');
     }
 
-    // Запуск
-    if (window.appready) {
-        startPlugin();
-    } else {
-        Lampa.Listener.follow('app', (e) => {
-            if (e.type === 'ready') startPlugin();
-        });
-    }
+    // Автозапуск
+    if (window.appready) start();
+    else Lampa.Listener.follow('app', (e) => { if (e.type === 'ready') start(); });
 
 })();
