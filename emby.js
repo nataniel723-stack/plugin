@@ -8,8 +8,8 @@
 
     // Стандартные настройки плагина
     const defaultSettings = {
-        server_url: '',
-        api_key: '',
+        server_url: 'https://192.168.1.145:8096',
+        api_key: '9674d647ee934be680bbb2e2b0c23529',
         user_id: ''
     };
 
