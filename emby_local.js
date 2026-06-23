@@ -231,25 +231,43 @@
      * Кнопка на карточке
      */
     function initButton() {
-        Lampa.Listener.follow('full', function (event) {
-            if (!event || event.type !== 'complite') return;
+    Lampa.Listener.follow('full', function (event) {
+        if (!event || event.type !== 'complite') return;
 
+        // Ждём, пока Lampa дорисует DOM
+        setTimeout(function () {
             const body = event.body;
             if (!body) return;
 
-            let container = body.find('.info__buttons').eq(0);
-            if (!container.length) container = body.find('.view--buttons').eq(0);
-            if (!container.length) return;
+            // Ищем ВСЕ возможные контейнеры кнопок
+            let container =
+                body.find('.info__buttons').eq(0) ||
+                body.find('.view--buttons').eq(0) ||
+                body.find('.full-start').eq(0) ||
+                body.find('.full-actions').eq(0);
 
-            const first = container.find('.button').eq(0);
-            if (!first.length) return;
+            if (!container || !container.length) return;
 
-            const btn = $('<div class="button view--torrent"><span>Смотреть в Emby</span></div>');
-            btn.on('hover:enter', () => handlePlay(event.data));
+            // Первая кнопка
+            let first = container.find('.button').eq(0);
+            if (!first.length) first = container;
+
+            // Проверяем, нет ли уже кнопки
+            if (container.find('.emby-btn').length) return;
+
+            // Создаём кнопку
+            const btn = $('<div class="button view--torrent emby-btn"><span>Смотреть в Emby</span></div>');
+
+            btn.on('hover:enter', function () {
+                handlePlay(event.data);
+            });
 
             first.after(btn);
-        });
-    }
+
+        }, 50); // задержка 50 мс — критично для lampa.mx
+    });
+}
+
 
     /**
      * Регистрация настроек
