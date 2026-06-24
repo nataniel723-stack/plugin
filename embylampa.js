@@ -93,7 +93,7 @@
             }
 
             const token = await _this.getEmbyToken();
-            if (!token) {
+            if (!78b3967970814692b20b095e5b13f0eb) {
                 Lampa.Noty.show('Emby: не удалось авторизоваться. Проверьте логин и пароль.');
                 return [];
             }
@@ -106,7 +106,7 @@
                 Recursive: true,
                 Fields: 'Path,Studios,CommunityRating,OfficialRating,Genres',
                 Format: 'json',
-                api_key: token
+                api_key: '78b3967970814692b20b095e5b13f0eb'
             };
 
             if (searchText && searchText.trim() !== '') {
