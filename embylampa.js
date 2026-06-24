@@ -1125,46 +1125,65 @@
     Lampa.Params.select(STORAGE_URL, 'http://192.168.1.145:8096', '');
     Lampa.Params.select(STORAGE_API_KEY, '78b3967970814692b20b095e5b13f0eb', '');
 
-    Lampa.SettingsApi.addComponent({
-      component: 'emby_settings',
-      name: 'Emby Settings',
-      icon: '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>'
-    });
+    // Настройки
+    function renderSettings(body) {
+        body.empty();
+        const url = getUrl();
+        const key = getApiKey();
 
-    Lampa.Settings.listener.follow('open', e => {
-      if (e.name != 'emby_settings') return;
+        const wrap = $('<div class="settings-container"></div>');
+        wrap.append('<div class="settings-param-title">Настройки Emby</div>');
 
-      const url = getUrl();
-      const key = getApiKey();
-
-      const wrap = $('<div class="settings-container"></div>');
-      wrap.append('<div class="settings-param-title">Настройки Emby</div>');
-
-      const urlRow = $(`<div class="settings-param selector"><div class="settings-param__name">Адрес сервера</div><div class="settings-param__value">${url || 'Не задано'}</div></div>`);
-      urlRow.on('hover:enter', () => {
-        Lampa.Input.edit({title: 'Emby URL', value: url, free: true}, val => {
-          Lampa.Storage.set(STORAGE_URL, val);
-          urlRow.find('.settings-param__value').text(val || 'Не задано');
+        const urlRow = $(`<div class="settings-param selector"><div class="settings-param__name">Адрес сервера</div><div class="settings-param__value">${url || 'Не задано'}</div></div>`);
+        urlRow.on('hover:enter', () => {
+            Lampa.Input.edit({title: 'Emby URL', value: url, free: true}, (val) => {
+                Lampa.Storage.set(STORAGE_URL, val);
+                urlRow.find('.settings-param__value').text(val || 'Не задано');
+            });
         });
-      });
 
-      const keyRow = $(`<div class="settings-param selector"><div class="settings-param__name">API Key</div><div class="settings-param__value">${key ? '••••••••••' : 'Не задано'}</div></div>`);
-      keyRow.on('hover:enter', () => {
-        Lampa.Input.edit({title: 'Emby API Key', value: key, free: true}, val => {
-          Lampa.Storage.set(STORAGE_API_KEY, val);
-          keyRow.find('.settings-param__value').text(val ? '••••••••••' : 'Не задано');
+        const keyRow = $(`<div class="settings-param selector"><div class="settings-param__name">API Key</div><div class="settings-param__value">${key ? '••••••••••' : 'Не задано'}</div></div>`);
+        keyRow.on('hover:enter', () => {
+            Lampa.Input.edit({title: 'Emby API Key', value: key, free: true}, (val) => {
+                Lampa.Storage.set(STORAGE_API_KEY, val);
+                keyRow.find('.settings-param__value').text(val ? '••••••••••' : 'Не задано');
+            });
         });
-      });
 
-      wrap.append(urlRow).append(keyRow);
-      e.body.append(wrap);
-    });
-
-    if (Lampa.Manifest.appDigital >= 177) {
-      Lampa.Storage.sync('online_choice_emby', 'object_object');
+        wrap.append(urlRow).append(keyRow);
+        body.append(wrap);
     }
-  }
 
-  if (!window.emby_plugin_loaded && Lampa.Manifest.appDigital >= 155) startPlugin();
-  window.emby_plugin_loaded = true;
+    function initSettings() {
+        Lampa.SettingsApi.addComponent({
+            component: 'emby',
+            name: 'Emby',
+            icon: '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>'
+        });
+
+        Lampa.Settings.listener.follow('open', function(e) {
+            if (e.name === 'emby') renderSettings(e.body);
+        });
+    }
+
+    function startPlugin() {
+        initSettings();
+
+        Lampa.Listener.follow('full', function(e) {
+            if (e.type === 'complite') {
+                const data = {
+                    render: e.object.activity.render(),
+                    movie: e.data.movie || e.data.card
+                };
+                addEmbyButton(data);
+            }
+        });
+
+        console.log(`%c${PLUGIN_NAME} v${PLUGIN_VERSION} загружен`, 'color: #00ff88; font-weight: bold');
+    }
+
+    if (window.appready) startPlugin();
+    else Lampa.Listener.follow('app', function(e) {
+        if (e.type === 'ready') startPlugin();
+    });
 })();
