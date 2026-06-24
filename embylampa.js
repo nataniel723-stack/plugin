@@ -8,7 +8,6 @@
   const STORAGE_API_KEY = 'emby_api_key';
 
   let currentSerieId = ''; // Глобальная переменная для хранения ID текущего сериала
-  let filter = null; // Глобальная переменная для фильтра
 
   // Вспомогательная функция для получения адреса сервера
   function getUrl() {
@@ -38,16 +37,9 @@
     }
 
     const base = getUrl().replace(/\/$/, '');
-    const fullEndpoint = endpoint.endsWith('?') ? endpoint : `${endpoint}?`;
-    const url = `${base}/emby${fullEndpoint}api_key=${getApiKey()}`;
+    const url = `${base}/emby${endpoint}`;
 
-    new Lampa.Reguest().silent(url, response => {
-      if (response.status === 200) {
-        success(response.data);
-      } else {
-        error(new Error(`Запрос завершился с ошибкой: ${response.statusText}`));
-      }
-    }, error || (() => {}));
+    new Lampa.Reguest().silent(url, success, error || (() => {}));
   }
 
   // Поиск контента в библиотеке Emby
