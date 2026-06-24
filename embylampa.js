@@ -1,261 +1,307 @@
-(function () {
+(function() {
     'use strict';
 
-    const PLUGIN_ID = 'emby_local';
+    const PLUGIN_NAME = 'Emby';
+    const PLUGIN_VERSION = '2.5.0';
 
-    let state = {
-        url: Lampa.Storage.get('emby_url', ''),
-        token: Lampa.Storage.get('emby_token', '')
-    };
+    const STORAGE_URL = 'emby_url';
+    const STORAGE_API_KEY = 'emby_api_key';
 
-    function save() {
-        Lampa.Storage.set('emby_url', state.url);
-        Lampa.Storage.set('emby_token', state.token);
+    let currentSerieId = '';
+    let currentSeasonId = '';
+    let currentEpisodeId = '';
+
+    function getUrl() {
+        return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim();
     }
 
-    // -----------------------------
-    // РЕНДЕР НАСТРОЕК (как Filmix FX)
-    // -----------------------------
-    function renderSettings(body) {
-        body.empty();
-
-        let url = $('<div class="settings-param selector"><div class="settings-param__name">Emby URL</div><div class="settings-param__value">' + (state.url || 'Не задано') + '</div></div>');
-        url.on('hover:enter', function () {
-            Lampa.Input.edit({
-                title: 'Emby URL',
-                value: state.url,
-                free: true
-            }, function (v) {
-                state.url = v.trim();
-                url.find('.settings-param__value').text(state.url || 'Не задано');
-                save();
-            });
-        });
-
-        let token = $('<div class="settings-param selector"><div class="settings-param__name">API Token</div><div class="settings-param__value">' + (state.token ? '********' : 'Не задано') + '</div></div>');
-        token.on('hover:enter', function () {
-            Lampa.Input.edit({
-                title: 'API Token',
-                value: state.token,
-                free: true
-            }, function (v) {
-                state.token = v.trim();
-                token.find('.settings-param__value').text(state.token ? '********' : 'Не задано');
-                save();
-            });
-        });
-
-        body.append(url);
-        body.append(token);
+    function getApiKey() {
+        return (Lampa.Storage.get(STORAGE_API_KEY, '78b3967970814692b20b095e5b13f0eb') || '').trim();
     }
 
-    Lampa.Settings.add({
-        id: PLUGIN_ID,
-        name: 'Emby (локальный)',
-        category: 'plugins',
-        icon: 'E'
-    });
-
-    Lampa.Settings.listener.follow('open', function (e) {
-        if (e.name === PLUGIN_ID) renderSettings(e.body);
-    });
-
-    // -----------------------------
-    // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-    // -----------------------------
-    function api(path, params = {}) {
-        if (!state.url) return '';
-        let base = state.url.replace(/\/+$/, '');
-        params.api_key = state.token;
-
-        let q = Object.keys(params)
-            .map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k]))
-            .join('&');
-
-        return base + path + '?' + q;
+    function isConfigured() {
+        return getUrl().length > 10 && getApiKey().length > 10;
     }
 
-    function request(url, ok, err) {
-        let req = new Lampa.Reguest();
-        req.native(url, ok, err);
+    function notify(msg) {
+        Lampa.Noty.show(msg);
     }
 
-    // -----------------------------
-    // ПОИСК В EMBY
-    // -----------------------------
-    function search(card, cb) {
-        if (!state.url || !state.token) {
-            Lampa.Noty.show('Укажите Emby URL и Token');
+    function apiRequest(endpoint, success, error) {
+        if (!isConfigured()) {
+            notify('Настройте Emby в параметрах');
+            if (error) error();
             return;
         }
 
-        let title = card.name || card.title || card.original_title;
-        if (!title) return Lampa.Noty.show('Нет названия');
+        const base = getUrl().replace(/\/$/, '');
+        const url = `${base}/emby${endpoint}${endpoint.includes('?') ? '&' : '?'}api_key=${getApiKey()}`;
 
-        let year = null;
-        if (card.release_date) year = card.release_date.slice(0, 4);
-        if (card.first_air_date) year = card.first_air_date.slice(0, 4);
+        new Lampa.Reguest().silent(url, success, error || (() => {}));
+    }
 
-        let url = api('/emby/Items', {
-            SearchTerm: title,
-            IncludeItemTypes: 'Movie,Series',
-            Recursive: true,
-            Fields: 'ProductionYear'
+    // Поиск в Emby
+    function findInEmby(movie, callback) {
+        if (!movie) return callback(null);
+
+        const fields = '&Fields=Id,Name,IndexNumber,Overview,PrimaryImageTag&Recursive=true&IncludeItemTypes=Movie,Series,Episode';
+
+        // IMDB
+        if (movie.imdb_id || movie.imdbid) {
+            const imdb = (movie.imdb_id || movie.imdbid).replace('tt', '');
+            apiRequest(`/Items?AnyProviderIdEquals=imdb.${imdb}${fields}`, (data) => {
+                if (data?.Items?.[0]) return callback(data.Items[0]);
+                searchByTMDB(movie, callback);
+            });
+            return;
+        }
+
+        searchByTMDB(movie, callback);
+    }
+
+    function searchByTMDB(movie, callback) {
+        const tmdb = movie.tmdb_id || movie.id;
+        if (!tmdb) return searchByName(movie, callback);
+
+        const fields = '&Fields=Id,Name,IndexNumber,Overview,PrimaryImageTag&Recursive=true';
+        apiRequest(`/Items?AnyProviderIdEquals=tmdb.${tmdb}${fields}`, (data) => {
+            callback(data?.Items?.[0]);
         });
+    }
 
-        Lampa.Loading.start();
+    function searchByName(movie, callback) {
+        const title = encodeURIComponent(movie.title || movie.name || '');
+        if (!title) return callback(null);
 
-        request(url, function (json) {
-            Lampa.Loading.stop();
+        const fields = '&Fields=Id,Name,IndexNumber,Overview,PrimaryImageTag&Recursive=true&IncludeItemTypes=Movie,Series';
+        apiRequest(`/Items?SearchTerm=${title}&Limit=5${fields}`, (data) => {
+            callback(data?.Items?.[0]);
+        });
+    }
 
-            if (!json.Items || !json.Items.length) {
-                Lampa.Noty.show('Не найдено в Emby');
+    function getSeasons(seriesId, callback) {
+        apiRequest(`/Shows/${seriesId}/Seasons?Fields=Id,Name,IndexNumber`, (data) => callback(data.Items || []));
+    }
+
+    function getEpisodes(seasonId, callback) {
+        apiRequest(`/Items?ParentId=${seasonId}&IncludeItemTypes=Episode&Fields=Id,Name,IndexNumber,Overview,PrimaryImageTag`, (data) => callback(data.Items || []));
+    }
+
+    function getStreamingUrl(itemId, callback) {
+        const base = getUrl().replace(/\/$/, '');
+        const url = `${base}/Videos/${itemId}/stream.mp4?static=true&api_key=${getApiKey()}`;
+        callback(url);
+    }
+
+    function getPosterUrl(item) {
+        if (!item) return '';
+        const base = getUrl().replace(/\/$/, '');
+        if (item.PrimaryImageTag) {
+            return `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}`;
+        }
+        return `${base}/Items/${item.Id}/Images/Primary`;
+    }
+
+    // Основной обработчик (унифицированный)
+    function handleEmbyClick(movie) {
+        if (!isConfigured()) {
+            notify('Настройте Emby в параметрах');
+            return;
+        }
+
+        Lampa.Activity.loading(true);
+
+        findInEmby(movie, (item) => {
+            Lampa.Activity.loading(false);
+
+            if (!item) {
+                notify('Контент не найден в библиотеке Emby.');
                 return;
             }
 
-            let items = json.Items;
-
-            if (year) {
-                let y = items.filter(i => String(i.ProductionYear) === String(year));
-                if (y.length) items = y;
+            if (item.Type === 'Movie') {
+                playMovie(item);
+            } else if (item.Type === 'Series') {
+                currentSerieId = item.Id;
+                showSeriesSelector(item, movie);
+            } else {
+                notify('Неизвестный тип контента');
             }
-
-            if (items.length > 1) {
-                Lampa.Select.show({
-                    title: 'Выберите',
-                    items: items.map(i => ({
-                        title: i.Name + ' (' + (i.ProductionYear || '?') + ')',
-                        item: i
-                    })),
-                    onSelect: sel => cb(sel.item)
-                });
-            } else cb(items[0]);
-
-        }, () => {
-            Lampa.Loading.stop();
-            Lampa.Noty.show('Ошибка Emby');
         });
     }
 
-    // -----------------------------
-    // ВОСПРОИЗВЕДЕНИЕ
-    // -----------------------------
-    function play(item) {
-        let infoUrl = api('/emby/Items/' + item.Id, { Fields: 'MediaStreams' });
-
-        request(infoUrl, function (json) {
-            let media = json.MediaSources?.[0];
-            let audios = media?.MediaStreams?.filter(s => s.Type === 'Audio') || [];
-
-            function start(index) {
-                let url = api('/emby/Videos/' + item.Id + '/stream', {
-                    static: true,
-                    AudioStreamIndex: index
-                });
-
-                Lampa.Player.play({
-                    title: item.Name,
-                    url: url
-                });
-
-                Lampa.Player.playlist([{ title: item.Name, url: url }]);
-            }
-
-            if (audios.length > 1) {
-                Lampa.Select.show({
-                    title: 'Аудиодорожка',
-                    items: audios.map(a => ({
-                        title: a.DisplayTitle || a.Language || 'Дорожка',
-                        index: a.Index
-                    })),
-                    onSelect: sel => start(sel.index)
-                });
-            } else start(audios[0]?.Index);
-
-        });
-    }
-
-    // -----------------------------
-    // СЕРИАЛЫ
-    // -----------------------------
-    function openSeries(item) {
-        let url = api('/emby/Shows/' + item.Id + '/Seasons');
-
-        request(url, function (json) {
-            let seasons = json.Items || [];
-            if (!seasons.length) return Lampa.Noty.show('Нет сезонов');
-
-            Lampa.Select.show({
-                title: 'Сезоны',
-                items: seasons.map(s => ({
-                    title: s.Name,
-                    season: s
-                })),
-                onSelect: sel => openEpisodes(item, sel.season)
+    function playMovie(item) {
+        getStreamingUrl(item.Id, (streamingUrl) => {
+            Lampa.Player.play({
+                title: item.Name,
+                url: streamingUrl,
+                poster: getPosterUrl(item),
+                timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id))
             });
         });
     }
 
-    function openEpisodes(series, season) {
-        let url = api('/emby/Shows/' + series.Id + '/Episodes', {
-            SeasonId: season.Id
-        });
+    function playEpisode(episode) {
+        currentEpisodeId = episode.Id;
 
-        request(url, function (json) {
-            let eps = json.Items || [];
-            if (!eps.length) return Lampa.Noty.show('Нет серий');
+        getStreamingUrl(episode.Id, (streamingUrl) => {
+            const hash = Lampa.Utils.hash(`${currentSerieId}_${currentSeasonId}_${episode.Id}`);
 
-            Lampa.Select.show({
-                title: season.Name,
-                items: eps.map(e => ({
-                    title: (e.IndexNumber || '') + '. ' + e.Name,
-                    episode: e
-                })),
-                onSelect: sel => play(sel.episode)
+            Lampa.Player.play({
+                title: `${episode.SeriesName || ''} S${String(episode.ParentIndexNumber || '').padStart(2, '0')}E${String(episode.IndexNumber || '').padStart(2, '0')} - ${episode.Name}`,
+                url: streamingUrl,
+                poster: getPosterUrl(episode),
+                timeline: Lampa.Timeline.view(hash)
             });
         });
     }
 
-    // -----------------------------
-    // КНОПКА В КАРТОЧКЕ (bylampa FIX)
-    // -----------------------------
-    Lampa.Listener.follow('full', function (e) {
-        setTimeout(() => {
-            try {
-                if (!state.url || !state.token) return;
+    // Показ селектора сезонов/эпизодов с использованием Filter (как в популярных плагинах)
+    function showSeriesSelector(seriesItem, originalMovie) {
+        const filter = new Lampa.Filter(originalMovie || {});
+        const scroll = new Lampa.Scroll({ mask: true, over: true });
 
-                let body = e.body;
-                if (!body || !body.length) return;
+        let activity = Lampa.Activity.create({
+            title: seriesItem.Name,
+            header: {
+                title: seriesItem.Name,
+                subtitle: seriesItem.Overview ? seriesItem.Overview.substring(0, 120) + '...' : ''
+            }
+        });
 
-                if (body.find('.emby-btn').length) return;
+        activity.render().append(scroll.render());
+        activity.render().append(filter.render());
 
-                let container =
-                    body.find('.info__buttons').eq(0) ||
-                    body.find('.view--buttons').eq(0) ||
-                    body.find('.full-start').eq(0) ||
-                    body.find('.full-actions').eq(0);
+        // Загружаем сезоны
+        getSeasons(seriesItem.Id, (seasons) => {
+            if (!seasons.length) {
+                notify('Сезоны не найдены');
+                Lampa.Activity.destroy(activity);
+                return;
+            }
 
-                if (!container || !container.length) return;
+            const seasonOptions = seasons.map(s => ({
+                title: `Сезон ${s.IndexNumber}`,
+                value: s.Id,
+                season: s
+            }));
 
-                let first = container.find('.button').eq(0);
-                if (!first.length) first = container;
+            filter.set('season', seasonOptions);
+            filter.onSelect('season', (selected) => {
+                currentSeasonId = selected.value;
 
-                let btn = $('<div class="button view--torrent emby-btn"><span>Смотреть в Emby</span></div>');
+                getEpisodes(selected.value, (episodes) => {
+                    if (!episodes.length) {
+                        notify('Эпизоды не найдены');
+                        return;
+                    }
 
-                btn.on('hover:enter', function () {
-                    search(e.data, function (item) {
-                        if (item.Type === 'Series') openSeries(item);
-                        else play(item);
+                    const episodeOptions = episodes.map(ep => ({
+                        title: `S${String(ep.ParentIndexNumber || '').padStart(2, '0')}E${String(ep.IndexNumber || '').padStart(2, '0')} - ${ep.Name}`,
+                        value: ep.Id,
+                        episode: ep
+                    }));
+
+                    filter.set('episode', episodeOptions);
+                    filter.onSelect('episode', (selectedEpisode) => {
+                        playEpisode(selectedEpisode.episode);
                     });
                 });
+            });
 
-                first.after(btn);
-
-            } catch (err) {
-                console.log('Emby plugin error:', err);
+            // Автовыбор первого сезона
+            if (seasonOptions.length) {
+                filter.select('season', 0);
             }
-        }, 120); // критично для bylampa.online
-    });
+        });
 
-    console.log('Emby plugin for bylampa.online loaded');
+        // Кнопка назад
+        activity.onBack = () => Lampa.Activity.destroy(activity);
+    }
+
+    // Добавление кнопки
+    function addEmbyButton(data) {
+        if (!data || !data.render) return;
+        if (data.render.find('.view--emby').length) return;
+
+        const button = $(`
+            <div class="full-start__button selector view--emby" data-subtitle="${PLUGIN_NAME} v${PLUGIN_VERSION}">
+                <svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>
+                <span>${PLUGIN_NAME}</span>
+            </div>
+        `);
+
+        button.on('hover:enter', () => {
+            handleEmbyClick(data.movie || data.card);
+        });
+
+        const playButton = data.render.find('.button--play, .view--torrent').first();
+        if (playButton.length) {
+            playButton.after(button);
+        } else {
+            data.render.find('.buttons, .full-start__buttons, .activity__body').append(button);
+        }
+    }
+
+    // Настройки
+    function renderSettings(body) {
+        body.empty();
+        const url = getUrl();
+        const key = getApiKey();
+
+        const wrap = $('<div class="settings-container"></div>');
+        wrap.append('<div class="settings-param-title">Настройки Emby</div>');
+
+        const urlRow = $(`<div class="settings-param selector"><div class="settings-param__name">Адрес сервера Emby</div><div class="settings-param__value">${url || 'Не задан'}</div></div>`);
+        urlRow.on('hover:enter', () => {
+            Lampa.Input.edit({title: 'Emby URL (например http://192.168.1.100:8096)', value: url, free: true}, (val) => {
+                Lampa.Storage.set(STORAGE_URL, val);
+                urlRow.find('.settings-param__value').text(val || 'Не задан');
+            });
+        });
+
+        const keyRow = $(`<div class="settings-param selector"><div class="settings-param__name">API Key</div><div class="settings-param__value">${key ? '••••••••••' : 'Не задан'}</div></div>`);
+        keyRow.on('hover:enter', () => {
+            Lampa.Input.edit({title: 'Emby API Key', value: key, free: true}, (val) => {
+                Lampa.Storage.set(STORAGE_API_KEY, val);
+                keyRow.find('.settings-param__value').text(val ? '••••••••••' : 'Не задан');
+            });
+        });
+
+        wrap.append(urlRow).append(keyRow);
+        body.append(wrap);
+    }
+
+    function initSettings() {
+        Lampa.SettingsApi.addComponent({
+            component: 'emby',
+            name: 'Emby',
+            icon: '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>'
+        });
+
+        Lampa.Settings.listener.follow('open', function(e) {
+            if (e.name === 'emby') renderSettings(e.body);
+        });
+    }
+
+    function startPlugin() {
+        initSettings();
+
+        Lampa.Listener.follow('full', function(e) {
+            if (e.type === 'complite') {
+                const data = {
+                    render: e.object.activity.render(),
+                    movie: e.data.movie || e.data.card
+                };
+                addEmbyButton(data);
+            }
+        });
+
+        console.log(`%c${PLUGIN_NAME} v${PLUGIN_VERSION} загружен успешно`, 'color: #00ff88; font-weight: bold');
+    }
+
+    if (window.appready) startPlugin();
+    else Lampa.Listener.follow('app', function(e) {
+        if (e.type === 'ready') startPlugin();
+    });
 })();
