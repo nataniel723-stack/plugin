@@ -2,7 +2,7 @@
   'use strict';
 
   const PLUGIN_NAME = 'Emby';
-  const PLUGIN_VERSION = '0.2.4';
+  const PLUGIN_VERSION = '0.3.1';
 
   const STORAGE_URL = 'emby_url';
   const STORAGE_API_KEY = 'emby_api_key';
@@ -379,4 +379,35 @@
   // Инициализация настроек
   function initSettings() {
     Lampa.SettingsApi.addComponent({
-      component:
+      component: 'emby',
+      name: 'Emby',
+      icon: '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>'
+    });
+
+    Lampa.Settings.listener.follow('open', function(e) {
+      if (e.name === 'emby') renderSettings(e.body);
+    });
+  }
+
+  // Запуск плагина
+  function startPlugin() {
+    initSettings();
+
+    Lampa.Listener.follow('full', function(e) {
+      if (e.type === 'complite') {
+        const data = {
+          render: e.object.activity.render(),
+          movie: e.data.movie || e.data.card
+        };
+        addEmbyButton(data);
+      }
+    });
+
+    console.log(`%c${PLUGIN_NAME} v${PLUGIN_VERSION} загружен`, 'color: #00ff88; font-weight: bold');
+  }
+
+  if (window.appready) startPlugin();
+  else Lampa.Listener.follow('app', function(e) {
+    if (e.type === 'ready') startPlugin();
+  });
+})();
