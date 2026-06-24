@@ -2,12 +2,13 @@
   'use strict';
 
   const PLUGIN_NAME = 'Emby';
-  const PLUGIN_VERSION = '0.3.2';
+  const PLUGIN_VERSION = '0.2.4';
 
   const STORAGE_URL = 'emby_url';
   const STORAGE_API_KEY = 'emby_api_key';
 
   let currentSerieId = ''; // Глобальная переменная для хранения ID текущего сериала
+  let filter = null; // Глобальная переменная для фильтра
 
   // Вспомогательная функция для получения адреса сервера
   function getUrl() {
@@ -40,7 +41,13 @@
     const fullEndpoint = endpoint.endsWith('?') ? endpoint : `${endpoint}?`;
     const url = `${base}/emby${fullEndpoint}api_key=${getApiKey()}`;
 
-    new Lampa.Reguest().silent(url, success, error || (() => {}));
+    new Lampa.Reguest().silent(url, response => {
+      if (response.status === 200) {
+        success(response.data);
+      } else {
+        error(new Error(`Запрос завершился с ошибкой: ${response.statusText}`));
+      }
+    }, error || (() => {}));
   }
 
   // Поиск контента в библиотеке Emby
@@ -51,8 +58,8 @@
     const fields = '&Fields=Id,Name&Recursive=true';
 
     // Поиск по IMDB ID
-    if (movie.imdb_id || movie.imdbid) {
-      const imdb = (movie.imdb_id || movie.imdbid).replace('tt', '');
+    if (movie.imdb_id) {
+      const imdb = movie.imdb_id.replace('tt', '');
       apiRequest(`/Items?AnyProviderIdEquals=imdb.${imdb}${fields}`, (data) => {
         if (data?.Items?.[0]) return callback(data.Items[0]);
         searchByTMDB(movie, callback);
