@@ -15,7 +15,7 @@
     }
 
     function getApiKey() {
-        return (Lampa.Storage.get(STORAGE_API_KEY, '') || '').trim();
+        return (Lampa.Storage.get(STORAGE_API_KEY, '78b3967970814692b20b095e5b13f0eb') || '').trim();
     }
 
     function isConfigured() {
