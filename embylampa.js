@@ -2,7 +2,7 @@
   'use strict';
 
   const PLUGIN_NAME = 'Emby';
-  const PLUGIN_VERSION = '0.3.1';
+  const PLUGIN_VERSION = '0.3.2';
 
   const STORAGE_URL = 'emby_url';
   const STORAGE_API_KEY = 'emby_api_key';
@@ -37,7 +37,8 @@
     }
 
     const base = getUrl().replace(/\/$/, '');
-    const url = `${base}/emby${endpoint}?api_key=${getApiKey()}`;
+    const fullEndpoint = endpoint.endsWith('?') ? endpoint : `${endpoint}?`;
+    const url = `${base}/emby${fullEndpoint}api_key=${getApiKey()}`;
 
     new Lampa.Reguest().silent(url, success, error || (() => {}));
   }
@@ -46,10 +47,13 @@
   function findInEmby(movie, callback) {
     if (!movie) return callback(null);
 
+    // Определение поисковых полей
+    const fields = '&Fields=Id,Name&Recursive=true';
+
     // Поиск по IMDB ID
     if (movie.imdb_id || movie.imdbid) {
       const imdb = (movie.imdb_id || movie.imdbid).replace('tt', '');
-      apiRequest(`/Items?AnyProviderIdEquals=imdb.${imdb}&Fields=Id,Name&Recursive=true&IncludeItemTypes=Movie,Series,Episode`, (data) => {
+      apiRequest(`/Items?AnyProviderIdEquals=imdb.${imdb}${fields}`, (data) => {
         if (data?.Items?.[0]) return callback(data.Items[0]);
         searchByTMDB(movie, callback);
       });
