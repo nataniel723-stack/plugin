@@ -2,12 +2,12 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '0.2.7';
+    const PLUGIN_VERSION = '2.4.0';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
-    let currentEpisodeId = '';
+    let currentSerieId = ''; // Глобальная переменная для хранения ID текущего сериала
 
     function getUrl() {
         return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim();
@@ -134,6 +134,7 @@
 
                 if (item.Type === 'Series') {
                     // Обработка сериала
+                    currentSerieId = item.Id;
                     getSeasons(item.Id, (seasons) => {
                         const seasonOptions = seasons.map(s => ({
                             label: `Сезон ${s.IndexNumber}`,
@@ -151,8 +152,8 @@
 
                                 filter.set('episode', episodeOptions);
                                 filter.onSelect('episode', (option) => {
-                                    currentEpisodeId = option.value;
-                                    getAudioStreams(option.value, (audios) => {
+                                    const episodeId = option.value;
+                                    getAudioStreams(episodeId, (audios) => {
                                         const audioOptions = audios.map(a => ({
                                             label: a.DisplayTitle,
                                             value: a.Index
@@ -160,7 +161,7 @@
 
                                         filter.set('audio', audioOptions);
                                         filter.onSelect('audio', (option) => {
-                                            getSubtitleStreams(currentEpisodeId, (subtitles) => {
+                                            getSubtitleStreams(episodeId, (subtitles) => {
                                                 const subtitleOptions = subtitles.map(s => ({
                                                     label: s.Language,
                                                     value: s.Index
@@ -168,7 +169,7 @@
 
                                                 filter.set('subtitle', subtitleOptions);
                                                 filter.onSelect('subtitle', (option) => {
-                                                    playEpisode(currentEpisodeId);
+                                                    playEpisode(episodeId);
                                                 });
                                             });
                                         });
@@ -253,8 +254,8 @@
 
                             filter.set('episode', episodeOptions);
                             filter.onSelect('episode', (option) => {
-                                currentEpisodeId = option.value;
-                                getAudioStreams(option.value, (audios) => {
+                                const episodeId = option.value;
+                                getAudioStreams(episodeId, (audios) => {
                                     const audioOptions = audios.map(a => ({
                                         label: a.DisplayTitle,
                                         value: a.Index
@@ -262,7 +263,7 @@
 
                                     filter.set('audio', audioOptions);
                                     filter.onSelect('audio', (option) => {
-                                        getSubtitleStreams(currentEpisodeId, (subtitles) => {
+                                        getSubtitleStreams(episodeId, (subtitles) => {
                                             const subtitleOptions = subtitles.map(s => ({
                                                 label: s.Language,
                                                 value: s.Index
@@ -270,7 +271,7 @@
 
                                             filter.set('subtitle', subtitleOptions);
                                             filter.onSelect('subtitle', (option) => {
-                                                playEpisode(currentEpisodeId);
+                                                playEpisode(episodeId);
                                             });
                                         });
                                     });
