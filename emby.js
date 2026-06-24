@@ -2,12 +2,12 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '0.2.6';
+    const PLUGIN_VERSION = '2.4.0';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
-    let currentSerieId = ''; // Глобальная переменная для хранения ID сериала
+    let currentEpisodeId = '';
 
     function getUrl() {
         return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim();
@@ -78,23 +78,27 @@
 
     // Вспомогательные функции для работы с сериалами
     function getSeasons(seriesId, callback) {
-        const url = `${getUrl().replace(/\/$/, '')}/Shows/${seriesId}/Seasons?api_key=${getApiKey()}`;
-        apiRequest(url, callback);
+        apiRequest(`/Shows/${seriesId}/Seasons`, (data) => callback(data.Items || []));
     }
 
-    function getEpisodes(seriesId, seasonNumber, callback) {
-        const url = `${getUrl().replace(/\/$/, '')}/Shows/${seriesId}/Seasons/${seasonNumber}/Episodes?api_key=${getApiKey()}`;
-        apiRequest(url, callback);
+    function getEpisodes(seasonId, callback) {
+        apiRequest(`/Items?ParentId=${seasonId}&IncludeItemTypes=Episode`, (data) => callback(data.Items || []));
     }
 
     function getAudioStreams(episodeId, callback) {
-        const url = `${getUrl().replace(/\/$/, '')}/Videos/${episodeId}/MediaSources?api_key=${getApiKey()}`;
-        apiRequest(url, callback);
+        apiRequest(`/Videos/${episodeId}/MediaSources`, (data) => {
+            const streams = data[0]?.MediaStreams || [];
+            const audios = streams.filter(s => s.Type === 'Audio');
+            callback(audios);
+        });
     }
 
     function getSubtitleStreams(episodeId, callback) {
-        const url = `${getUrl().replace(/\/$/, '')}/Videos/${episodeId}/Subtitles?api_key=${getApiKey()}`;
-        apiRequest(url, callback);
+        apiRequest(`/Videos/${episodeId}/MediaSources`, (data) => {
+            const streams = data[0]?.MediaStreams || [];
+            const subtitles = streams.filter(s => s.Type === 'Subtitle');
+            callback(subtitles);
+        });
     }
 
     function getStreamingUrl(episodeId, callback) {
@@ -107,10 +111,11 @@
         let network = new Lampa.Reguest();
         let scroll = new Lampa.Scroll({mask: true, over: true});
         let files = new Lampa.Explorer(object);
-        
+        let filter = new Lampa.Filter(object);
+
         this.initialize = function() {
             files.appendFiles(scroll.render());
-            files.appendHead($('<div/>'));
+            files.appendHead(filter.render());
             scroll.body().addClass('torrent-list');
             this.search();
         };
@@ -126,22 +131,66 @@
 
             findInEmby(movie, (item) => {
                 if (!item) return this.doesNotAnswer();
-                
+
                 if (item.Type === 'Series') {
                     // Обработка сериала
-                    currentSerieId = item.Id;
                     getSeasons(item.Id, (seasons) => {
-                        chooseSeason(seasons, Lampa.Storage.get('emby_selected_season', seasons[0]?.IndexNumber));
+                        const seasonOptions = seasons.map(s => ({
+                            label: `Сезон ${s.IndexNumber}`,
+                            value: s.Id
+                        }));
+
+                        filter.set('season', seasonOptions);
+                        filter.onSelect('season', (option) => {
+                            const seasonId = option.value;
+                            getEpisodes(seasonId, (episodes) => {
+                                const episodeOptions = episodes.map(e => ({
+                                    label: `Эпизод ${e.IndexNumber}: ${e.Name}`,
+                                    value: e.Id
+                                }));
+
+                                filter.set('episode', episodeOptions);
+                                filter.onSelect('episode', (option) => {
+                                    currentEpisodeId = option.value;
+                                    getAudioStreams(option.value, (audios) => {
+                                        const audioOptions = audios.map(a => ({
+                                            label: a.DisplayTitle,
+                                            value: a.Index
+                                        }));
+
+                                        filter.set('audio', audioOptions);
+                                        filter.onSelect('audio', (option) => {
+                                            getSubtitleStreams(currentEpisodeId, (subtitles) => {
+                                                const subtitleOptions = subtitles.map(s => ({
+                                                    label: s.Language,
+                                                    value: s.Index
+                                                }));
+
+                                                filter.set('subtitle', subtitleOptions);
+                                                filter.onSelect('subtitle', (option) => {
+                                                    playEpisode(currentEpisodeId);
+                                                });
+                                            });
+                                        });
+                                    });
+                                });
+                            });
+                        });
                     });
                 } else {
                     // Обработка фильма
-                    const streamingUrl = `${getUrl().replace(/\/$/, '')}/Videos/${item.Id}/stream.mp4?static=true&api_key=${getApiKey()}`;
+                    getStreamingUrl(item.Id, (streamingUrl) => {
+                        if (!streamingUrl) return this.doesNotAnswer();
 
-                    Lampa.Player.play({
-                        title: item.Name,
-                        url: streamingUrl,
-                        poster: item.PrimaryImageTag ? `${getUrl()}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
-                        timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id))
+                        Lampa.Player.play({
+                            title: item.Name,
+                            url: streamingUrl,
+                            poster: item.PrimaryImageTag ? `${getUrl()}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
+                            timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id))
+                        });
+
+                        this.activity.loader(false);
+                        this.activity.toggle();
                     });
                 }
             });
@@ -152,68 +201,6 @@
             this.activity.toggle();
             notify('Контент не найден в библиотеке Emby.');
         };
-    }
-
-    // Выбор сезона
-    function chooseSeason(seasons, currentSeason) {
-        const options = seasons.map(s => ({label: `Сезон ${s.IndexNumber}`, value: s.IndexNumber}));
-        Lampa.Select.show({
-            title: 'Выбор сезона',
-            options: options,
-            defaultValue: currentSeason,
-            onChange: (newSeason) => {
-                Lampa.Storage.set('emby_selected_season', newSeason);
-                getEpisodes(currentSerieId, newSeason, (episodes) => {
-                    chooseEpisode(episodes);
-                });
-            }
-        });
-    }
-
-    // Выбор эпизода
-    function chooseEpisode(episodes, currentEpisode) {
-        const options = episodes.map(e => ({label: `Эпизод ${e.IndexNumber}: ${e.Name}`, value: e.IndexNumber}));
-        Lampa.Select.show({
-            title: 'Выбор эпизода',
-            options: options,
-            defaultValue: currentEpisode,
-            onChange: (newEpisode) => {
-                Lampa.Storage.set('emby_selected_episode', newEpisode);
-                getAudioStreams(currentEpisodeId, (audioStreams) => {
-                    chooseAudio(audioStreams);
-                });
-            }
-        });
-    }
-
-    // Выбор аудиопотока (озвучки)
-    function chooseAudio(audioStreams, currentAudio) {
-        const options = audioStreams.map(stream => ({label: stream.DisplayTitle, value: stream.Index}));
-        Lampa.Select.show({
-            title: 'Выбор аудио дорожки',
-            options: options,
-            defaultValue: currentAudio,
-            onChange: (newAudio) => {
-                Lampa.Storage.set('emby_selected_audio', newAudio);
-                getSubtitleStreams(currentEpisodeId, (subtitleStreams) => {
-                    chooseSubtitle(subtitleStreams);
-                });
-            }
-        });
-    }
-
-    // Выбор субтитров
-    function chooseSubtitle(subtitleStreams, currentSubtitle) {
-        const options = subtitleStreams.map(stream => ({label: stream.Language, value: stream.Index}));
-        Lampa.Select.show({
-            title: 'Выбор субтитров',
-            options: options,
-            defaultValue: currentSubtitle,
-            onChange: (newSubtitle) => {
-                Lampa.Storage.set('emby_selected_subtitle', newSubtitle);
-                playEpisode(currentEpisodeId);
-            }
-        });
     }
 
     // Воспроизведение эпизода
@@ -250,7 +237,47 @@
                 // Обработка сериала
                 currentSerieId = item.Id;
                 getSeasons(item.Id, (seasons) => {
-                    chooseSeason(seasons, Lampa.Storage.get('emby_selected_season', seasons[0]?.IndexNumber));
+                    const seasonOptions = seasons.map(s => ({
+                        label: `Сезон ${s.IndexNumber}`,
+                        value: s.Id
+                    }));
+
+                    filter.set('season', seasonOptions);
+                    filter.onSelect('season', (option) => {
+                        const seasonId = option.value;
+                        getEpisodes(seasonId, (episodes) => {
+                            const episodeOptions = episodes.map(e => ({
+                                label: `Эпизод ${e.IndexNumber}: ${e.Name}`,
+                                value: e.Id
+                            }));
+
+                            filter.set('episode', episodeOptions);
+                            filter.onSelect('episode', (option) => {
+                                currentEpisodeId = option.value;
+                                getAudioStreams(option.value, (audios) => {
+                                    const audioOptions = audios.map(a => ({
+                                        label: a.DisplayTitle,
+                                        value: a.Index
+                                    }));
+
+                                    filter.set('audio', audioOptions);
+                                    filter.onSelect('audio', (option) => {
+                                        getSubtitleStreams(currentEpisodeId, (subtitles) => {
+                                            const subtitleOptions = subtitles.map(s => ({
+                                                label: s.Language,
+                                                value: s.Index
+                                            }));
+
+                                            filter.set('subtitle', subtitleOptions);
+                                            filter.onSelect('subtitle', (option) => {
+                                                playEpisode(currentEpisodeId);
+                                            });
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    });
                 });
             } else {
                 // Обработка фильма
