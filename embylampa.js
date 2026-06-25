@@ -347,4 +347,47 @@
 
         const urlRow = $(`<div class="settings-param selector"><div class="settings-param__name">Адрес сервера</div><div class="settings-param__value">${getUrl() || 'Не задано'}</div></div>`);
         urlRow.on('hover:enter click', () => {
-            Lampa.Input.edit
+            Lampa.Input.edit({title: 'Emby URL', value: getUrl(), free: true}, val => {
+                Lampa.Storage.set(STORAGE_URL, val);
+                urlRow.find('.settings-param__value').text(val || 'Не задано');
+            });
+        });
+
+        const keyRow = $(`<div class="settings-param selector"><div class="settings-param__name">API Key</div><div class="settings-param__value">${getApiKey() ? '••••••••••' : 'Не задано'}</div></div>`);
+        keyRow.on('hover:enter click', () => {
+            Lampa.Input.edit({title: 'Emby API Key', value: getApiKey(), free: true}, val => {
+                Lampa.Storage.set(STORAGE_API_KEY, val);
+                keyRow.find('.settings-param__value').text(val ? '••••••••••' : 'Не задано');
+            });
+        });
+
+        wrap.append(urlRow).append(keyRow);
+        body.append(wrap);
+    }
+
+    function initSettings() {
+        Lampa.SettingsApi.addComponent({
+            component: 'emby',
+            name: 'Emby',
+            icon: '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>'
+        });
+        Lampa.Settings.listener.follow('open', e => { if (e.name === 'emby') renderSettings(e.body); });
+    }
+
+    /* --- Запуск --- */
+    function startPlugin() {
+        Lampa.Component.add('emby_series', EmbySeriesComponent);
+
+        initSettings();
+        Lampa.Listener.follow('full', e => {
+            if (e.type === 'complite') {
+                addEmbyButton({ render: e.object.activity.render(), movie: e.data.movie || e.data.card });
+            }
+        });
+        console.log(`%c${PLUGIN_NAME} v${PLUGIN_VERSION} загружен`, 'color: #00ff88; font-weight: bold');
+    }
+
+    if (window.appready) startPlugin();
+    else Lampa.Listener.follow('app', e => { if (e.type === 'ready') startPlugin(); });
+
+})();
