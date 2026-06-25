@@ -2,15 +2,12 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '2.4.1'; // Обновлена версия из-за изменения структуры
+    const PLUGIN_VERSION = '2.5.0';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
-    let currentSerieId = '';
-    let selectedSeasonIndex = 0;
-    let selectedEpisodeIndex = 0;
-
+    // Базовые утилиты
     function getUrl() {
         return (Lampa.Storage.get(STORAGE_URL) || '').trim();
     }
@@ -32,165 +29,163 @@
             notify('Настройте Emby в параметрах');
             return;
         }
+
         const base = getUrl().replace(/\/$/, '');
         const url = `${base}/emby${endpoint}${endpoint.includes('?') ? '&' : '?'}api_key=${getApiKey()}`;
+
         new Lampa.Reguest().silent(url, success, error || (() => {}));
     }
 
-    /* --- Поиск контента --- */
+    // Поиск контента
     function findInEmby(movie, callback) {
         if (!movie) return callback(null);
-        const fields = '&Fields=Id,Name,Type,ParentId,PrimaryImageTag&Recursive=true&IncludeItemTypes=Movie,Series,Episode';
 
-        // Поиск по TMDB ID (основной приоритет)
+        const fields = '&Fields=Id,Name,Type,PrimaryImageTag,Genres,Overview,PremiereDate&Recursive=true&IncludeItemTypes=Movie,Series,Episode';
+
+        // Поиск по TMDB-ID
         const tmdb = movie.tmdb_id || movie.id;
         if (tmdb) {
             apiRequest(`/Items?AnyProviderIdEquals=tmdb.${tmdb}${fields}`, data => {
-                callback(data?.Items?.[0]);
+                const item = data?.Items?.[0];
+                if (item) {
+                    // Дополнительная проверка по году
+                    const yearDiff = Math.abs(new Date(item.PremiereDate).getFullYear() - movie.year);
+                    if (yearDiff <= 1) return callback(item);
+                }
+                searchByName(movie, callback);
             });
             return;
         }
 
-        // Фолбэк: поиск по названию
-        const title = encodeURIComponent(movie.title || movie.name || '');
-        if (title) {
-            apiRequest(`/Items?SearchTerm=${title}&Limit=3${fields}`, data => {
-                callback(data?.Items?.[0]);
-            });
-        } else {
-            callback(null);
-        }
+        // Поиск по названию
+        searchByName(movie, callback);
     }
 
-    /* --- Логика воспроизведения --- */
-    function playVideo(item) {
-        const videoId = item.Id;
-        const streamingUrl = `${getUrl().replace(/\/$/, '')}/Videos/${videoId}/stream.mp4?static=true&api_key=${getApiKey()}`;
+    function searchByName(movie, callback) {
+        const title = encodeURIComponent(movie.title || movie.name || '');
+        if (!title) return callback(null);
 
-        Lampa.Player.play({
-            title: item.Name,
-            url: streamingUrl,
-            poster: item.PrimaryImageTag ? `${getUrl()}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
-            timeline: Lampa.Timeline.view(Lampa.Utils.hash(videoId))
+        apiRequest(`/Items?SearchTerm=${title}&Limit=3${fields}`, data => {
+            const item = data?.Items?.[0];
+            if (item) {
+                // Проверка по году
+                const yearDiff = Math.abs(new Date(item.PremiereDate).getFullYear() - movie.year);
+                if (yearDiff <= 1) return callback(item);
+            }
+            callback(null);
         });
     }
 
-    /* --- Компоненты интерфейса --- */
+    // Оптимизированный запрос всех эпизодов
+    function fetchAllEpisodes(seriesId, callback) {
+        const params = `ParentId=${seriesId}&IsFolder=false&IncludeItemTypes=Episode&SortBy=ProductionYear,IndexNumber,ParentIndexNumber&SortOrder=Ascending`;
+        apiRequest(`/Items?${params}`, data => {
+            const episodes = data.Items || [];
+            const grouped = {};
 
-    // Страница списка серий (Сезон)
-    function EpisodesPage(activity, seriesId, seasonNumber) {
-        this.activity = activity;
-        this.seriesId = seriesId;
-        this.seasonNumber = seasonNumber;
-        this.scroll = null;
-
-        this.initialize = () => {
-            this.activity.loader(true);
-            this.activity.render().addClass('view--episodes'); // Стандартный класс для страницы серий
-            this.fetchEpisodes();
-        };
-
-        this.fetchEpisodes = () => {
-            const query = `ParentId=${this.seriesId}&Season=${this.seasonNumber}&IncludeItemTypes=Episode&SortBy=SortName&SortOrder=Ascending`;
-            apiRequest(`/Items?${query}`, (data) => {
-                this.episodes = data.Items || [];
-                this.buildUI();
-            }, () => {
-                this.activity.loader(false);
-                notify('Ошибка загрузки эпизодов.');
-            });
-        };
-
-        this.buildUI = () => {
-            const container = $('<div class="list"></div>');
-            this.episodes.forEach(episode => {
-                const card = $(`
-                    <div class="card selector" data-id="${episode.Id}">
-                        <div class="card__poster">
-                            ${episode.IndexNumber ? `<span class="card__number">${episode.IndexNumber}</span>` : ''}
-                            <img src="${getUrl()}/Items/${episode.Id}/Images/Primary?maxHeight=260&quality=90" alt="${episode.Name}" onerror="this.style.display='none'">
-                        </div>
-                        <div class="card__body">
-                            <div class="card__name">${episode.Name}</div>
-                        </div>
-                    </div>
-                `);
-                card.on('hover:enter', () => this.selectCard(card, episode));
-                container.append(card);
+            episodes.forEach(ep => {
+                const seasonNum = ep.ParentIndexNumber || 1;
+                if (!grouped[seasonNum]) grouped[seasonNum] = [];
+                grouped[seasonNum].push(ep);
             });
 
-            this.scroll = new Lampa.Scroll({mask: true});
-            this.scroll.body().append(container);
-            this.activity.render().empty().append(this.scroll.render());
-            this.activity.loader(false);
-        };
+            // Преобразуем в массив [{season: 1, episodes: [...]}, {...}]
+            const seasons = Object.keys(grouped).map(seasonNum => ({
+                season: parseInt(seasonNum),
+                episodes: grouped[seasonNum]
+            }));
 
-        this.selectCard = (el, episode) => {
-            $('.card.selected').removeClass('selected');
-            el.addClass('selected');
-            selectedEpisodeIndex = parseInt(el.data('id'));
-            // При нажатии - играем серию
-            el.off('click').on('click', () => playVideo(episode));
-        };
+            callback(seasons);
+        });
     }
 
-    // Страница списка сезонов
-    function SeasonsPage(activity, seriesId) {
-        this.activity = activity;
-        this.seriesId = seriesId;
-        this.scroll = null;
+    // Рендеринг страницы сериала
+    function renderSeasonsPage(activity, serieData) {
+        activity.loader(true);
+        activity.render().addClass('view--seasons');
 
-        this.initialize = () => {
-            this.activity.loader(true);
-            this.activity.render().addClass('view--seasons'); // Стандартный класс для страницы сезонов
-            this.fetchSeasons();
-        };
+        // Создаем контейнер
+        const container = $('<div class="content"></div>');
 
-        this.fetchSeasons = () => {
-            apiRequest(`/Shows/${this.seriesId}/Seasons`, (data) => {
-                this.seasons = data.Items || [];
-                this.buildUI();
-            }, () => {
-                this.activity.loader(false);
-                notify('Ошибка загрузки сезонов.');
-            });
-        };
+        // Верхняя панель
+        const topPanel = $(
+            `<div class="top-panel">
+                <div class="poster">
+                    <img src="${serieData.poster}" />
+                </div>
+                <div class="meta">
+                    <h1>${serieData.name}</h1>
+                    <p>${serieData.year} • ${serieData.genres} • ${serieData.rating} ★</p>
+                    <p>${serieData.description}</p>
+                </div>
+             </div>`
+        );
 
-        this.buildUI = () => {
-            const container = $('<div class="list"></div>');
-            this.seasons.forEach(season => {
-                const card = $(`
-                    <div class="card selector" data-index="${season.IndexNumber}">
-                        <div class="card__poster">
-                            ${season.IndexNumber ? `<span class="card__number">S${String(season.IndexNumber).padStart(2, '0')}</span>` : ''}
-                            <img src="${getUrl()}/Items/${season.Id}/Images/Primary?maxHeight=260&quality=90" alt="${season.Name}" onerror="this.style.display='none'">
-                        </div>
-                        <div class="card__body">
-                            <div class="card__name">${season.Name}</div>
-                        </div>
-                    </div>
-                `);
-                card.on('hover:enter', () => this.selectCard(card, season));
-                card.on('click', () => {
-                    selectedSeasonIndex = season.IndexNumber;
-                    new EpisodesPage(this.activity, this.seriesId, season.IndexNumber).initialize();
+        // Блок с сезонами
+        const seasonsBlock = $('<div class="season-block"></div>');
+
+        // Запрашиваем все эпизоды
+        fetchAllEpisodes(serieData.id, (seasons) => {
+            seasons.forEach(({season, episodes}) => {
+                const seasonEl = $(
+                    `<div class="season">
+                        <h2>Сезон ${season}</h2>
+                        <ul class="episode-list"></ul>
+                     </div>`
+                );
+
+                const ul = seasonEl.find('.episode-list');
+                episodes.forEach(ep => {
+                    const thumb = ep.ImageTags.Primary ?
+                        `${getUrl()}/Items/${ep.Id}/Images/Primary?tag=${ep.ImageTags.Primary}` :
+                        serieData.poster;
+
+                    const li = $(
+                        `<li class="selector">
+                            <div class="thumb"><img id="019efcbf-1f63-7097-ad33-50cddcb643c5"/></div>
+                            <div class="info">
+                                <strong>${ep.IndexNumber.padStart(2,'0')}. ${ep.Name}</strong>
+                                <small>${ep.RunTimeTicks ? msToTime(ep.RunTimeTicks / 10000) : '-:-'}</small>
+                            </div>
+                         </li>`
+                    ).on('hover:enter', () => playEpisode(ep.Id));
+
+                    ul.append(li);
                 });
-                container.append(card);
+
+                seasonsBlock.append(seasonEl);
             });
 
-            this.scroll = new Lampa.Scroll({mask: true});
-            this.scroll.body().append(container);
-            this.activity.render().empty().append(this.scroll.render());
-            this.activity.loader(false);
-        };
-
-        this.selectCard = (el, season) => {
-            $('.card.selected').removeClass('selected');
-            el.addClass('selected');
-        };
+            container.append(topPanel).append(seasonsBlock);
+            activity.render().empty().append(container);
+            activity.loader(false);
+        });
     }
 
-    // Главная логика запуска
+    // Вспомогательная функция для перевода RunTimeTicks в формат hh:mm:ss
+    function msToTime(ms) {
+        const sec = Math.floor(ms / 1000);
+        const hours = String(Math.floor(sec / 3600)).padStart(2, '0');
+        const minutes = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+        const seconds = String(sec % 60).padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+    }
+
+    // Воспроизведение
+    function playEpisode(episodeId) {
+        const streamUrl = `${getUrl().replace(/\/$/, '')}/Videos/${episodeId}/stream.mp4?static=true&api_key=${getApiKey()}`;
+        apiRequest(`/Items/${episodeId}`, data => {
+            const episode = data;
+            Lampa.Player.play({
+                title: `[S${episode.ParentIndexNumber}E${episode.IndexNumber}] ${episode.SeriesName} — ${episode.Name}`,
+                url: streamUrl,
+                poster: episode.ImageTags.Primary ? `${getUrl()}/Items/${episode.Id}/Images/Primary?tag=${episode.ImageTags.Primary}` : '',
+                timeline: Lampa.Timeline.view(Lampa.Utils.hash(episode.Id))
+            });
+        });
+    }
+
+    // Основной обработчик
     function handleEmbyClick(movie) {
         if (!isConfigured()) {
             notify('Настройте Emby в параметрах');
@@ -204,31 +199,40 @@
             }
 
             if (item.Type === 'Series') {
-                currentSerieId = item.Id;
-                // Открываем стандартное окно просмотра сериала
+                // Дополним сериал нужными полями
+                const serieData = {
+                    id: item.Id,
+                    name: item.Name,
+                    poster: item.PrimaryImageTag ? `${getUrl()}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
+                    genres: item.Genres.join(', '),
+                    rating: item.CommunityRating,
+                    description: item.Overview,
+                    year: new Date(item.PremiereDate).getFullYear()
+                };
+
+                // Открываем стандартную активность
                 Lampa.Activity.push({
                     name: 'series',
                     view: 'seasons',
                     id: item.Id,
                     title: item.Name,
-                    poster: item.PrimaryImageTag ? `${getUrl()}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : ''
+                    poster: serieData.poster,
+                    data: serieData // Передаем полный объект
                 });
-            } else { // Movie
-                playVideo(item);
+            } else {
+                // Фильм
+                const streamUrl = `${getUrl().replace(/\/$/, '')}/Videos/${item.Id}/stream.mp4?static=true&api_key=${getApiKey()}`;
+                Lampa.Player.play({
+                    title: item.Name,
+                    url: streamUrl,
+                    poster: item.PrimaryImageTag ? `${getUrl()}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
+                    timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id))
+                });
             }
         });
     }
 
-    /* --- Интеграция в систему Lampa --- */
-
-    // Хук для обработки перехода на страницу сезонов
-    Lampa.Listener.follow('activity', e => {
-        if (e.type === 'push' && e.data.view === 'seasons') {
-            new SeasonsPage(e.object, e.data.id).initialize();
-        }
-    });
-
-    // Добавление кнопки в карточку фильма/сериала
+    // Создание кнопки
     function addEmbyButton(data) {
         if (!data || !data.render || !data.movie) return;
         if (data.render.find('.emby-button').length) return;
@@ -238,9 +242,7 @@
                 <svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>
                 <span>${PLUGIN_NAME}</span>
             </div>
-        `);
-
-        button.on('hover:enter', () => handleEmbyClick(data.movie));
+        `).on('hover:enter', () => handleEmbyClick(data.movie));
 
         const playButton = data.render.find('.button--play, .view--torrent').first();
         if (playButton.length) {
@@ -250,30 +252,51 @@
         }
     }
 
-    /* --- Настройки плагина --- */
+    // Хуки Lampa
+    Lampa.Listener.follow('activity', e => {
+        if (e.type !== 'push' || e.data.view !== 'seasons') return;
+
+        // Проверяем, переданы ли все нужные поля
+        const serieData = e.data.data;
+        if (!serieData.poster || !serieData.genres) {
+            // Если нет — делаем дополнительный запрос
+            apiRequest(`/Items/${e.data.id}?Fields=Genres,Overview,PremiereDate`, data => {
+                serieData.poster = data.ImageTags.Primary ?
+                    `${getUrl()}/Items/${e.data.id}/Images/Primary?tag=${data.ImageTags.Primary}` :
+                    '';
+                serieData.genres = data.Genres.join(', ');
+                serieData.rating = data.CommunityRating;
+                serieData.description = data.Overview;
+                serieData.year = new Date(data.PremiereDate).getFullYear();
+
+                renderSeasonsPage(e.object, serieData);
+            });
+        } else {
+            renderSeasonsPage(e.object, serieData);
+        }
+    });
+
+    // Настройки
     function renderSettings(body) {
         body.empty();
         const wrap = $('<div class="settings-container"></div>');
         wrap.append('<div class="settings-param-title">Настройки Emby</div>');
 
-        const urlRow = $(`<div class="settings-param selector"><div class="settings-param__name">Адрес сервера</div><div class="settings-param__value">${getUrl() || 'Не задано'}</div></div>`);
-        urlRow.on('hover:enter', () => {
-            Lampa.Input.edit({title: 'Emby URL', value: getUrl(), free: true}, val => {
-                Lampa.Storage.set(STORAGE_URL, val);
-                urlRow.find('.settings-param__value').text(val || 'Не задано');
-            });
-        });
+        const urlRow = $(`<div class="settings-param selector"><div class="settings-param__name">Адрес сервера</div><div class="settings-param__value">${getUrl() || 'Не задано'}</div></div>`)
+            .on('hover:enter', () => editInput('URL', STORAGE_URL));
 
-        const keyRow = $(`<div class="settings-param selector"><div class="settings-param__name">API Key</div><div class="settings-param__value">${getApiKey() ? '••••••••••' : 'Не задано'}</div></div>`);
-        keyRow.on('hover:enter', () => {
-            Lampa.Input.edit({title: 'Emby API Key', value: getApiKey(), free: true}, val => {
-                Lampa.Storage.set(STORAGE_API_KEY, val);
-                keyRow.find('.settings-param__value').text(val ? '••••••••••' : 'Не задано');
-            });
-        });
+        const keyRow = $(`<div class="settings-param selector"><div class="settings-param__name">API Key</div><div class="settings-param__value">${getApiKey() ? '••••••••••' : 'Не задано'}</div></div>`)
+            .on('hover:enter', () => editInput('API Key', STORAGE_API_KEY));
 
         wrap.append(urlRow).append(keyRow);
         body.append(wrap);
+    }
+
+    function editInput(title, storageKey) {
+        Lampa.Input.edit({title: `Emby ${title}`, value: Lampa.Storage.get(storageKey), free: true}, val => {
+            Lampa.Storage.set(storageKey, val.trim());
+            window.location.reload(); // Перезагрузка для обновления состояния
+        });
     }
 
     function initSettings() {
@@ -282,14 +305,15 @@
             name: 'Emby',
             icon: '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>'
         });
+
         Lampa.Settings.listener.follow('open', e => {
             if (e.name === 'emby') renderSettings(e.body);
         });
     }
 
-    /* --- Инициализация --- */
     function startPlugin() {
         initSettings();
+
         Lampa.Listener.follow('full', e => {
             if (e.type === 'complite') {
                 const data = {
@@ -299,6 +323,7 @@
                 addEmbyButton(data);
             }
         });
+
         console.log(`%c${PLUGIN_NAME} v${PLUGIN_VERSION} загружен`, 'color: #00ff88; font-weight: bold');
     }
 
