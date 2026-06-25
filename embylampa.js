@@ -2,12 +2,11 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '3.0.1'; // Патч версии с исправлением скролла
+    const PLUGIN_VERSION = '3.0.2'; // Полностью исправлена работа компонента Lampa
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
-    // Внедряем CSS стили для красивых карточек серий
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
@@ -36,31 +35,30 @@
     function isConfigured() { return getUrl().length > 5 && getApiKey().length > 5; }
     function notify(msg) { Lampa.Noty.show(msg); }
 
-    function apiRequest(endpoint, success, error) {
-        if (!isConfigured()) return notify('Настройте Emby в параметрах');
+    function buildApiUrl(endpoint) {
         const base = getUrl().replace(/\/$/, '');
         const sep = endpoint.includes('?') ? '&' : '?';
-        const url = `${base}/emby${endpoint}${sep}api_key=${getApiKey()}`;
-        new Lampa.Reguest().silent(url, success, error || (() => {}));
+        return `${base}/emby${endpoint}${sep}api_key=${getApiKey()}`;
     }
 
     /* --- Поиск контента --- */
     function findInEmby(movie, callback) {
         if (!movie) return callback(null);
+        let network = new Lampa.Reguest();
         const fields = '&Fields=Id,Name,Type,ParentId,PrimaryImageTag&Recursive=true&IncludeItemTypes=Movie,Series,Episode';
         const tmdb = movie.tmdb_id || movie.id;
         
         if (tmdb) {
-            apiRequest(`/Items?AnyProviderIdEquals=tmdb.${tmdb}${fields}`, data => callback(data?.Items?.[0]));
+            network.silent(buildApiUrl(`/Items?AnyProviderIdEquals=tmdb.${tmdb}${fields}`), data => callback(data?.Items?.[0]));
             return;
         }
 
         const title = encodeURIComponent(movie.title || movie.name || '');
-        if (title) apiRequest(`/Items?SearchTerm=${title}&Limit=3${fields}`, data => callback(data?.Items?.[0]));
+        if (title) network.silent(buildApiUrl(`/Items?SearchTerm=${title}&Limit=3${fields}`), data => callback(data?.Items?.[0]));
         else callback(null);
     }
 
-    /* --- Логика воспроизведения --- */
+    /* --- Воспроизведение --- */
     function playVideo(item) {
         const base = getUrl().replace(/\/$/, '');
         Lampa.Player.play({
@@ -71,56 +69,61 @@
         });
     }
 
-    /* --- Единый компонент Сериала (Сезоны + Серии) --- */
+    /* --- Нативный компонент Lampa --- */
     function EmbySeriesComponent(object) {
         let network = new Lampa.Reguest();
         let scroll = new Lampa.Scroll({mask: true, over: true});
-        let html = $('<div></div>');
+        let is_destroyed = false; // <-- ФЛАГ ДЛЯ ЗАЩИТЫ ОТ АСИНХРОННЫХ ОШИБОК
         
+        // Инициализируем DOM скролла сразу
+        scroll.render();
+
         this.seasons = [];
         this.current_season = null;
 
         this.create = function() {
-            html.empty().append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
+            scroll.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
             
-            // Загружаем список сезонов
-            apiRequest(`/Shows/${object.id}/Seasons`, (data) => {
-                this.seasons = data.Items || [];
+            network.silent(buildApiUrl(`/Shows/${object.id}/Seasons`), (data) => {
+                if (is_destroyed) return; // Прерываем код, если мы уже вышли
                 
+                this.seasons = data.Items || [];
                 if (this.seasons.length === 0) {
-                    html.empty().append('<div class="emby-empty">Сезоны не найдены</div>');
+                    scroll.clear();
+                    scroll.append('<div class="emby-empty">Сезоны не найдены</div>');
                     this.start();
                 } else {
                     this.current_season = this.seasons[0];
                     this.loadEpisodes();
                 }
             }, () => {
-                html.empty().append('<div class="emby-empty">Ошибка загрузки сезонов</div>');
+                if (is_destroyed) return;
+                scroll.clear();
+                scroll.append('<div class="emby-empty">Ошибка загрузки сезонов</div>');
                 this.start();
             });
         };
 
         this.loadEpisodes = function() {
-            // ИСПРАВЛЕНИЕ: Обязательно инициализируем скролл перед его очисткой
-            scroll.render(); 
+            if (is_destroyed) return;
             scroll.clear();
-            
-            html.empty().append(scroll.render());
             scroll.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
             
-            const query = `ParentId=${object.id}&Season=${this.current_season.IndexNumber}&IncludeItemTypes=Episode&Fields=RunTimeTicks,PremiereDate,CommunityRating&SortBy=SortName&SortOrder=Ascending`;
+            const query = `/Items?ParentId=${object.id}&Season=${this.current_season.IndexNumber}&IncludeItemTypes=Episode&Fields=RunTimeTicks,PremiereDate,CommunityRating&SortBy=SortName&SortOrder=Ascending`;
             
-            apiRequest(`/Items?${query}`, (data) => {
+            network.silent(buildApiUrl(query), (data) => {
+                if (is_destroyed) return;
                 this.renderEpisodes(data.Items || []);
             }, () => {
+                if (is_destroyed) return;
                 scroll.clear();
                 scroll.append('<div class="emby-empty">Ошибка загрузки эпизодов</div>');
             });
         };
 
         this.renderEpisodes = function(episodes) {
-            // Скролл уже инициализирован, можем безопасно очищать
-            scroll.clear(); 
+            if (is_destroyed) return;
+            scroll.clear();
             
             let filterPanel = $('<div class="emby-filter"></div>');
             let seasonBtn = $(`<div class="emby-filter-btn selector">Сезон: ${this.current_season.IndexNumber} сезон</div>`);
@@ -205,11 +208,15 @@
 
         this.pause = function() {};
         this.stop = function() {};
-        this.render = function() { return html; };
+        
+        // Отдаем чистый элемент скролла (как того ждет Lampa)
+        this.render = function() { return scroll.render(); };
+        
+        // Уничтожение компонента
         this.destroy = function() {
+            is_destroyed = true;
             network.clear();
             scroll.destroy();
-            html.remove();
         };
     }
 
@@ -233,7 +240,7 @@
         });
     }
 
-    /* --- Интеграция в систему Lampa --- */
+    /* --- Кнопка в интерфейсе --- */
     function addEmbyButton(data) {
         if (!data || !data.render || !data.movie) return;
         if (data.render.find('.emby-button').length) return;
@@ -252,7 +259,7 @@
         else data.render.find('.buttons, .activity__body').append(button);
     }
 
-    /* --- Настройки плагина --- */
+    /* --- Настройки --- */
     function renderSettings(body) {
         body.empty();
         const wrap = $('<div class="settings-container"></div>');
@@ -287,7 +294,7 @@
         Lampa.Settings.listener.follow('open', e => { if (e.name === 'emby') renderSettings(e.body); });
     }
 
-    /* --- Инициализация --- */
+    /* --- Запуск --- */
     function startPlugin() {
         Lampa.Component.add('emby_series', EmbySeriesComponent);
 
