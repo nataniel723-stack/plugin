@@ -2,30 +2,102 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '3.0.2'; // Полностью исправлена работа компонента Lampa
+    const PLUGIN_VERSION = '4.0.0'; // Обновленный UI и фикс контроллера
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
+    // Внедряем новые стили для отображения серий сеткой (как на 2-м скриншоте)
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
-                .emby-episode { display: flex; align-items: center; padding: 10px; margin: 0 1.5em 1em 1.5em; background: rgba(255,255,255,0.05); border-radius: 10px; cursor: pointer; transition: background 0.3s; }
-                .emby-episode.focus { background: #fff; color: #000; }
-                .emby-episode .emby-ep-img-wrap { position: relative; width: 150px; height: 85px; border-radius: 5px; overflow: hidden; margin-right: 15px; flex-shrink: 0; background: #222; }
-                .emby-episode .emby-ep-img { width: 100%; height: 100%; object-fit: cover; }
-                .emby-episode .emby-ep-num { position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; font-size: 2em; color: #fff; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
-                .emby-episode .emby-ep-body { flex-grow: 1; overflow: hidden; }
-                .emby-episode .emby-ep-title { font-size: 1.2em; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-                .emby-episode .emby-ep-info { font-size: 0.9em; opacity: 0.6; }
-                .emby-episode .emby-ep-time { padding: 0 15px; font-size: 1.1em; opacity: 0.8; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+                .emby-episodes-grid { display: flex; flex-wrap: wrap; padding: 1em 1.5em; gap: 1.5em; }
                 
-                .emby-filter { display: flex; align-items: center; justify-content: flex-end; padding: 1em 1.5em; gap: 1em; margin-bottom: 1em; border-bottom: 1px solid rgba(255,255,255,0.05); }
-                .emby-filter-btn { background: rgba(255,255,255,0.1); padding: 0.5em 1.2em; border-radius: 5px; cursor: pointer; font-size: 1.1em; }
+                .emby-episode-card { 
+                    width: calc(25% - 1.125em); /* 4 колонки по умолчанию */
+                    cursor: pointer; 
+                    transition: transform 0.2s, background 0.2s; 
+                    border-radius: 0.5em; 
+                    padding: 0.5em; 
+                    box-sizing: border-box; 
+                    position: relative;
+                }
+                .emby-episode-card.focus { 
+                    background: rgba(255, 255, 255, 0.1); 
+                    transform: scale(1.05); 
+                }
+                
+                .emby-ep-img-wrap { 
+                    width: 100%; 
+                    aspect-ratio: 16 / 9; 
+                    border-radius: 0.4em; 
+                    overflow: hidden; 
+                    position: relative; 
+                    background: #111; 
+                    margin-bottom: 0.6em; 
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+                }
+                .emby-ep-img { 
+                    width: 100%; 
+                    height: 100%; 
+                    object-fit: cover; 
+                }
+                
+                .emby-ep-num { 
+                    position: absolute; 
+                    top: 0.4em; 
+                    left: 0.4em; 
+                    background: rgba(0,0,0,0.7); 
+                    padding: 0.2em 0.5em; 
+                    border-radius: 0.3em; 
+                    font-weight: bold; 
+                    font-size: 0.9em; 
+                    color: #fff;
+                }
+                .emby-ep-time { 
+                    position: absolute; 
+                    bottom: 0.4em; 
+                    right: 0.4em; 
+                    background: rgba(0,0,0,0.7); 
+                    padding: 0.2em 0.5em; 
+                    border-radius: 0.3em; 
+                    font-size: 0.85em; 
+                    color: #ddd;
+                }
+                
+                .emby-ep-title { 
+                    font-size: 1.1em; 
+                    white-space: nowrap; 
+                    overflow: hidden; 
+                    text-overflow: ellipsis; 
+                    margin-bottom: 0.2em; 
+                    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+                }
+                .emby-ep-info { 
+                    font-size: 0.85em; 
+                    color: #aaa; 
+                }
+
+                .emby-filter { 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: flex-start; 
+                    padding: 1.5em 2em 0 2em; 
+                }
+                .emby-filter-btn { 
+                    background: rgba(255,255,255,0.1); 
+                    padding: 0.6em 1.5em; 
+                    border-radius: 5px; 
+                    cursor: pointer; 
+                    font-size: 1.1em; 
+                    font-weight: bold;
+                }
                 .emby-filter-btn.focus { background: #fff; color: #000; }
                 
                 .emby-loader { display: flex; justify-content: center; align-items: center; height: 50vh; }
-                .emby-empty { text-align: center; padding: 3em; font-size: 1.2em; opacity: 0.7; }
+                .emby-empty { text-align: center; padding: 3em; font-size: 1.2em; opacity: 0.7; width: 100%; }
+
+                @media (max-width: 1200px) { .emby-episode-card { width: calc(33.333% - 1em); } } /* 3 колонки на небольших ТВ */
             </style>
         `);
     }
@@ -73,9 +145,8 @@
     function EmbySeriesComponent(object) {
         let network = new Lampa.Reguest();
         let scroll = new Lampa.Scroll({mask: true, over: true});
-        let is_destroyed = false; // <-- ФЛАГ ДЛЯ ЗАЩИТЫ ОТ АСИНХРОННЫХ ОШИБОК
+        let is_destroyed = false; 
         
-        // Инициализируем DOM скролла сразу
         scroll.render();
 
         this.seasons = [];
@@ -85,7 +156,7 @@
             scroll.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
             
             network.silent(buildApiUrl(`/Shows/${object.id}/Seasons`), (data) => {
-                if (is_destroyed) return; // Прерываем код, если мы уже вышли
+                if (is_destroyed) return; 
                 
                 this.seasons = data.Items || [];
                 if (this.seasons.length === 0) {
@@ -125,8 +196,9 @@
             if (is_destroyed) return;
             scroll.clear();
             
+            // Фильтр выбора сезона
             let filterPanel = $('<div class="emby-filter"></div>');
-            let seasonBtn = $(`<div class="emby-filter-btn selector">Сезон: ${this.current_season.IndexNumber} сезон</div>`);
+            let seasonBtn = $(`<div class="emby-filter-btn selector">Сезон ${this.current_season.IndexNumber || 1}</div>`);
             
             seasonBtn.on('hover:enter click', () => {
                 let items = this.seasons.map(s => ({
@@ -151,8 +223,11 @@
             filterPanel.append(seasonBtn);
             scroll.append(filterPanel);
 
+            // Сетка эпизодов
+            let grid = $('<div class="emby-episodes-grid"></div>');
+
             if (episodes.length === 0) {
-                scroll.append('<div class="emby-empty">Эпизоды не найдены</div>');
+                grid.append('<div class="emby-empty">Эпизоды не найдены</div>');
             } else {
                 let base = getUrl().replace(/\/$/, '');
                 
@@ -160,36 +235,28 @@
                     let runTime = episode.RunTimeTicks ? Math.floor(episode.RunTimeTicks / 600000000) : 0;
                     let timeStr = runTime ? `${String(Math.floor(runTime/60)).padStart(2,'0')}:${String(runTime%60).padStart(2,'0')}` : '';
                     
-                    let dateStr = 'Неизвестно';
-                    if (episode.PremiereDate) {
-                        try {
-                            dateStr = new Date(episode.PremiereDate).toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}).replace(' г.', '');
-                        } catch(e) {}
-                    }
-                    
                     let rating = episode.CommunityRating ? episode.CommunityRating.toFixed(1) : '0.0';
-                    let img = episode.PrimaryImageTag ? `${base}/Items/${episode.Id}/Images/Primary?maxHeight=200&quality=90` : '';
+                    let img = episode.PrimaryImageTag ? `${base}/Items/${episode.Id}/Images/Primary?maxWidth=400&quality=90` : '';
                     let epNum = String(episode.IndexNumber || 0).padStart(2, '0');
 
                     let item = $(`
-                        <div class="emby-episode selector">
+                        <div class="emby-episode-card selector">
                             <div class="emby-ep-img-wrap">
                                 ${img ? `<img src="${img}" class="emby-ep-img" onerror="this.style.display='none'">` : ''}
-                                <div class="emby-ep-num">${epNum}</div>
+                                <div class="emby-ep-num">${epNum} серия</div>
+                                ${timeStr ? `<div class="emby-ep-time">${timeStr}</div>` : ''}
                             </div>
-                            <div class="emby-ep-body">
-                                <div class="emby-ep-title">${episode.Name || 'Эпизод ' + epNum}</div>
-                                <div class="emby-ep-info">⭐ ${rating} • ${dateStr}</div>
-                            </div>
-                            <div class="emby-ep-time">${timeStr}</div>
+                            <div class="emby-ep-title">${episode.Name || 'Эпизод ' + epNum}</div>
+                            <div class="emby-ep-info">⭐ ${rating}</div>
                         </div>
                     `);
 
                     item.on('hover:enter click', () => playVideo(episode));
-                    scroll.append(item);
+                    grid.append(item);
                 });
             }
             
+            scroll.append(grid);
             this.start();
         };
 
@@ -197,10 +264,25 @@
             Lampa.Controller.add('content', {
                 toggle: () => {
                     Lampa.Controller.collectionSet(scroll.render());
-                    Lampa.Controller.collectionFocus(false, scroll.render());
+                    
+                    // БЕЗОПАСНЫЙ ФОКУС: если функция есть, используем её, если нет - наводимся вручную
+                    if (typeof Lampa.Controller.collectionFocus === 'function') {
+                        Lampa.Controller.collectionFocus(false, scroll.render());
+                    } else {
+                        let first = scroll.render().find('.selector').eq(0);
+                        if (first.length) Lampa.Navigator.focus(first);
+                    }
                 },
-                left: () => { Lampa.Controller.toggle('menu'); },
-                up: () => {}, down: () => {}, right: () => {},
+                left: () => { 
+                    if (Lampa.Navigator.canmove('left')) Lampa.Navigator.move('left');
+                    else Lampa.Controller.toggle('menu'); 
+                },
+                right: () => { if (Lampa.Navigator.canmove('right')) Lampa.Navigator.move('right'); },
+                up: () => { 
+                    if (Lampa.Navigator.canmove('up')) Lampa.Navigator.move('up');
+                    else Lampa.Controller.toggle('head'); 
+                },
+                down: () => { if (Lampa.Navigator.canmove('down')) Lampa.Navigator.move('down'); },
                 back: () => { Lampa.Activity.backward(); }
             });
             Lampa.Controller.toggle('content');
@@ -209,10 +291,8 @@
         this.pause = function() {};
         this.stop = function() {};
         
-        // Отдаем чистый элемент скролла (как того ждет Lampa)
         this.render = function() { return scroll.render(); };
         
-        // Уничтожение компонента
         this.destroy = function() {
             is_destroyed = true;
             network.clear();
@@ -267,47 +347,4 @@
 
         const urlRow = $(`<div class="settings-param selector"><div class="settings-param__name">Адрес сервера</div><div class="settings-param__value">${getUrl() || 'Не задано'}</div></div>`);
         urlRow.on('hover:enter click', () => {
-            Lampa.Input.edit({title: 'Emby URL', value: getUrl(), free: true}, val => {
-                Lampa.Storage.set(STORAGE_URL, val);
-                urlRow.find('.settings-param__value').text(val || 'Не задано');
-            });
-        });
-
-        const keyRow = $(`<div class="settings-param selector"><div class="settings-param__name">API Key</div><div class="settings-param__value">${getApiKey() ? '••••••••••' : 'Не задано'}</div></div>`);
-        keyRow.on('hover:enter click', () => {
-            Lampa.Input.edit({title: 'Emby API Key', value: getApiKey(), free: true}, val => {
-                Lampa.Storage.set(STORAGE_API_KEY, val);
-                keyRow.find('.settings-param__value').text(val ? '••••••••••' : 'Не задано');
-            });
-        });
-
-        wrap.append(urlRow).append(keyRow);
-        body.append(wrap);
-    }
-
-    function initSettings() {
-        Lampa.SettingsApi.addComponent({
-            component: 'emby',
-            name: 'Emby',
-            icon: '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>'
-        });
-        Lampa.Settings.listener.follow('open', e => { if (e.name === 'emby') renderSettings(e.body); });
-    }
-
-    /* --- Запуск --- */
-    function startPlugin() {
-        Lampa.Component.add('emby_series', EmbySeriesComponent);
-
-        initSettings();
-        Lampa.Listener.follow('full', e => {
-            if (e.type === 'complite') {
-                addEmbyButton({ render: e.object.activity.render(), movie: e.data.movie || e.data.card });
-            }
-        });
-        console.log(`%c${PLUGIN_NAME} v${PLUGIN_VERSION} загружен`, 'color: #00ff88; font-weight: bold');
-    }
-
-    if (window.appready) startPlugin();
-    else Lampa.Listener.follow('app', e => { if (e.type === 'ready') startPlugin(); });
-
-})();
+            Lampa.Input.edit
