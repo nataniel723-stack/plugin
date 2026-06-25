@@ -2,12 +2,12 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '3.0.0'; // Обновляем версию до 3.0 (редизайн)
+    const PLUGIN_VERSION = '3.0.1'; // Патч версии с исправлением скролла
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
-    // Внедряем CSS стили для карточек, чтобы они выглядели точь-в-точь как на скрине №2
+    // Внедряем CSS стили для красивых карточек серий
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
@@ -81,9 +81,9 @@
         this.current_season = null;
 
         this.create = function() {
-            html.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
+            html.empty().append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
             
-            // Сначала загружаем список сезонов
+            // Загружаем список сезонов
             apiRequest(`/Shows/${object.id}/Seasons`, (data) => {
                 this.seasons = data.Items || [];
                 
@@ -91,7 +91,7 @@
                     html.empty().append('<div class="emby-empty">Сезоны не найдены</div>');
                     this.start();
                 } else {
-                    this.current_season = this.seasons[0]; // Выбираем первый по умолчанию
+                    this.current_season = this.seasons[0];
                     this.loadEpisodes();
                 }
             }, () => {
@@ -100,9 +100,11 @@
             });
         };
 
-        // Метод загрузки серий выбранного сезона
         this.loadEpisodes = function() {
+            // ИСПРАВЛЕНИЕ: Обязательно инициализируем скролл перед его очисткой
+            scroll.render(); 
             scroll.clear();
+            
             html.empty().append(scroll.render());
             scroll.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
             
@@ -116,18 +118,18 @@
             });
         };
 
-        // Метод отрисовки интерфейса (Фильтр + Список серий)
         this.renderEpisodes = function(episodes) {
-            scroll.clear();
+            // Скролл уже инициализирован, можем безопасно очищать
+            scroll.clear(); 
             
-            // 1. Создаем панель с фильтром сезона (как на скрине №2)
             let filterPanel = $('<div class="emby-filter"></div>');
             let seasonBtn = $(`<div class="emby-filter-btn selector">Сезон: ${this.current_season.IndexNumber} сезон</div>`);
             
             seasonBtn.on('hover:enter click', () => {
                 let items = this.seasons.map(s => ({
                     title: s.Name,
-                    season: s
+                    season: s,
+                    selected: s.Id === this.current_season.Id
                 }));
                 
                 Lampa.Select.show({
@@ -146,26 +148,26 @@
             filterPanel.append(seasonBtn);
             scroll.append(filterPanel);
 
-            // 2. Создаем список эпизодов
             if (episodes.length === 0) {
                 scroll.append('<div class="emby-empty">Эпизоды не найдены</div>');
             } else {
                 let base = getUrl().replace(/\/$/, '');
                 
                 episodes.forEach(episode => {
-                    // Форматируем время (например, 00:52)
                     let runTime = episode.RunTimeTicks ? Math.floor(episode.RunTimeTicks / 600000000) : 0;
                     let timeStr = runTime ? `${String(Math.floor(runTime/60)).padStart(2,'0')}:${String(runTime%60).padStart(2,'0')}` : '';
                     
-                    // Форматируем дату (например, 1 Декабря 2017)
-                    let date = episode.PremiereDate ? new Date(episode.PremiereDate).toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}).replace(' г.', '') : 'Неизвестно';
+                    let dateStr = 'Неизвестно';
+                    if (episode.PremiereDate) {
+                        try {
+                            dateStr = new Date(episode.PremiereDate).toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}).replace(' г.', '');
+                        } catch(e) {}
+                    }
                     
-                    // Рейтинг
                     let rating = episode.CommunityRating ? episode.CommunityRating.toFixed(1) : '0.0';
                     let img = episode.PrimaryImageTag ? `${base}/Items/${episode.Id}/Images/Primary?maxHeight=200&quality=90` : '';
                     let epNum = String(episode.IndexNumber || 0).padStart(2, '0');
 
-                    // Карточка серии (Верстка точно под скриншот №2)
                     let item = $(`
                         <div class="emby-episode selector">
                             <div class="emby-ep-img-wrap">
@@ -173,8 +175,8 @@
                                 <div class="emby-ep-num">${epNum}</div>
                             </div>
                             <div class="emby-ep-body">
-                                <div class="emby-ep-title">${episode.Name}</div>
-                                <div class="emby-ep-info">⭐ ${rating} • ${date}</div>
+                                <div class="emby-ep-title">${episode.Name || 'Эпизод ' + epNum}</div>
+                                <div class="emby-ep-info">⭐ ${rating} • ${dateStr}</div>
                             </div>
                             <div class="emby-ep-time">${timeStr}</div>
                         </div>
@@ -219,7 +221,6 @@
             if (!item) return notify('Контент не найден в библиотеке Emby.');
 
             if (item.Type === 'Series') {
-                // Вызываем новый объединенный компонент
                 Lampa.Activity.push({
                     url: '',
                     title: item.Name,
@@ -288,7 +289,6 @@
 
     /* --- Инициализация --- */
     function startPlugin() {
-        // Регистрируем наш новый компонент сериалов
         Lampa.Component.add('emby_series', EmbySeriesComponent);
 
         initSettings();
