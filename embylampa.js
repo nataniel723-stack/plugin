@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '2.5.0'; // Обновлено под Lampa Component API
+    const PLUGIN_VERSION = '2.5.1';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -23,7 +23,6 @@
         Lampa.Noty.show(msg);
     }
 
-    // Исправлено формирование URL 
     function apiRequest(endpoint, success, error) {
         if (!isConfigured()) {
             notify('Настройте Emby в параметрах');
@@ -41,7 +40,6 @@
         if (!movie) return callback(null);
         const fields = '&Fields=Id,Name,Type,ParentId,PrimaryImageTag&Recursive=true&IncludeItemTypes=Movie,Series,Episode';
 
-        // Поиск по TMDB ID (основной приоритет)
         const tmdb = movie.tmdb_id || movie.id;
         if (tmdb) {
             apiRequest(`/Items?AnyProviderIdEquals=tmdb.${tmdb}${fields}`, data => {
@@ -50,7 +48,6 @@
             return;
         }
 
-        // Фолбэк: поиск по названию
         const title = encodeURIComponent(movie.title || movie.name || '');
         if (title) {
             apiRequest(`/Items?SearchTerm=${title}&Limit=3${fields}`, data => {
@@ -78,19 +75,24 @@
     /* --- Компоненты интерфейса (Lampa Components) --- */
 
     // Страница списка сезонов
-    function EmbySeasonsComponent(activity) {
+    function EmbySeasonsComponent(object) {
         let network = new Lampa.Reguest();
         let scroll = new Lampa.Scroll({mask: true, over: true});
         let html = $('<div></div>');
-        // Сетка для вывода постеров как в Lampa
         let body = $('<div class="emby-grid" style="padding: 1.5em; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1.5em;"></div>');
+        
+        // Стандартный спиннер загрузки Lampa
+        let loader = $('<div style="display: flex; justify-content: center; align-items: center; height: 100vh;"><div class="broadcast__spin"></div></div>');
 
         this.create = function() {
-            activity.loader(true);
-            apiRequest(`/Shows/${activity.data.id}/Seasons`, (data) => {
+            html.append(loader);
+            
+            apiRequest(`/Shows/${object.id}/Seasons`, (data) => {
+                loader.remove(); // Убираем лоадер после получения данных
+                
                 let seasons = data.Items || [];
                 if (seasons.length === 0) {
-                    html.append('<div class="empty">Сезоны не найдены</div>');
+                    html.append('<div class="empty" style="text-align:center; padding-top: 50px;">Сезоны не найдены</div>');
                 } else {
                     let base = getUrl().replace(/\/$/, '');
                     seasons.forEach(season => {
@@ -105,29 +107,30 @@
                             </div>
                         `);
 
-                        card.on('hover:enter', () => {
+                        const onSelect = () => {
                             Lampa.Activity.push({
                                 title: season.Name,
                                 component: 'emby_episodes',
-                                seriesId: activity.data.id,
+                                seriesId: object.id,
                                 seasonNumber: season.IndexNumber
                             });
-                        });
+                        };
+
+                        card.on('hover:enter', onSelect);
+                        card.on('click', onSelect);
                         body.append(card);
                     });
                     scroll.append(body);
                     html.append(scroll.render());
                 }
-                activity.loader(false);
                 this.start();
             }, () => {
-                activity.loader(false);
+                loader.remove();
                 notify('Ошибка загрузки сезонов.');
             });
         };
 
         this.start = function() {
-            // Регистрация контроллера для навигации с пульта
             Lampa.Controller.add('content', {
                 toggle: () => {
                     Lampa.Controller.collectionSet(scroll.render());
@@ -137,7 +140,7 @@
                 up: () => {},
                 down: () => {},
                 right: () => {},
-                back: () => { activity.backward(); }
+                back: () => { Lampa.Activity.backward(); } // Правильный метод возврата назад
             });
             Lampa.Controller.toggle('content');
         };
@@ -154,21 +157,25 @@
     }
 
     // Страница списка серий
-    function EmbyEpisodesComponent(activity) {
+    function EmbyEpisodesComponent(object) {
         let network = new Lampa.Reguest();
         let scroll = new Lampa.Scroll({mask: true, over: true});
         let html = $('<div></div>');
-        // Серии обычно имеют широкий формат постера (16:9)
         let body = $('<div class="emby-grid" style="padding: 1.5em; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5em;"></div>');
+        
+        let loader = $('<div style="display: flex; justify-content: center; align-items: center; height: 100vh;"><div class="broadcast__spin"></div></div>');
 
         this.create = function() {
-            activity.loader(true);
-            const query = `ParentId=${activity.data.seriesId}&Season=${activity.data.seasonNumber}&IncludeItemTypes=Episode&SortBy=SortName&SortOrder=Ascending`;
+            html.append(loader);
+            
+            const query = `ParentId=${object.seriesId}&Season=${object.seasonNumber}&IncludeItemTypes=Episode&SortBy=SortName&SortOrder=Ascending`;
             
             apiRequest(`/Items?${query}`, (data) => {
+                loader.remove();
+                
                 let episodes = data.Items || [];
                 if (episodes.length === 0) {
-                    html.append('<div class="empty">Эпизоды не найдены</div>');
+                    html.append('<div class="empty" style="text-align:center; padding-top: 50px;">Эпизоды не найдены</div>');
                 } else {
                     let base = getUrl().replace(/\/$/, '');
                     episodes.forEach(episode => {
@@ -184,16 +191,15 @@
                         `);
 
                         card.on('hover:enter', () => playVideo(episode));
-                        card.on('click', () => playVideo(episode)); // Для мышки
+                        card.on('click', () => playVideo(episode));
                         body.append(card);
                     });
                     scroll.append(body);
                     html.append(scroll.render());
                 }
-                activity.loader(false);
                 this.start();
             }, () => {
-                activity.loader(false);
+                loader.remove();
                 notify('Ошибка загрузки эпизодов.');
             });
         };
@@ -208,7 +214,7 @@
                 up: () => {},
                 down: () => {},
                 right: () => {},
-                back: () => { activity.backward(); }
+                back: () => { Lampa.Activity.backward(); }
             });
             Lampa.Controller.toggle('content');
         };
@@ -241,7 +247,6 @@
             let posterUrl = item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '';
 
             if (item.Type === 'Series') {
-                // Открываем кастомный компонент сезонов
                 Lampa.Activity.push({
                     url: '',
                     title: item.Name,
@@ -258,7 +263,6 @@
     /* --- Интеграция в систему Lampa --- */
     function addEmbyButton(data) {
         if (!data || !data.render || !data.movie) return;
-        // Защита от дублей
         if (data.render.find('.emby-button').length) return;
 
         const button = $(`
@@ -269,7 +273,7 @@
         `);
 
         button.on('hover:enter', () => handleEmbyClick(data.movie));
-        button.on('click', () => handleEmbyClick(data.movie)); // Поддержка мыши
+        button.on('click', () => handleEmbyClick(data.movie));
 
         const playButton = data.render.find('.button--play, .view--torrent').first();
         if (playButton.length) {
@@ -320,7 +324,6 @@
 
     /* --- Инициализация --- */
     function startPlugin() {
-        // Регистрируем новые компоненты в роутере Lampa
         Lampa.Component.add('emby_seasons', EmbySeasonsComponent);
         Lampa.Component.add('emby_episodes', EmbyEpisodesComponent);
 
