@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.0.1'; // Фикс collectionSet для старых версий Lampa
+    const PLUGIN_VERSION = '4.0.2'; // Исправлена навигация (Navigator)
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -263,7 +263,6 @@
         this.start = function() {
             Lampa.Controller.add('content', {
                 toggle: () => {
-                    // ПРОБЛЕМА БЫЛА ЗДЕСЬ: Безопасный вызов для старых версий
                     if (typeof Lampa.Controller.collectionSet === 'function') {
                         Lampa.Controller.collectionSet(scroll.render());
                     }
@@ -271,21 +270,27 @@
                     if (typeof Lampa.Controller.collectionFocus === 'function') {
                         Lampa.Controller.collectionFocus(false, scroll.render());
                     } else {
-                        // Ручной фокус для старых ТВ
+                        // Исправленный ручной фокус (Navigator вместо Lampa.Navigator)
                         let first = scroll.render().find('.selector').eq(0);
-                        if (first.length) Lampa.Navigator.focus(first);
+                        if (first.length && typeof Navigator !== 'undefined') {
+                            Navigator.focus(first[0]);
+                        }
                     }
                 },
                 left: () => { 
-                    if (Lampa.Navigator.canmove('left')) Lampa.Navigator.move('left');
+                    if (typeof Navigator !== 'undefined' && Navigator.canmove('left')) Navigator.move('left');
                     else Lampa.Controller.toggle('menu'); 
                 },
-                right: () => { if (Lampa.Navigator.canmove('right')) Lampa.Navigator.move('right'); },
+                right: () => { 
+                    if (typeof Navigator !== 'undefined' && Navigator.canmove('right')) Navigator.move('right'); 
+                },
                 up: () => { 
-                    if (Lampa.Navigator.canmove('up')) Lampa.Navigator.move('up');
+                    if (typeof Navigator !== 'undefined' && Navigator.canmove('up')) Navigator.move('up');
                     else Lampa.Controller.toggle('head'); 
                 },
-                down: () => { if (Lampa.Navigator.canmove('down')) Lampa.Navigator.move('down'); },
+                down: () => { 
+                    if (typeof Navigator !== 'undefined' && Navigator.canmove('down')) Navigator.move('down'); 
+                },
                 back: () => { Lampa.Activity.backward(); }
             });
             Lampa.Controller.toggle('content');
