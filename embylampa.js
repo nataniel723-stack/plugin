@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.0.4';
+    const PLUGIN_VERSION = '4.0.5';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -11,11 +11,6 @@
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
-                .emby-container {
-                    padding: 1em;
-                    height: 100%;
-                    overflow-y: auto;
-                }
                 .emby-episodes-grid { 
                     display: flex; 
                     flex-wrap: wrap; 
@@ -230,16 +225,18 @@
     function EmbyMovieComponent() {
         let network = new Lampa.Reguest();
         let is_destroyed = false;
+        let component = this;
+        
+        // Создаем DOM элемент
+        let element = $('<div class="emby-container"></div>')[0];
 
         this.create = function() {
-            // create вызывается при создании активности
+            // Вызывается при создании активности
         };
 
         this.start = function() {
-            let object = this.object || {};
-            let activity = this.activity;
-            let body = $(activity.render());
-            body.addClass('emby-container');
+            let object = component.object || {};
+            let body = $(element);
             body.empty();
             body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
 
@@ -284,8 +281,8 @@
 
                 Lampa.Controller.add('content', {
                     toggle: () => {
-                        Lampa.Controller.collectionSet(activity.render());
-                        Lampa.Controller.collectionFocus(false, activity.render());
+                        Lampa.Controller.collectionSet(element);
+                        Lampa.Controller.collectionFocus(false, element);
                     },
                     up: () => Lampa.Controller.toggle('head'),
                     down: () => {},
@@ -299,6 +296,10 @@
             });
         };
 
+        this.render = function() {
+            return element;
+        };
+
         this.destroy = function() {
             is_destroyed = true;
             network.clear();
@@ -309,78 +310,79 @@
     function EmbySeriesComponent() {
         let network = new Lampa.Reguest();
         let is_destroyed = false;
+        let component = this;
+        
+        // Создаем DOM элемент
+        let element = $('<div class="emby-container"></div>')[0];
         
         this.seasons = [];
         this.current_season = null;
 
         this.create = function() {
-            // create вызывается при создании активности
+            // Вызывается при создании активности
         };
 
         this.start = function() {
-            let object = this.object || {};
-            let activity = this.activity;
-            let body = $(activity.render());
-            body.addClass('emby-container');
+            let object = component.object || {};
+            let body = $(element);
             body.empty();
             body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
             
             network.silent(buildApiUrl(`/Shows/${object.id}/Seasons`), (data) => {
                 if (is_destroyed) return;
                 
-                this.seasons = data.Items || [];
-                if (this.seasons.length === 0) {
+                component.seasons = data.Items || [];
+                if (component.seasons.length === 0) {
                     body.html('<div class="emby-empty">Сезоны не найдены</div>');
-                    setupNavigation(activity, body);
+                    setupNavigation();
                 } else {
-                    this.current_season = this.seasons[0];
-                    this.loadEpisodes(activity, body, object);
+                    component.current_season = component.seasons[0];
+                    loadEpisodes(body, object);
                 }
             }, () => {
                 if (is_destroyed) return;
                 body.html('<div class="emby-empty">Ошибка загрузки сезонов</div>');
-                setupNavigation(activity, body);
+                setupNavigation();
             });
         };
 
-        this.loadEpisodes = function(activity, body, object) {
+        function loadEpisodes(body, object) {
             if (is_destroyed) return;
             body.empty();
             body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
             
-            const query = `/Items?ParentId=${object.id}&Season=${this.current_season.IndexNumber}&IncludeItemTypes=Episode&Fields=RunTimeTicks,PremiereDate,CommunityRating,PrimaryImageTag&SortBy=SortName&SortOrder=Ascending`;
+            const query = `/Items?ParentId=${object.id}&Season=${component.current_season.IndexNumber}&IncludeItemTypes=Episode&Fields=RunTimeTicks,PremiereDate,CommunityRating,PrimaryImageTag&SortBy=SortName&SortOrder=Ascending`;
             
             network.silent(buildApiUrl(query), (data) => {
                 if (is_destroyed) return;
-                this.renderEpisodes(activity, body, data.Items || []);
+                renderEpisodes(body, object, data.Items || []);
             }, () => {
                 if (is_destroyed) return;
                 body.html('<div class="emby-empty">Ошибка загрузки эпизодов</div>');
-                setupNavigation(activity, body);
+                setupNavigation();
             });
-        };
+        }
 
-        this.renderEpisodes = function(activity, body, episodes) {
+        function renderEpisodes(body, object, episodes) {
             if (is_destroyed) return;
             body.empty();
             
             let filterPanel = $('<div class="emby-filter"></div>');
-            let seasonBtn = $(`<div class="emby-filter-btn selector">Сезон ${this.current_season.IndexNumber || 1}</div>`);
+            let seasonBtn = $(`<div class="emby-filter-btn selector">Сезон ${component.current_season.IndexNumber || 1}</div>`);
             
-            let self = this;
             seasonBtn.on('hover:enter click', () => {
-                let items = self.seasons.map(s => ({
+                let items = component.seasons.map(s => ({
                     title: s.Name || `Сезон ${s.IndexNumber}`,
                     season: s,
-                    selected: s.Id === self.current_season.Id
+                    selected: s.Id === component.current_season.Id
                 }));
                 
                 Lampa.Select.show({
                     title: 'Выберите сезон',
                     items: items,
                     onSelect: (a) => {
-                        self.current_season = a.season;
-                        self.loadEpisodes(activity, body, object);
+                        component.current_season = a.season;
+                        loadEpisodes(body, object);
                     },
                     onBack: () => {
                         Lampa.Controller.toggle('content');
@@ -426,14 +428,14 @@
             }
             
             body.append(grid);
-            setupNavigation(activity, body);
-        };
+            setupNavigation();
+        }
 
-        function setupNavigation(activity, body) {
+        function setupNavigation() {
             Lampa.Controller.add('content', {
                 toggle: () => {
-                    Lampa.Controller.collectionSet(activity.render());
-                    Lampa.Controller.collectionFocus(false, activity.render());
+                    Lampa.Controller.collectionSet(element);
+                    Lampa.Controller.collectionFocus(false, element);
                 },
                 up: () => Lampa.Controller.toggle('head'),
                 down: () => {},
@@ -443,6 +445,10 @@
             });
             Lampa.Controller.toggle('content');
         }
+
+        this.render = function() {
+            return element;
+        };
 
         this.destroy = function() {
             is_destroyed = true;
