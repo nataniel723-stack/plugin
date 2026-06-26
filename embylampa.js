@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.2.0';
+    const PLUGIN_VERSION = '4.2.1';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -258,7 +258,7 @@
             
             if (!tmdb_id) {
                 scroll.append('<div class="emby-empty">Не удалось определить TMDB ID сериала</div>');
-                setupNavigation();
+                this.pause();
                 return;
             }
 
@@ -270,7 +270,7 @@
                 if (seasons.length === 0) {
                     scroll.clear();
                     scroll.append('<div class="emby-empty">Сезоны не найдены</div>');
-                    setupNavigation();
+                    this.pause();
                 } else {
                     current_season = seasons[0];
                     loadEpisodes();
@@ -357,7 +357,7 @@
                             } else {
                                 scroll.clear();
                                 scroll.append('<div class="emby-empty">Эпизод не найден на Emby сервере</div>');
-                                setupNavigation();
+                                this.pause();
                             }
                         });
                     });
@@ -367,37 +367,41 @@
             }
             
             scroll.append(grid);
-            setupNavigation();
+            this.pause();
         }
 
-        function setupNavigation() {
+        this.render = function() {
+            return scroll.render();
+        };
+        
+        this.pause = function() {
             Lampa.Controller.add('content', {
                 toggle: () => {
                     Lampa.Controller.collectionSet(scroll.render());
                     Lampa.Controller.collectionFocus(false, scroll.render());
                 },
                 up: () => {
-                    if (Navigator && Navigator.canmove('up')) {
-                        Navigator.move('up');
+                    if (window.Navigator && window.Navigator.canmove('up')) {
+                        window.Navigator.move('up');
                     } else {
                         Lampa.Controller.toggle('head');
                     }
                 },
                 down: () => {
-                    if (Navigator && Navigator.canmove('down')) {
-                        Navigator.move('down');
+                    if (window.Navigator && window.Navigator.canmove('down')) {
+                        window.Navigator.move('down');
                     }
                 },
                 left: () => {
-                    if (Navigator && Navigator.canmove('left')) {
-                        Navigator.move('left');
+                    if (window.Navigator && window.Navigator.canmove('left')) {
+                        window.Navigator.move('left');
                     } else {
                         Lampa.Controller.toggle('menu');
                     }
                 },
                 right: () => {
-                    if (Navigator && Navigator.canmove('right')) {
-                        Navigator.move('right');
+                    if (window.Navigator && window.Navigator.canmove('right')) {
+                        window.Navigator.move('right');
                     }
                 },
                 back: () => {
@@ -405,13 +409,8 @@
                 }
             });
             Lampa.Controller.toggle('content');
-        }
-
-        this.render = function() {
-            return scroll.render();
         };
         
-        this.pause = function() {};
         this.stop = function() {};
 
         this.destroy = function() {
