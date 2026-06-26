@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.1.6';
+    const PLUGIN_VERSION = '4.1.8';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -149,6 +149,19 @@
         return `${base}/emby${endpoint}${sep}api_key=${getApiKey()}`;
     }
 
+    // Генерация уникального ID устройства
+    function generateDeviceId() {
+        let stored = Lampa.Storage.get('emby_device_id');
+        if (!stored) {
+            stored = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+            Lampa.Storage.set('emby_device_id', stored);
+        }
+        return stored;
+    }
+
     /* --- Извлечение TMDB ID --- */
     function extractTmdbId(movie) {
         if (!movie) return null;
@@ -232,14 +245,23 @@
     /* --- Воспроизведение --- */
     function playVideo(item) {
         const base = getUrl().replace(/\/$/, '');
+        const apiKey = getApiKey();
+        const deviceId = generateDeviceId();
+        const playSessionId = Date.now().toString();
         
-        // Правильный URL для воспроизведения с Emby
-        let streamUrl = `${base}/Videos/${item.Id}/stream?static=true&api_key=${getApiKey()}`;
+        let streamUrl;
         
-        // Если есть MediaSources, используем первый
         if (item.MediaSources && item.MediaSources.length > 0) {
-            streamUrl = `${base}/Videos/${item.Id}/stream?static=true&MediaSourceId=${item.MediaSources[0].Id}&api_key=${getApiKey()}`;
+            let source = item.MediaSources[0];
+            // Формат как в оригинальном Emby
+            streamUrl = `${base}/emby/Videos/${item.Id}/${source.Path ? source.Path.split('/').pop() : 'stream'}`;
+            streamUrl += `?DeviceId=${deviceId}&MediaSourceId=${source.Id}&PlaySessionId=${playSessionId}&api_key=${apiKey}`;
+        } else {
+            // Запасной вариант
+            streamUrl = `${base}/Videos/${item.Id}/stream.mp4?static=true&api_key=${apiKey}`;
         }
+        
+        console.log('Playing URL:', streamUrl);
         
         Lampa.Player.play({
             title: item.Name,
