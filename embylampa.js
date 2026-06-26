@@ -132,8 +132,8 @@
         `);
     }
 
-    function getUrl() { return (Lampa.Storage.get(STORAGE_URL) || '').trim(); }
-    function getApiKey() { return (Lampa.Storage.get(STORAGE_API_KEY) || '').trim(); }
+    function getUrl() { return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim(); }
+    function getApiKey() { return (Lampa.Storage.get(STORAGE_API_KEY, '78b3967970814692b20b095e5b13f0eb') || '').trim(); }
     function isConfigured() { return getUrl().length > 5 && getApiKey().length > 5; }
     function notify(msg) { Lampa.Noty.show(msg); }
 
