@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '5.0.2';
+    const PLUGIN_VERSION = '5.0.3';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -41,7 +41,7 @@
                 }
                 
                 .emby-episode-card.watched {
-                    opacity: 0.6;
+                    opacity: 0.5;
                 }
                 
                 .emby-episode-card.watched::after {
@@ -51,15 +51,16 @@
                     right: 0.5em;
                     background: #00B0FF;
                     color: #fff;
-                    width: 24px;
-                    height: 24px;
+                    width: 26px;
+                    height: 26px;
                     border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 14px;
+                    font-size: 16px;
                     font-weight: bold;
                     z-index: 5;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
                 }
                 
                 .emby-ep-img-wrap { 
@@ -185,8 +186,12 @@
     }
 
     function isEpisodeWatched(episodeId) {
-        let timeline = Lampa.Timeline.view('emby_' + episodeId);
-        return timeline && timeline.time > 0;
+        let timeline = Lampa.Storage.get('emby_timeline_' + episodeId);
+        return timeline && timeline > 0;
+    }
+
+    function markEpisodeWatched(episodeId) {
+        Lampa.Storage.set('emby_timeline_' + episodeId, Date.now());
     }
 
     function extractTmdbId(movie) {
@@ -249,34 +254,57 @@
         }, () => callback([]));
     }
 
-    function playEpisodes(episodes, currentIndex) {
-    const base = getUrl().replace(/\/$/, '');
-    const apiKey = getApiKey();
-    const deviceId = getDeviceId();
-    
-    // Создаем плейлист
-    let playlist = episodes.map((episode, index) => {
-        let playSessionId = Date.now() + index;
-        return {
-            title: episode.Name,
-            url: `${base}/emby/Videos/${episode.Id}/stream?Static=true&DeviceId=${deviceId}&PlaySessionId=${playSessionId}&api_key=${apiKey}`,
-            poster: episode.PrimaryImageTag ? `${base}/Items/${episode.Id}/Images/Primary?tag=${episode.PrimaryImageTag}` : '',
-            timeline: Lampa.Timeline.view(Lampa.Utils.hash('emby_' + episode.Id))
+    function playVideo(item, playlist, currentIndex) {
+        const base = getUrl().replace(/\/$/, '');
+        const apiKey = getApiKey();
+        const deviceId = getDeviceId();
+        const playSessionId = Date.now().toString();
+        
+        let streamUrl = `${base}/emby/Videos/${item.Id}/stream?Static=true&DeviceId=${deviceId}&PlaySessionId=${playSessionId}&api_key=${apiKey}`;
+        
+        // Сохраняем текущий контекст для возврата
+        window.embyPlaybackContext = {
+            seasonNumber: current_season_num,
+            seriesId: emby_series_id,
+            tmdbId: tmdb_id
         };
-    });
-    
-    // Запускаем с указанием плейлиста через source
-    Lampa.Player.play({
-        title: playlist[currentIndex].title,
-        url: playlist[currentIndex].url,
-        poster: playlist[currentIndex].poster,
-        timeline: playlist[currentIndex].timeline,
-        source: {
-            playlist: playlist,
-            current: currentIndex
+        
+        // Отмечаем как просмотренное
+        markEpisodeWatched(item.Id);
+        
+        // Обновляем метки на карточках
+        setTimeout(() => {
+            $(element).find('.emby-episode-card').each(function() {
+                let epId = $(this).data('emby-id');
+                if (epId && isEpisodeWatched(epId)) {
+                    $(this).addClass('watched');
+                }
+            });
+        }, 1000);
+        
+        if (playlist && playlist.length > 0) {
+            // Запускаем с плейлистом для переключения серий
+            Lampa.Player.play({
+                title: item.Name,
+                url: streamUrl,
+                poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
+                timeline: Lampa.Timeline.view(Lampa.Utils.hash('emby_' + item.Id)),
+                source: {
+                    playlist: playlist,
+                    current: currentIndex
+                }
+            });
+        } else {
+            Lampa.Player.play({
+                title: item.Name,
+                url: streamUrl,
+                poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
+                timeline: Lampa.Timeline.view(Lampa.Utils.hash('emby_' + item.Id))
+            });
         }
-    });
-}
+    }
+
+    let current_season_num = 1;
 
     /* --- Компонент для сериалов --- */
     function EmbySeriesComponent() {
@@ -295,6 +323,11 @@
             if (window.embySeriesData) {
                 emby_series_id = window.embySeriesData.emby_id;
                 tmdb_id = window.embySeriesData.tmdb_id;
+            }
+            
+            // Восстанавливаем последний сезон если есть
+            if (window.embyLastSeason && window.embyLastSeason.seriesId === emby_series_id) {
+                // Будет установлен в start после загрузки сезонов
             }
         };
 
@@ -322,7 +355,15 @@
                     body.html('<div class="emby-empty">Сезоны не найдены</div>');
                     setupNavigation();
                 } else {
-                    current_season = seasons[0];
+                    // Восстанавливаем последний сезон или берем первый
+                    let savedSeason = window.embyLastSeason;
+                    if (savedSeason && savedSeason.seriesId === emby_series_id) {
+                        let found = seasons.find(s => s.season_number === savedSeason.seasonNumber);
+                        current_season = found || seasons[0];
+                    } else {
+                        current_season = seasons[0];
+                    }
+                    current_season_num = current_season.season_number;
                     loadEpisodes(body);
                 }
             });
@@ -332,6 +373,8 @@
             if (is_destroyed) return;
             body.empty();
             body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
+            
+            current_season_num = current_season.season_number;
             
             getEpisodesFromTMDB(tmdb_id, current_season.season_number, (episodes) => {
                 if (is_destroyed) return;
@@ -391,11 +434,9 @@
                     }
                     
                     let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
-                    
-                    let watchedClass = isEpisodeWatched(episode.id) ? ' watched' : '';
 
                     let item = $(`
-                        <div class="emby-episode-card selector${watchedClass}" data-episode="${episode.episode_number}" data-season="${current_season.season_number}" data-index="${index}">
+                        <div class="emby-episode-card selector" data-episode="${episode.episode_number}" data-season="${current_season.season_number}" data-index="${index}" data-emby-id="${episode.id}">
                             <div class="emby-ep-img-wrap">
                                 ${imageHtml}
                                 <div class="emby-ep-num">${epNum} серия</div>
@@ -404,10 +445,21 @@
                             <div class="emby-ep-info">⭐ ${rating}</div>
                         </div>
                     `);
+                    
+                    // Проверяем и устанавливаем метку просмотрено
+                    if (isEpisodeWatched(episode.id)) {
+                        item.addClass('watched');
+                    }
 
                     item.on('hover:enter click', function() {
                         let epNumber = parseInt($(this).data('episode'));
                         let seasonNumber = parseInt($(this).data('season'));
+                        
+                        // Сохраняем текущий сезон для возврата
+                        window.embyLastSeason = {
+                            seriesId: emby_series_id,
+                            seasonNumber: seasonNumber
+                        };
                         
                         body.empty();
                         body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
@@ -430,8 +482,21 @@
                                         if (episodeData && episodeData.Items) {
                                             let sortedEpisodes = episodeData.Items.sort((a, b) => (a.IndexNumber || 0) - (b.IndexNumber || 0));
                                             
-                                            // Запускаем плейлист начиная с выбранного эпизода
-                                            playEpisodes(sortedEpisodes, epNumber - 1);
+                                            // Создаем плейлист для всех эпизодов
+                                            let playlist = sortedEpisodes.map((ep, i) => {
+                                                let psId = Date.now() + i;
+                                                return {
+                                                    title: ep.Name,
+                                                    url: `${getUrl().replace(/\/$/, '')}/emby/Videos/${ep.Id}/stream?Static=true&DeviceId=${getDeviceId()}&PlaySessionId=${psId}&api_key=${getApiKey()}`,
+                                                    poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
+                                                    timeline: Lampa.Timeline.view(Lampa.Utils.hash('emby_' + ep.Id))
+                                                };
+                                            });
+                                            
+                                            let currentEp = sortedEpisodes[epNumber - 1];
+                                            if (currentEp) {
+                                                playVideo(currentEp, playlist, epNumber - 1);
+                                            }
                                         }
                                     }, () => {
                                         if (is_destroyed) return;
@@ -452,9 +517,7 @@
             }
             
             body.append(grid);
-            
             element.scrollTop = 0;
-            
             setupNavigation();
         }
 
@@ -553,8 +616,7 @@
                     component: 'emby_series'
                 });
             } else if (item.Type === 'Movie') {
-                // Для фильмов используем обычный play
-                playEpisodes([item], 0);
+                playVideo(item);
             } else {
                 notify('Неизвестный тип контента');
             }
