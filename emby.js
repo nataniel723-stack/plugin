@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.3';
+    const PLUGIN_VERSION = '4.4.4';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -16,6 +16,7 @@
                     height: 100%; 
                     overflow-y: auto;
                     overflow-x: hidden;
+                    scroll-behavior: smooth;
                 }
                 .emby-episodes-grid { 
                     display: flex; 
@@ -66,16 +67,6 @@
                     font-size: 0.9em; 
                     color: #fff;
                 }
-                .emby-ep-time { 
-                    position: absolute; 
-                    bottom: 0.4em; 
-                    right: 0.4em; 
-                    background: rgba(0,0,0,0.7); 
-                    padding: 0.2em 0.5em; 
-                    border-radius: 0.3em; 
-                    font-size: 0.85em; 
-                    color: #ddd;
-                }
                 
                 .emby-ep-title { 
                     font-size: 1.1em; 
@@ -97,6 +88,10 @@
                     padding: 1.5em 2em 0 2em; 
                     gap: 1em;
                     flex-wrap: wrap;
+                    position: sticky;
+                    top: 0;
+                    z-index: 10;
+                    background: rgba(0,0,0,0.9);
                 }
                 .emby-filter-btn { 
                     background: rgba(255,255,255,0.1); 
@@ -343,7 +338,6 @@
                 current_episodes.forEach((episode) => {
                     let epNum = String(episode.episode_number).padStart(2, '0');
                     
-                    // Прямой URL к изображению TMDB
                     let stillPath = '';
                     if (episode.still_path) {
                         stillPath = 'https://image.tmdb.org/t/p/w400' + episode.still_path;
@@ -369,7 +363,15 @@
                         </div>
                     `);
 
-                    item.on('hover:enter click', function() {
+                    // Авто-скролл при фокусе с пульта
+                    item.on('hover:enter', function() {
+                        // Плавная прокрутка к элементу
+                        if (element.scrollIntoView) {
+                            this.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    });
+
+                    item.on('hover:click', function() {
                         let epNumber = parseInt($(this).data('episode'));
                         let seasonNumber = parseInt($(this).data('season'));
                         
