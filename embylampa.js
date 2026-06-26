@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.1.6';
+    const PLUGIN_VERSION = '4.1.5';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -132,14 +132,8 @@
         `);
     }
 
-    function getUrl() {
-        return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim();
-    }
-
-    function getApiKey() {
-        return (Lampa.Storage.get(STORAGE_API_KEY, '78b3967970814692b20b095e5b13f0eb') || '').trim();
-    }
-    
+    function getUrl() { return (Lampa.Storage.get(STORAGE_URL) || '').trim(); }
+    function getApiKey() { return (Lampa.Storage.get(STORAGE_API_KEY) || '').trim(); }
     function isConfigured() { return getUrl().length > 5 && getApiKey().length > 5; }
     function notify(msg) { Lampa.Noty.show(msg); }
 
@@ -220,7 +214,7 @@
     /* --- Получение эпизода из Emby --- */
     function getEpisodeFromEmby(series_id, season_number, episode_number, callback) {
         let network = new Lampa.Reguest();
-        const query = `/Items?ParentId=${series_id}&Season=${season_number}&IncludeItemTypes=Episode&Fields=Id,Name,RunTimeTicks,PrimaryImageTag,MediaSources&SortBy=SortName&SortOrder=Ascending`;
+        const query = `/Items?ParentId=${series_id}&Season=${season_number}&IncludeItemTypes=Episode&Fields=Id,Name,RunTimeTicks,PrimaryImageTag&SortBy=SortName&SortOrder=Ascending`;
         network.silent(buildApiUrl(query), (data) => {
             if (data && data.Items) {
                 let episode = data.Items.find(e => e.IndexNumber === episode_number);
@@ -232,18 +226,9 @@
     /* --- Воспроизведение --- */
     function playVideo(item) {
         const base = getUrl().replace(/\/$/, '');
-        
-        // Правильный URL для воспроизведения с Emby
-        let streamUrl = `${base}/Videos/${item.Id}/stream?static=true&api_key=${getApiKey()}`;
-        
-        // Если есть MediaSources, используем первый
-        if (item.MediaSources && item.MediaSources.length > 0) {
-            streamUrl = `${base}/Videos/${item.Id}/stream?static=true&MediaSourceId=${item.MediaSources[0].Id}&api_key=${getApiKey()}`;
-        }
-        
         Lampa.Player.play({
             title: item.Name,
-            url: streamUrl,
+            url: `${base}/Videos/${item.Id}/stream.mp4?static=true&api_key=${getApiKey()}`,
             poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
             timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id + ''))
         });
