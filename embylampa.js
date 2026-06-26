@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.1.1';
+    const PLUGIN_VERSION = '4.1.2';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -143,21 +143,43 @@
         return `${base}/emby${endpoint}${sep}api_key=${getApiKey()}`;
     }
 
+    /* --- Извлечение TMDB ID из разных форматов данных --- */
+    function extractTmdbId(movie) {
+        if (!movie) return null;
+        
+        // Пробуем разные варианты
+        let tmdb = movie.tmdb_id || movie.id;
+        
+        // Если это строка с URL, извлекаем ID
+        if (typeof movie.url === 'string') {
+            let match = movie.url.match(/tv\/(\d+)/);
+            if (match) tmdb = parseInt(match[1]);
+        }
+        
+        // Проверяем data объект
+        if (!tmdb && movie.data) {
+            tmdb = movie.data.tmdb_id || movie.data.id;
+        }
+        
+        // Проверяем source объект
+        if (!tmdb && movie.source) {
+            tmdb = movie.source.tmdb_id || movie.source.id;
+        }
+        
+        // Если tmdb строка, пробуем преобразовать в число
+        if (typeof tmdb === 'string' && !isNaN(tmdb)) {
+            tmdb = parseInt(tmdb);
+        }
+        
+        return tmdb;
+    }
+
     /* --- Поиск ID в Emby --- */
     function findInEmby(movie, callback) {
         if (!movie) return callback(null);
         
-        // Извлекаем TMDB ID
-        let tmdb = null;
-        if (movie.tmdb_id) {
-            tmdb = movie.tmdb_id;
-        } else if (movie.id && !isNaN(movie.id)) {
-            tmdb = movie.id;
-        } else if (movie.data && movie.data.tmdb_id) {
-            tmdb = movie.data.tmdb_id;
-        } else if (movie.data && movie.data.id) {
-            tmdb = movie.data.id;
-        }
+        let tmdb = extractTmdbId(movie);
+        console.log('Extracted TMDB ID:', tmdb, 'from movie:', movie);
         
         let network = new Lampa.Reguest();
         
@@ -166,10 +188,10 @@
                 callback(data?.Items?.[0] || null);
             }, () => callback(null));
         } else {
-            const title = encodeURIComponent(movie.title || movie.name || movie.data?.title || movie.data?.name || '');
+            const title = movie.title || movie.name || movie.original_title || movie.original_name || '';
             if (!title) return callback(null);
             
-            network.silent(buildApiUrl(`/Items?SearchTerm=${title}&Limit=3&Recursive=true&IncludeItemTypes=Movie,Series&Fields=Id,Type,Name`), (data) => {
+            network.silent(buildApiUrl(`/Items?SearchTerm=${encodeURIComponent(title)}&Limit=3&Recursive=true&IncludeItemTypes=Movie,Series&Fields=Id,Type,Name`), (data) => {
                 callback(data?.Items?.[0] || null);
             }, () => callback(null));
         }
@@ -183,7 +205,6 @@
         }
         
         let network = new Lampa.Reguest();
-        // Используем тот же API ключ, что и в Lampa, или стандартный TMDB ключ
         let apiKey = Lampa.Storage.get('tmdb_api_key') || 'b8b20a5e4ca4e5e6e1e5f1e0e5e1e5f1';
         
         network.silent(`https://api.themoviedb.org/3/tv/${tmdb_id}?api_key=${apiKey}&language=ru`, (data) => {
@@ -253,7 +274,6 @@
         this.current_episodes = [];
         this.emby_series_id = null;
         this.tmdb_id = null;
-        this.movie_data = null;
 
         this.create = function() {};
 
@@ -263,26 +283,19 @@
             body.empty();
             
             component.emby_series_id = object.id;
-            component.movie_data = object.movie;
             
-            // Извлекаем TMDB ID из movie данных
-            if (component.movie_data) {
-                component.tmdb_id = component.movie_data.tmdb_id || component.movie_data.id;
-            }
-            // Если нет в movie_data, пробуем из object
-            if (!component.tmdb_id) {
-                component.tmdb_id = object.tmdb_id;
-            }
+            // Извлекаем TMDB ID из всех возможных источников
+            component.tmdb_id = extractTmdbId(object);
             
             // Логирование для отладки
-            console.log('Emby Series:', {
+            console.log('Emby Series Component Start:', {
                 emby_id: component.emby_series_id,
                 tmdb_id: component.tmdb_id,
-                movie_data: component.movie_data
+                object: object
             });
             
             if (!component.tmdb_id) {
-                body.html('<div class="emby-empty">Не удалось определить TMDB ID сериала</div>');
+                body.html('<div class="emby-empty">Не удалось определить TMDB ID сериала. Проверьте консоль для отладки.</div>');
                 setupNavigation();
                 return;
             }
@@ -354,17 +367,15 @@
                     let epNum = String(episode.episode_number).padStart(2, '0');
                     let stillPath = episode.still_path ? `https://image.tmdb.org/t/p/w400${episode.still_path}` : '';
                     let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
-                    let airDate = episode.air_date ? new Date(episode.air_date).toLocaleDateString('ru-RU') : '';
 
                     let item = $(`
                         <div class="emby-episode-card selector" data-episode="${episode.episode_number}" data-season="${component.current_season.season_number}">
                             <div class="emby-ep-img-wrap">
                                 ${stillPath ? `<img src="${stillPath}" class="emby-ep-img" onerror="this.style.display='none'">` : ''}
                                 <div class="emby-ep-num">${epNum} серия</div>
-                                ${airDate ? `<div class="emby-ep-time">${airDate}</div>` : ''}
                             </div>
                             <div class="emby-ep-title">${episode.name || 'Эпизод ' + epNum}</div>
-                            <div class="emby-ep-info">${episode.overview ? episode.overview.substring(0, 100) + '...' : ''}</div>
+                            <div class="emby-ep-info">⭐ ${rating}</div>
                         </div>
                     `);
 
@@ -372,7 +383,6 @@
                         let epNumber = parseInt($(this).data('episode'));
                         let seasonNumber = parseInt($(this).data('season'));
                         
-                        // Показываем загрузку
                         body.empty();
                         body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
                         
@@ -424,19 +434,23 @@
     function handleEmbyClick(movie) {
         if (!isConfigured()) return notify('Настройте Emby в параметрах');
         
-        console.log('Emby click - movie data:', movie);
+        console.log('Emby click - movie data:', JSON.stringify(movie));
 
         findInEmby(movie, (item) => {
             if (!item) return notify('Контент не найден в библиотеке Emby.');
 
             if (item.Type === 'Series') {
+                let tmdbId = extractTmdbId(movie);
+                console.log('Pushing series activity with TMDB ID:', tmdbId);
+                
                 Lampa.Activity.push({
                     url: '',
                     title: item.Name,
                     component: 'emby_series', 
                     id: item.Id,
-                    tmdb_id: movie.tmdb_id || movie.id,
-                    movie: movie  // Передаем все данные о фильме/сериале
+                    tmdb_id: tmdbId,
+                    name: item.Name,
+                    movie: movie
                 });
             } else if (item.Type === 'Movie') {
                 playVideo(item);
