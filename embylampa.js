@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.0';
+    const PLUGIN_VERSION = '5.0.0';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -11,12 +11,19 @@
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
-                .emby-container { padding: 0; height: 100%; }
+                .emby-container { 
+                    padding: 0; 
+                    height: 100%; 
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                    scroll-behavior: smooth;
+                }
                 .emby-episodes-grid { 
                     display: flex; 
                     flex-wrap: wrap; 
                     padding: 1em 1.5em; 
                     gap: 1.5em; 
+                    align-content: flex-start;
                 }
                 
                 .emby-episode-card { 
@@ -31,6 +38,28 @@
                 .emby-episode-card.focus { 
                     background: rgba(255, 255, 255, 0.1); 
                     transform: scale(1.05); 
+                }
+                
+                .emby-episode-card.watched {
+                    opacity: 0.6;
+                }
+                
+                .emby-episode-card.watched::after {
+                    content: '✓';
+                    position: absolute;
+                    top: 0.5em;
+                    right: 0.5em;
+                    background: #00B0FF;
+                    color: #fff;
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 14px;
+                    font-weight: bold;
+                    z-index: 5;
                 }
                 
                 .emby-ep-img-wrap { 
@@ -60,16 +89,6 @@
                     font-size: 0.9em; 
                     color: #fff;
                 }
-                .emby-ep-time { 
-                    position: absolute; 
-                    bottom: 0.4em; 
-                    right: 0.4em; 
-                    background: rgba(0,0,0,0.7); 
-                    padding: 0.2em 0.5em; 
-                    border-radius: 0.3em; 
-                    font-size: 0.85em; 
-                    color: #ddd;
-                }
                 
                 .emby-ep-title { 
                     font-size: 1.1em; 
@@ -91,6 +110,10 @@
                     padding: 1.5em 2em 0 2em; 
                     gap: 1em;
                     flex-wrap: wrap;
+                    position: sticky;
+                    top: 0;
+                    z-index: 10;
+                    background: rgba(0,0,0,0.9);
                 }
                 .emby-filter-btn { 
                     background: rgba(255,255,255,0.1); 
@@ -161,6 +184,12 @@
         return deviceId;
     }
 
+    // Проверка, просмотрен ли эпизод
+    function isEpisodeWatched(episodeId) {
+        let timeline = Lampa.Timeline.view('emby_' + episodeId);
+        return timeline && timeline.time > 0;
+    }
+
     function extractTmdbId(movie) {
         if (!movie) return null;
         let tmdb = movie.tmdb_id || movie.id;
@@ -229,12 +258,18 @@
         
         let streamUrl = `${base}/emby/Videos/${item.Id}/stream?Static=true&DeviceId=${deviceId}&PlaySessionId=${playSessionId}&api_key=${apiKey}`;
         
+        // Используем встроенную синхронизацию Lampa
         Lampa.Player.play({
             title: item.Name,
             url: streamUrl,
             poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
-            timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id + ''))
+            timeline: Lampa.Timeline.view(Lampa.Utils.hash('emby_' + item.Id))
         });
+        
+        // После начала воспроизведения возвращаемся к списку серий
+        setTimeout(() => {
+            Lampa.Activity.backward();
+        }, 500);
     }
 
     /* --- Компонент для сериалов --- */
@@ -337,7 +372,6 @@
                 current_episodes.forEach((episode) => {
                     let epNum = String(episode.episode_number).padStart(2, '0');
                     
-                    // Прямой URL к изображению TMDB
                     let stillPath = '';
                     if (episode.still_path) {
                         stillPath = 'https://image.tmdb.org/t/p/w400' + episode.still_path;
@@ -351,9 +385,12 @@
                     }
                     
                     let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
+                    
+                    // Проверяем, просмотрен ли эпизод
+                    let watchedClass = isEpisodeWatched(episode.id) ? ' watched' : '';
 
                     let item = $(`
-                        <div class="emby-episode-card selector" data-episode="${episode.episode_number}" data-season="${current_season.season_number}">
+                        <div class="emby-episode-card selector${watchedClass}" data-episode="${episode.episode_number}" data-season="${current_season.season_number}" data-id="${episode.id}">
                             <div class="emby-ep-img-wrap">
                                 ${imageHtml}
                                 <div class="emby-ep-num">${epNum} серия</div>
@@ -415,7 +452,31 @@
             }
             
             body.append(grid);
+            
+            element.scrollTop = 0;
+            
             setupNavigation();
+        }
+
+        function scrollToFocused() {
+            let focused = $(element).find('.selector.focus');
+            if (focused.length) {
+                let containerRect = element.getBoundingClientRect();
+                let elementRect = focused[0].getBoundingClientRect();
+                
+                if (elementRect.bottom > containerRect.bottom - 20) {
+                    element.scrollBy({
+                        top: elementRect.bottom - containerRect.bottom + 100,
+                        behavior: 'smooth'
+                    });
+                }
+                if (elementRect.top < containerRect.top + 80) {
+                    element.scrollBy({
+                        top: elementRect.top - containerRect.top - 100,
+                        behavior: 'smooth'
+                    });
+                }
+            }
         }
 
         function setupNavigation() {
@@ -423,10 +484,12 @@
                 toggle: () => {
                     Lampa.Controller.collectionSet(element);
                     Lampa.Controller.collectionFocus(false, element);
+                    setTimeout(scrollToFocused, 100);
                 },
                 up: () => {
                     if (window.Navigator && window.Navigator.canmove && window.Navigator.canmove('up')) {
                         window.Navigator.move('up');
+                        setTimeout(scrollToFocused, 50);
                     } else {
                         Lampa.Controller.toggle('head');
                     }
@@ -434,11 +497,13 @@
                 down: () => {
                     if (window.Navigator && window.Navigator.canmove && window.Navigator.canmove('down')) {
                         window.Navigator.move('down');
+                        setTimeout(scrollToFocused, 50);
                     }
                 },
                 left: () => {
                     if (window.Navigator && window.Navigator.canmove && window.Navigator.canmove('left')) {
                         window.Navigator.move('left');
+                        setTimeout(scrollToFocused, 50);
                     } else {
                         Lampa.Controller.toggle('menu');
                     }
@@ -446,6 +511,7 @@
                 right: () => {
                     if (window.Navigator && window.Navigator.canmove && window.Navigator.canmove('right')) {
                         window.Navigator.move('right');
+                        setTimeout(scrollToFocused, 50);
                     }
                 },
                 back: () => {
