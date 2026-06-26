@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.1.4';
+    const PLUGIN_VERSION = '4.1.5';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -179,23 +179,35 @@
         }
     }
 
-    /* --- Получение сезонов из TMDB --- */
+    /* --- Получение сезонов из TMDB через Lampa.TMDB --- */
     function getSeasonsFromTMDB(tmdb_id, callback) {
         if (!tmdb_id) { callback([]); return; }
+        
         let network = new Lampa.Reguest();
-        let apiKey = Lampa.Storage.get('tmdb_api_key') || 'b8b20a5e4ca4e5e6e1e5f1e0e5e1e5f1';
-        network.silent(`https://api.themoviedb.org/3/tv/${tmdb_id}?api_key=${apiKey}&language=ru`, (data) => {
-            callback(data && data.seasons ? data.seasons.filter(s => s.season_number > 0) : []);
+        let url = Lampa.TMDB.api('tv/' + tmdb_id + '?api_key=' + Lampa.TMDB.key() + '&language=' + Lampa.Storage.get('language', 'ru'));
+        
+        network.silent(url, (data) => {
+            if (data && data.seasons) {
+                callback(data.seasons.filter(s => s.season_number > 0));
+            } else {
+                callback([]);
+            }
         }, () => callback([]));
     }
 
-    /* --- Получение эпизодов из TMDB --- */
+    /* --- Получение эпизодов из TMDB через Lampa.TMDB --- */
     function getEpisodesFromTMDB(tmdb_id, season_number, callback) {
         if (!tmdb_id) { callback([]); return; }
+        
         let network = new Lampa.Reguest();
-        let apiKey = Lampa.Storage.get('tmdb_api_key') || 'b8b20a5e4ca4e5e6e1e5f1e0e5e1e5f1';
-        network.silent(`https://api.themoviedb.org/3/tv/${tmdb_id}/season/${season_number}?api_key=${apiKey}&language=ru`, (data) => {
-            callback(data && data.episodes ? data.episodes : []);
+        let url = Lampa.TMDB.api('tv/' + tmdb_id + '/season/' + season_number + '?api_key=' + Lampa.TMDB.key() + '&language=' + Lampa.Storage.get('language', 'ru'));
+        
+        network.silent(url, (data) => {
+            if (data && data.episodes) {
+                callback(data.episodes);
+            } else {
+                callback([]);
+            }
         }, () => callback([]));
     }
 
@@ -236,22 +248,17 @@
         let tmdb_id = null;
 
         this.create = function() {
-            // Получаем данные из глобального хранилища
             if (window.embySeriesData) {
                 emby_series_id = window.embySeriesData.emby_id;
                 tmdb_id = window.embySeriesData.tmdb_id;
-                console.log('Emby Series Create from global:', {emby_series_id, tmdb_id});
             }
         };
 
         this.start = function() {
-            // Пробуем получить данные из глобального хранилища, если еще не получили
             if (!emby_series_id && window.embySeriesData) {
                 emby_series_id = window.embySeriesData.emby_id;
                 tmdb_id = window.embySeriesData.tmdb_id;
             }
-            
-            console.log('Emby Series Start:', {emby_series_id, tmdb_id, global: window.embySeriesData});
             
             let body = $(element);
             body.empty();
@@ -326,7 +333,7 @@
             } else {
                 current_episodes.forEach((episode) => {
                     let epNum = String(episode.episode_number).padStart(2, '0');
-                    let stillPath = episode.still_path ? `https://image.tmdb.org/t/p/w400${episode.still_path}` : '';
+                    let stillPath = episode.still_path ? Lampa.TMDB.image('w400', episode.still_path) : '';
                     let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
 
                     let item = $(`
@@ -401,14 +408,11 @@
             if (item.Type === 'Series') {
                 let tmdbId = extractTmdbId(movie);
                 
-                // Сохраняем данные глобально перед созданием активности
                 window.embySeriesData = {
                     emby_id: item.Id,
                     tmdb_id: tmdbId,
                     title: item.Name
                 };
-                
-                console.log('Saved to global:', window.embySeriesData);
                 
                 Lampa.Activity.push({
                     url: '',
