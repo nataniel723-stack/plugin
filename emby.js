@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.5';
+    const PLUGIN_VERSION = '4.4.6';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -363,7 +363,8 @@
                         </div>
                     `);
 
-                    item.on('hover:click', function() {
+                    // Обработчик клика - ВАЖНО: hover:enter click
+                    item.on('hover:enter click', function() {
                         let epNumber = parseInt($(this).data('episode'));
                         let seasonNumber = parseInt($(this).data('season'));
                         
@@ -416,7 +417,7 @@
             
             body.append(grid);
             
-            // Скроллим контейнер к началу
+            // Скроллим к началу
             element.scrollTop = 0;
             
             setupNavigation();
@@ -429,14 +430,12 @@
                 let containerRect = element.getBoundingClientRect();
                 let elementRect = focused[0].getBoundingClientRect();
                 
-                // Если элемент ниже видимой области
                 if (elementRect.bottom > containerRect.bottom - 20) {
                     element.scrollBy({
                         top: elementRect.bottom - containerRect.bottom + 100,
                         behavior: 'smooth'
                     });
                 }
-                // Если элемент выше видимой области
                 if (elementRect.top < containerRect.top + 80) {
                     element.scrollBy({
                         top: elementRect.top - containerRect.top - 100,
@@ -451,7 +450,6 @@
                 toggle: () => {
                     Lampa.Controller.collectionSet(element);
                     Lampa.Controller.collectionFocus(false, element);
-                    // Скролл к первому элементу
                     setTimeout(scrollToFocused, 100);
                 },
                 up: () => {
