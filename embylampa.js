@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.2.2';
+    const PLUGIN_VERSION = '4.2.3';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -11,11 +11,6 @@
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
-                .emby-container { 
-                    padding: 0; 
-                    height: 100%; 
-                    overflow-y: auto;
-                }
                 .emby-episodes-grid { 
                     display: flex; 
                     flex-wrap: wrap; 
@@ -217,23 +212,11 @@
     function playVideo(item) {
         const base = getUrl().replace(/\/$/, '');
         
-        // Пробуем разные варианты URL для воспроизведения
-        let streamUrl;
+        let streamUrl = `${base}/Videos/${item.Id}/stream?api_key=${getApiKey()}&Static=true&PlaySessionId=${Date.now()}`;
         
         if (item.MediaSources && item.MediaSources.length > 0) {
-            let source = item.MediaSources[0];
-            if (source.Container === 'mkv' || source.Container === 'mp4') {
-                // Прямая ссылка на файл если он в поддерживаемом формате
-                streamUrl = `${base}/Videos/${item.Id}/stream.${source.Container}?api_key=${getApiKey()}&MediaSourceId=${source.Id}&Static=true`;
-            } else {
-                // Транскодирование
-                streamUrl = `${base}/Videos/${item.Id}/stream?api_key=${getApiKey()}&MediaSourceId=${source.Id}&Static=true`;
-            }
-        } else {
-            streamUrl = `${base}/Videos/${item.Id}/stream?api_key=${getApiKey()}&Static=true`;
+            streamUrl = `${base}/Videos/${item.Id}/stream?api_key=${getApiKey()}&Static=true&MediaSourceId=${item.MediaSources[0].Id}&PlaySessionId=${Date.now()}`;
         }
-        
-        console.log('Stream URL:', streamUrl);
         
         Lampa.Player.play({
             title: item.Name,
@@ -246,8 +229,10 @@
     /* --- Компонент для сериалов --- */
     function EmbySeriesComponent() {
         let network = new Lampa.Reguest();
-        let element = $('<div class="emby-container"></div>')[0];
         let is_destroyed = false;
+        let component = this;
+        
+        let element = $('<div class="emby-container"></div>')[0];
         
         let seasons = [];
         let current_season = null;
@@ -324,7 +309,7 @@
                     items: items,
                     onSelect: (a) => {
                         current_season = a.season;
-                        loadEpisodes($(element));
+                        loadEpisodes(body);
                     },
                     onBack: () => {
                         Lampa.Controller.toggle('content');
@@ -343,7 +328,6 @@
             } else {
                 current_episodes.forEach((episode) => {
                     let epNum = String(episode.episode_number).padStart(2, '0');
-                    // Используем Lampa.TMDB.image для правильного URL постера
                     let stillPath = episode.still_path ? Lampa.TMDB.image('w400', episode.still_path) : '';
                     let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
 
@@ -362,7 +346,6 @@
                         let epNumber = parseInt($(this).data('episode'));
                         let seasonNumber = parseInt($(this).data('season'));
                         
-                        let body = $(element);
                         body.empty();
                         body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
                         
@@ -429,7 +412,8 @@
                 Lampa.Activity.push({
                     url: '',
                     title: item.Name,
-                    component: 'emby_series'
+                    component: 'emby_series',
+                    movie: movie
                 });
             } else if (item.Type === 'Movie') {
                 playVideo(item);
