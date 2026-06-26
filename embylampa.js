@@ -250,24 +250,33 @@
     }
 
     function playEpisodes(episodes, currentIndex) {
-        const base = getUrl().replace(/\/$/, '');
-        const apiKey = getApiKey();
-        const deviceId = getDeviceId();
-        
-        // Создаем плейлист из эпизодов
-        let playlist = episodes.map((episode, index) => {
-            let playSessionId = Date.now() + index;
-            return {
-                title: episode.Name,
-                url: `${base}/emby/Videos/${episode.Id}/stream?Static=true&DeviceId=${deviceId}&PlaySessionId=${playSessionId}&api_key=${apiKey}`,
-                poster: episode.PrimaryImageTag ? `${base}/Items/${episode.Id}/Images/Primary?tag=${episode.PrimaryImageTag}` : '',
-                timeline: Lampa.Timeline.view(Lampa.Utils.hash('emby_' + episode.Id))
-            };
-        });
-        
-        // Запускаем плеер с плейлистом, начиная с текущего индекса
-        Lampa.Player.playList(playlist, currentIndex);
-    }
+    const base = getUrl().replace(/\/$/, '');
+    const apiKey = getApiKey();
+    const deviceId = getDeviceId();
+    
+    // Создаем плейлист
+    let playlist = episodes.map((episode, index) => {
+        let playSessionId = Date.now() + index;
+        return {
+            title: episode.Name,
+            url: `${base}/emby/Videos/${episode.Id}/stream?Static=true&DeviceId=${deviceId}&PlaySessionId=${playSessionId}&api_key=${apiKey}`,
+            poster: episode.PrimaryImageTag ? `${base}/Items/${episode.Id}/Images/Primary?tag=${episode.PrimaryImageTag}` : '',
+            timeline: Lampa.Timeline.view(Lampa.Utils.hash('emby_' + episode.Id))
+        };
+    });
+    
+    // Запускаем с указанием плейлиста через source
+    Lampa.Player.play({
+        title: playlist[currentIndex].title,
+        url: playlist[currentIndex].url,
+        poster: playlist[currentIndex].poster,
+        timeline: playlist[currentIndex].timeline,
+        source: {
+            playlist: playlist,
+            current: currentIndex
+        }
+    });
+}
 
     /* --- Компонент для сериалов --- */
     function EmbySeriesComponent() {
