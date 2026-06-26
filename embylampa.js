@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.3.4';
+    const PLUGIN_VERSION = '4.4.0';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -197,10 +197,8 @@
 
     function getSeasonsFromTMDB(tmdb_id, callback) {
         if (!tmdb_id) { callback([]); return; }
-        
         let network = new Lampa.Reguest();
         let url = Lampa.TMDB.api('tv/' + tmdb_id + '?api_key=' + Lampa.TMDB.key() + '&language=' + Lampa.Storage.get('language', 'ru'));
-        
         network.silent(url, (data) => {
             if (data && data.seasons) {
                 callback(data.seasons.filter(s => s.season_number > 0));
@@ -212,10 +210,8 @@
 
     function getEpisodesFromTMDB(tmdb_id, season_number, callback) {
         if (!tmdb_id) { callback([]); return; }
-        
         let network = new Lampa.Reguest();
         let url = Lampa.TMDB.api('tv/' + tmdb_id + '/season/' + season_number + '?api_key=' + Lampa.TMDB.key() + '&language=' + Lampa.Storage.get('language', 'ru'));
-        
         network.silent(url, (data) => {
             if (data && data.episodes) {
                 callback(data.episodes);
@@ -303,22 +299,9 @@
             });
         }
 
-        
         function renderEpisodes(body) {
             if (is_destroyed) return;
             body.empty();
-
-// Временно для отладки - покажет структуру данных
-if (current_episodes.length > 0) {
-    let ep = current_episodes[0];
-    console.log('Episode data:', {
-        still_path: ep.still_path,
-        name: ep.name,
-        episode_number: ep.episode_number,
-        all_keys: Object.keys(ep)
-    });
-}
-
             
             let filterPanel = $('<div class="emby-filter"></div>');
             let seasonBtn = $(`<div class="emby-filter-btn selector">${current_season.name || 'Сезон ' + current_season.season_number}</div>`);
@@ -354,10 +337,10 @@ if (current_episodes.length > 0) {
                 current_episodes.forEach((episode) => {
                     let epNum = String(episode.episode_number).padStart(2, '0');
                     
-                    // Пробуем разные варианты получения изображения
+                    // Прямой URL к изображению TMDB
                     let stillPath = '';
                     if (episode.still_path) {
-                        stillPath = Lampa.TMDB.image('w400', episode.still_path);
+                        stillPath = 'https://image.tmdb.org/t/p/w400' + episode.still_path;
                     }
                     
                     let imageHtml = '';
