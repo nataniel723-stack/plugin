@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.1.8';
+    const PLUGIN_VERSION = '4.1.9';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -108,6 +108,20 @@
                     width: 100%; 
                 }
 
+                .emby-button {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 0.5em;
+                    padding: 1em;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: background 0.2s;
+                }
+                .emby-button.focus {
+                    background: rgba(255,255,255,0.1);
+                }
+
                 @media (max-width: 1200px) { 
                     .emby-episode-card { width: calc(33.333% - 1em); } 
                 }
@@ -129,8 +143,13 @@
         return (Lampa.Storage.get(STORAGE_API_KEY, '78b3967970814692b20b095e5b13f0eb') || '').trim();
     }
     
-    function isConfigured() { return getUrl().length > 5 && getApiKey().length > 5; }
-    function notify(msg) { Lampa.Noty.show(msg); }
+    function isConfigured() { 
+        return getUrl().length > 5 && getApiKey().length > 5; 
+    }
+    
+    function notify(msg) { 
+        Lampa.Noty.show(msg); 
+    }
 
     function buildApiUrl(endpoint) {
         const base = getUrl().replace(/\/$/, '');
@@ -159,10 +178,18 @@
         let tmdb = extractTmdbId(movie);
         let network = new Lampa.Reguest();
         
+        console.log('Emby search - tmdb:', tmdb, 'movie:', movie);
+        
         if (tmdb) {
-            network.silent(buildApiUrl(`/Items?AnyProviderIdEquals=tmdb.${tmdb}&Recursive=true&IncludeItemTypes=Movie,Series&Fields=Id,Type,Name`), (data) => {
+            let url = buildApiUrl(`/Items?AnyProviderIdEquals=tmdb.${tmdb}&Recursive=true&IncludeItemTypes=Movie,Series&Fields=Id,Type,Name`);
+            console.log('Emby API URL:', url);
+            network.silent(url, (data) => {
+                console.log('Emby API response:', data);
                 callback(data?.Items?.[0] || null);
-            }, () => callback(null));
+            }, (error) => {
+                console.error('Emby API error:', error);
+                callback(null);
+            });
         } else {
             const title = movie.title || movie.name || movie.original_title || movie.original_name || '';
             if (!title) return callback(null);
@@ -215,6 +242,7 @@
         if (item.MediaSources && item.MediaSources.length > 0) {
             streamUrl = `${base}/Videos/${item.Id}/stream?api_key=${getApiKey()}&Static=true&MediaSourceId=${item.MediaSources[0].Id}&PlaySessionId=${Date.now()}`;
         }
+        console.log('Playing:', streamUrl);
         Lampa.Player.play({
             title: item.Name,
             url: streamUrl,
@@ -236,14 +264,18 @@
         let tmdb_id = null;
 
         this.create = function() {
+            console.log('EmbySeriesComponent create');
             if (window.embySeriesData) {
                 emby_series_id = window.embySeriesData.emby_id;
                 tmdb_id = window.embySeriesData.tmdb_id;
+                console.log('Loaded from global:', {emby_series_id, tmdb_id});
             }
             scroll.render();
         };
 
         this.start = function() {
+            console.log('EmbySeriesComponent start');
+            
             if (!emby_series_id && window.embySeriesData) {
                 emby_series_id = window.embySeriesData.emby_id;
                 tmdb_id = window.embySeriesData.tmdb_id;
@@ -262,6 +294,7 @@
             getSeasonsFromTMDB(tmdb_id, (result) => {
                 if (is_destroyed) return;
                 seasons = result;
+                console.log('Seasons loaded:', seasons);
                 if (seasons.length === 0) {
                     scroll.clear();
                     scroll.append('<div class="emby-empty">Сезоны не найдены</div>');
@@ -281,6 +314,7 @@
             getEpisodesFromTMDB(tmdb_id, current_season.season_number, (episodes) => {
                 if (is_destroyed) return;
                 current_episodes = episodes;
+                console.log('Episodes loaded:', episodes);
                 renderEpisodes();
             });
         }
@@ -289,11 +323,15 @@
             if (is_destroyed) return;
             scroll.clear();
             
-            // Кнопка выбора сезона
             let filterPanel = $('<div class="emby-filter"></div>');
             let seasonBtn = $(`<div class="emby-filter-btn selector">${current_season.name || 'Сезон ' + current_season.season_number}</div>`);
             
-            seasonBtn.on('hover:click', () => {
+            seasonBtn.on('hover:enter', function() {
+                console.log('Season button focus');
+            });
+            
+            seasonBtn.on('hover:click', function() {
+                console.log('Season button clicked');
                 let items = seasons.map(s => ({
                     title: s.name || `Сезон ${s.season_number}`,
                     season: s,
@@ -303,11 +341,11 @@
                 Lampa.Select.show({
                     title: 'Выберите сезон',
                     items: items,
-                    onSelect: (a) => {
+                    onSelect: function(a) {
                         current_season = a.season;
                         loadEpisodes();
                     },
-                    onBack: () => {
+                    onBack: function() {
                         Lampa.Controller.toggle('content');
                     }
                 });
@@ -316,7 +354,6 @@
             filterPanel.append(seasonBtn);
             scroll.append(filterPanel);
 
-            // Сетка эпизодов
             let grid = $('<div class="emby-episodes-grid"></div>');
 
             if (current_episodes.length === 0) {
@@ -339,6 +376,7 @@
                     `);
 
                     card.on('hover:click', function() {
+                        console.log('Episode clicked:', $(this).data());
                         let epNumber = parseInt($(this).data('episode'));
                         let seasonNumber = parseInt($(this).data('season'));
                         
@@ -347,6 +385,7 @@
                         
                         getEpisodeFromEmby(emby_series_id, seasonNumber, epNumber, (embyEpisode) => {
                             if (is_destroyed) return;
+                            console.log('Emby episode found:', embyEpisode);
                             if (embyEpisode) {
                                 playVideo(embyEpisode);
                             } else {
@@ -366,38 +405,39 @@
         }
 
         function setupNavigation() {
+            console.log('Setup navigation');
             Lampa.Controller.add('content', {
-                toggle: () => {
+                toggle: function() {
                     if (scroll && scroll.render()) {
                         Lampa.Controller.collectionSet(scroll.render());
                         Lampa.Controller.collectionFocus(false, scroll.render());
                     }
                 },
-                up: () => {
+                up: function() {
                     if (window.Navigator && window.Navigator.canmove('up')) {
                         window.Navigator.move('up');
                     } else {
                         Lampa.Controller.toggle('head');
                     }
                 },
-                down: () => {
+                down: function() {
                     if (window.Navigator && window.Navigator.canmove('down')) {
                         window.Navigator.move('down');
                     }
                 },
-                left: () => {
+                left: function() {
                     if (window.Navigator && window.Navigator.canmove('left')) {
                         window.Navigator.move('left');
                     } else {
                         Lampa.Controller.toggle('menu');
                     }
                 },
-                right: () => {
+                right: function() {
                     if (window.Navigator && window.Navigator.canmove('right')) {
                         window.Navigator.move('right');
                     }
                 },
-                back: () => {
+                back: function() {
                     Lampa.Activity.backward();
                 }
             });
@@ -420,9 +460,16 @@
 
     /* --- Главная логика запуска --- */
     function handleEmbyClick(movie) {
-        if (!isConfigured()) return notify('Настройте Emby в параметрах');
+        console.log('handleEmbyClick called', movie);
+        
+        if (!isConfigured()) {
+            console.log('Emby not configured');
+            return notify('Настройте Emby в параметрах');
+        }
 
         findInEmby(movie, (item) => {
+            console.log('findInEmby result:', item);
+            
             if (!item) return notify('Контент не найден в библиотеке Emby.');
 
             if (item.Type === 'Series') {
@@ -434,12 +481,15 @@
                     title: item.Name
                 };
                 
+                console.log('Pushing series activity', window.embySeriesData);
+                
                 Lampa.Activity.push({
                     url: '',
                     title: item.Name,
                     component: 'emby_series'
                 });
             } else if (item.Type === 'Movie') {
+                console.log('Playing movie:', item);
                 playVideo(item);
             } else {
                 notify('Неизвестный тип контента');
@@ -449,20 +499,38 @@
 
     /* --- Кнопка в интерфейсе --- */
     function addEmbyButton(data) {
-        if (!data || !data.render || !data.movie) return;
-        if (data.render.find('.emby-button').length) return;
+        console.log('addEmbyButton called', data);
+        
+        if (!data || !data.render || !data.movie) {
+            console.log('Invalid data for button');
+            return;
+        }
+        
+        if (data.render.find('.emby-button').length) {
+            console.log('Button already exists');
+            return;
+        }
 
-        let button = $('<div class="full-start__button selector view--emby emby-button" data-subtitle="' + PLUGIN_NAME + ' v' + PLUGIN_VERSION + '"></div>');
+        let button = $('<div class="full-start__button selector view--emby emby-button"></div>');
+        button.attr('data-subtitle', PLUGIN_NAME + ' v' + PLUGIN_VERSION);
         button.append('<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>');
         button.append('<span>' + PLUGIN_NAME + '</span>');
 
+        console.log('Button created, movie data:', data.movie);
+
         button.on('hover:click', function() {
+            console.log('Emby button clicked!');
             handleEmbyClick(data.movie);
         });
 
         let playButton = data.render.find('.button--play, .view--torrent').first();
-        if (playButton.length) playButton.after(button);
-        else data.render.find('.buttons, .activity__body').append(button);
+        if (playButton.length) {
+            playButton.after(button);
+            console.log('Button added after play button');
+        } else {
+            data.render.find('.buttons, .activity__body').append(button);
+            console.log('Button added to container');
+        }
     }
 
     /* --- Настройки --- */
@@ -516,7 +584,9 @@
         initSettings();
         
         Lampa.Listener.follow('full', function(e) {
+            console.log('Full event:', e.type, e);
             if (e.type === 'complite') {
+                console.log('Adding Emby button');
                 addEmbyButton({ 
                     render: e.object.activity.render(), 
                     movie: e.data.movie || e.data.card 
@@ -527,9 +597,17 @@
         console.log('%c' + PLUGIN_NAME + ' v' + PLUGIN_VERSION + ' loaded', 'color: #00ff88; font-weight: bold');
     }
 
-    if (window.appready) startPlugin();
-    else Lampa.Listener.follow('app', function(e) { 
-        if (e.type === 'ready') startPlugin(); 
-    });
+    if (window.appready) {
+        console.log('App ready, starting plugin');
+        startPlugin();
+    } else {
+        console.log('Waiting for app ready');
+        Lampa.Listener.follow('app', function(e) { 
+            if (e.type === 'ready') {
+                console.log('App ready event received');
+                startPlugin(); 
+            }
+        });
+    }
 
 })();
