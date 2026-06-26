@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '5.0.0';
+    const PLUGIN_VERSION = '5.0.1';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -184,7 +184,6 @@
         return deviceId;
     }
 
-    // Проверка, просмотрен ли эпизод
     function isEpisodeWatched(episodeId) {
         let timeline = Lampa.Timeline.view('emby_' + episodeId);
         return timeline && timeline.time > 0;
@@ -250,26 +249,24 @@
         }, () => callback([]));
     }
 
-    function playVideo(item) {
+    function playEpisodes(episodes, currentIndex) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
         const deviceId = getDeviceId();
-        const playSessionId = Date.now().toString();
         
-        let streamUrl = `${base}/emby/Videos/${item.Id}/stream?Static=true&DeviceId=${deviceId}&PlaySessionId=${playSessionId}&api_key=${apiKey}`;
-        
-        // Используем встроенную синхронизацию Lampa
-        Lampa.Player.play({
-            title: item.Name,
-            url: streamUrl,
-            poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
-            timeline: Lampa.Timeline.view(Lampa.Utils.hash('emby_' + item.Id))
+        // Создаем плейлист из эпизодов
+        let playlist = episodes.map((episode, index) => {
+            let playSessionId = Date.now() + index;
+            return {
+                title: episode.Name,
+                url: `${base}/emby/Videos/${episode.Id}/stream?Static=true&DeviceId=${deviceId}&PlaySessionId=${playSessionId}&api_key=${apiKey}`,
+                poster: episode.PrimaryImageTag ? `${base}/Items/${episode.Id}/Images/Primary?tag=${episode.PrimaryImageTag}` : '',
+                timeline: Lampa.Timeline.view(Lampa.Utils.hash('emby_' + episode.Id))
+            };
         });
         
-        // После начала воспроизведения возвращаемся к списку серий
-        setTimeout(() => {
-            Lampa.Activity.backward();
-        }, 500);
+        // Запускаем плеер с плейлистом, начиная с текущего индекса
+        Lampa.Player.playList(playlist, currentIndex);
     }
 
     /* --- Компонент для сериалов --- */
@@ -369,7 +366,7 @@
             if (current_episodes.length === 0) {
                 grid.append('<div class="emby-empty">Эпизоды не найдены</div>');
             } else {
-                current_episodes.forEach((episode) => {
+                current_episodes.forEach((episode, index) => {
                     let epNum = String(episode.episode_number).padStart(2, '0');
                     
                     let stillPath = '';
@@ -386,11 +383,10 @@
                     
                     let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
                     
-                    // Проверяем, просмотрен ли эпизод
                     let watchedClass = isEpisodeWatched(episode.id) ? ' watched' : '';
 
                     let item = $(`
-                        <div class="emby-episode-card selector${watchedClass}" data-episode="${episode.episode_number}" data-season="${current_season.season_number}" data-id="${episode.id}">
+                        <div class="emby-episode-card selector${watchedClass}" data-episode="${episode.episode_number}" data-season="${current_season.season_number}" data-index="${index}">
                             <div class="emby-ep-img-wrap">
                                 ${imageHtml}
                                 <div class="emby-ep-num">${epNum} серия</div>
@@ -417,21 +413,16 @@
                                 let season = seasonData.Items.find(s => s.IndexNumber === seasonNumber);
                                 
                                 if (season) {
-                                    let episodeQuery = `/Items?ParentId=${season.Id}&IncludeItemTypes=Episode&Fields=Id,Name,IndexNumber&SortBy=SortName&SortOrder=Ascending`;
+                                    let episodeQuery = `/Items?ParentId=${season.Id}&IncludeItemTypes=Episode&Fields=Id,Name,IndexNumber,PrimaryImageTag&SortBy=SortName&SortOrder=Ascending`;
                                     
                                     net.silent(buildApiUrl(episodeQuery), (episodeData) => {
                                         if (is_destroyed) return;
                                         
                                         if (episodeData && episodeData.Items) {
                                             let sortedEpisodes = episodeData.Items.sort((a, b) => (a.IndexNumber || 0) - (b.IndexNumber || 0));
-                                            let embyEpisode = sortedEpisodes[epNumber - 1];
                                             
-                                            if (embyEpisode) {
-                                                playVideo(embyEpisode);
-                                            } else {
-                                                body.html('<div class="emby-empty">Эпизод не найден</div>');
-                                                setupNavigation();
-                                            }
+                                            // Запускаем плейлист начиная с выбранного эпизода
+                                            playEpisodes(sortedEpisodes, epNumber - 1);
                                         }
                                     }, () => {
                                         if (is_destroyed) return;
@@ -553,7 +544,8 @@
                     component: 'emby_series'
                 });
             } else if (item.Type === 'Movie') {
-                playVideo(item);
+                // Для фильмов используем обычный play
+                playEpisodes([item], 0);
             } else {
                 notify('Неизвестный тип контента');
             }
