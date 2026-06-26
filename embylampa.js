@@ -2,16 +2,21 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.0.2'; // Исправлена навигация (Navigator)
+    const PLUGIN_VERSION = '4.0.3';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
-    // Внедряем стили для отображения серий сеткой
+    // Внедряем стили
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
-                .emby-episodes-grid { display: flex; flex-wrap: wrap; padding: 1em 1.5em; gap: 1.5em; }
+                .emby-episodes-grid { 
+                    display: flex; 
+                    flex-wrap: wrap; 
+                    padding: 1em 1.5em; 
+                    gap: 1.5em; 
+                }
                 
                 .emby-episode-card { 
                     width: calc(25% - 1.125em); 
@@ -92,12 +97,81 @@
                     font-size: 1.1em; 
                     font-weight: bold;
                 }
-                .emby-filter-btn.focus { background: #fff; color: #000; }
+                .emby-filter-btn.focus { 
+                    background: #fff; 
+                    color: #000; 
+                }
                 
-                .emby-loader { display: flex; justify-content: center; align-items: center; height: 50vh; }
-                .emby-empty { text-align: center; padding: 3em; font-size: 1.2em; opacity: 0.7; width: 100%; }
+                .emby-loader { 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center; 
+                    height: 50vh; 
+                }
+                .emby-empty { 
+                    text-align: center; 
+                    padding: 3em; 
+                    font-size: 1.2em; 
+                    opacity: 0.7; 
+                    width: 100%; 
+                }
 
-                @media (max-width: 1200px) { .emby-episode-card { width: calc(33.333% - 1em); } } 
+                /* Описание и постер для фильмов */
+                .emby-movie-info {
+                    display: flex;
+                    gap: 2em;
+                    padding: 2em;
+                    align-items: flex-start;
+                }
+                .emby-movie-poster {
+                    width: 300px;
+                    border-radius: 10px;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+                }
+                .emby-movie-details {
+                    flex: 1;
+                }
+                .emby-movie-details h2 {
+                    font-size: 2em;
+                    margin-bottom: 0.5em;
+                }
+                .emby-movie-details .meta {
+                    color: #aaa;
+                    margin-bottom: 1em;
+                }
+                .emby-movie-details .overview {
+                    color: #ddd;
+                    line-height: 1.6;
+                    margin-bottom: 1.5em;
+                }
+                .emby-play-btn {
+                    background: #00B0FF;
+                    color: #fff;
+                    padding: 1em 2em;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.5em;
+                    font-size: 1.2em;
+                    font-weight: bold;
+                }
+                .emby-play-btn.focus {
+                    transform: scale(1.05);
+                    box-shadow: 0 0 20px rgba(0,176,255,0.5);
+                }
+
+                @media (max-width: 1200px) { 
+                    .emby-episode-card { width: calc(33.333% - 1em); }
+                    .emby-movie-info { flex-direction: column; }
+                    .emby-movie-poster { width: 100%; max-width: 300px; }
+                }
+                @media (max-width: 768px) { 
+                    .emby-episode-card { width: calc(50% - 0.75em); }
+                }
+                @media (max-width: 480px) { 
+                    .emby-episode-card { width: 100%; }
+                }
             </style>
         `);
     }
@@ -117,17 +191,24 @@
     function findInEmby(movie, callback) {
         if (!movie) return callback(null);
         let network = new Lampa.Reguest();
-        const fields = '&Fields=Id,Name,Type,ParentId,PrimaryImageTag&Recursive=true&IncludeItemTypes=Movie,Series,Episode';
+        const fields = '&Fields=Id,Name,Type,ParentId,PrimaryImageTag,Overview,RunTimeTicks,CommunityRating,Genres,ProductionYear&Recursive=true&IncludeItemTypes=Movie,Series,Episode';
         const tmdb = movie.tmdb_id || movie.id;
         
         if (tmdb) {
-            network.silent(buildApiUrl(`/Items?AnyProviderIdEquals=tmdb.${tmdb}${fields}`), data => callback(data?.Items?.[0]));
+            network.silent(buildApiUrl(`/Items?AnyProviderIdEquals=tmdb.${tmdb}${fields}`), data => {
+                callback(data?.Items?.[0] || null);
+            });
             return;
         }
 
         const title = encodeURIComponent(movie.title || movie.name || '');
-        if (title) network.silent(buildApiUrl(`/Items?SearchTerm=${title}&Limit=3${fields}`), data => callback(data?.Items?.[0]));
-        else callback(null);
+        if (title) {
+            network.silent(buildApiUrl(`/Items?SearchTerm=${title}&Limit=3${fields}`), data => {
+                callback(data?.Items?.[0] || null);
+            });
+        } else {
+            callback(null);
+        }
     }
 
     /* --- Воспроизведение --- */
@@ -141,60 +222,139 @@
         });
     }
 
-    /* --- Нативный компонент Lampa --- */
+    /* --- Компонент для фильмов --- */
+    function EmbyMovieComponent(object) {
+        let network = new Lampa.Reguest();
+        let activity = this;
+        let is_destroyed = false;
+
+        this.create = function() {
+            let body = $(activity.render());
+            body.empty();
+            body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
+
+            network.silent(buildApiUrl(`/Items?Ids=${object.id}&Fields=Overview,RunTimeTicks,CommunityRating,Genres,ProductionYear,PrimaryImageTag`), (data) => {
+                if (is_destroyed || !data?.Items?.length) {
+                    if (!is_destroyed) body.html('<div class="emby-empty">Фильм не найден</div>');
+                    return;
+                }
+                
+                let item = data.Items[0];
+                let base = getUrl().replace(/\/$/, '');
+                let poster = item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?maxWidth=400&quality=90` : '';
+                let year = item.ProductionYear || '';
+                let genres = (item.Genres || []).join(', ');
+                let rating = item.CommunityRating ? item.CommunityRating.toFixed(1) : '0.0';
+                let runtime = item.RunTimeTicks ? Math.floor(item.RunTimeTicks / 600000000) : 0;
+                let hours = Math.floor(runtime / 60);
+                let minutes = runtime % 60;
+                let timeStr = hours > 0 ? `${hours}ч ${minutes}м` : `${minutes}м`;
+
+                body.html(`
+                    <div class="emby-movie-info">
+                        ${poster ? `<img src="${poster}" class="emby-movie-poster" onerror="this.style.display='none'">` : ''}
+                        <div class="emby-movie-details">
+                            <h2>${item.Name || 'Без названия'}</h2>
+                            <div class="meta">
+                                ${year ? `<span>${year}</span>` : ''}
+                                ${genres ? `<span> • ${genres}</span>` : ''}
+                                ${timeStr ? `<span> • ${timeStr}</span>` : ''}
+                                <span> • ⭐ ${rating}</span>
+                            </div>
+                            ${item.Overview ? `<div class="overview">${item.Overview}</div>` : ''}
+                            <div class="emby-play-btn selector">
+                                <svg width="24" height="24" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="currentColor"/></svg>
+                                Смотреть
+                            </div>
+                        </div>
+                    </div>
+                `);
+
+                // Кнопка воспроизведения
+                body.find('.emby-play-btn').on('hover:enter click', () => playVideo(item));
+
+                // Навигация
+                Lampa.Controller.add('content', {
+                    toggle: () => {
+                        Lampa.Controller.collectionSet(activity.render());
+                        Lampa.Controller.collectionFocus(false, activity.render());
+                    },
+                    up: () => Lampa.Controller.toggle('head'),
+                    down: () => {},
+                    left: () => Lampa.Controller.toggle('menu'),
+                    right: () => {},
+                    back: () => Lampa.Activity.backward()
+                });
+                Lampa.Controller.toggle('content');
+            }, () => {
+                if (!is_destroyed) body.html('<div class="emby-empty">Ошибка загрузки</div>');
+            });
+        };
+
+        this.destroy = function() {
+            is_destroyed = true;
+            network.clear();
+        };
+
+        this.render = function() {
+            return $('<div></div>')[0];
+        };
+    }
+
+    /* --- Компонент для сериалов --- */
     function EmbySeriesComponent(object) {
         let network = new Lampa.Reguest();
-        let scroll = new Lampa.Scroll({mask: true, over: true});
-        let is_destroyed = false; 
+        let activity = this;
+        let is_destroyed = false;
         
-        scroll.render();
-
         this.seasons = [];
         this.current_season = null;
 
         this.create = function() {
-            scroll.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
+            let body = $(activity.render());
+            body.empty();
+            body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
             
             network.silent(buildApiUrl(`/Shows/${object.id}/Seasons`), (data) => {
-                if (is_destroyed) return; 
+                if (is_destroyed) return;
                 
                 this.seasons = data.Items || [];
                 if (this.seasons.length === 0) {
-                    scroll.clear();
-                    scroll.append('<div class="emby-empty">Сезоны не найдены</div>');
-                    this.start();
+                    body.html('<div class="emby-empty">Сезоны не найдены</div>');
+                    setupNavigation(body);
                 } else {
                     this.current_season = this.seasons[0];
                     this.loadEpisodes();
                 }
             }, () => {
                 if (is_destroyed) return;
-                scroll.clear();
-                scroll.append('<div class="emby-empty">Ошибка загрузки сезонов</div>');
-                this.start();
+                body.html('<div class="emby-empty">Ошибка загрузки сезонов</div>');
+                setupNavigation(body);
             });
         };
 
         this.loadEpisodes = function() {
             if (is_destroyed) return;
-            scroll.clear();
-            scroll.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
+            let body = $(activity.render());
+            body.empty();
+            body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
             
-            const query = `/Items?ParentId=${object.id}&Season=${this.current_season.IndexNumber}&IncludeItemTypes=Episode&Fields=RunTimeTicks,PremiereDate,CommunityRating&SortBy=SortName&SortOrder=Ascending`;
+            const query = `/Items?ParentId=${object.id}&Season=${this.current_season.IndexNumber}&IncludeItemTypes=Episode&Fields=RunTimeTicks,PremiereDate,CommunityRating,PrimaryImageTag&SortBy=SortName&SortOrder=Ascending`;
             
             network.silent(buildApiUrl(query), (data) => {
                 if (is_destroyed) return;
                 this.renderEpisodes(data.Items || []);
             }, () => {
                 if (is_destroyed) return;
-                scroll.clear();
-                scroll.append('<div class="emby-empty">Ошибка загрузки эпизодов</div>');
+                body.html('<div class="emby-empty">Ошибка загрузки эпизодов</div>');
+                setupNavigation(body);
             });
         };
 
         this.renderEpisodes = function(episodes) {
             if (is_destroyed) return;
-            scroll.clear();
+            let body = $(activity.render());
+            body.empty();
             
             // Фильтр выбора сезона
             let filterPanel = $('<div class="emby-filter"></div>');
@@ -202,7 +362,7 @@
             
             seasonBtn.on('hover:enter click', () => {
                 let items = this.seasons.map(s => ({
-                    title: s.Name,
+                    title: s.Name || `Сезон ${s.IndexNumber}`,
                     season: s,
                     selected: s.Id === this.current_season.Id
                 }));
@@ -221,7 +381,7 @@
             });
             
             filterPanel.append(seasonBtn);
-            scroll.append(filterPanel);
+            body.append(filterPanel);
 
             // Сетка эпизодов
             let grid = $('<div class="emby-episodes-grid"></div>');
@@ -233,7 +393,9 @@
                 
                 episodes.forEach(episode => {
                     let runTime = episode.RunTimeTicks ? Math.floor(episode.RunTimeTicks / 600000000) : 0;
-                    let timeStr = runTime ? `${String(Math.floor(runTime/60)).padStart(2,'0')}:${String(runTime%60).padStart(2,'0')}` : '';
+                    let hours = Math.floor(runTime / 60);
+                    let minutes = runTime % 60;
+                    let timeStr = runTime ? `${hours}:${String(minutes).padStart(2,'0')}` : '';
                     
                     let rating = episode.CommunityRating ? episode.CommunityRating.toFixed(1) : '0.0';
                     let img = episode.PrimaryImageTag ? `${base}/Items/${episode.Id}/Images/Primary?maxWidth=400&quality=90` : '';
@@ -256,55 +418,32 @@
                 });
             }
             
-            scroll.append(grid);
-            this.start();
+            body.append(grid);
+            setupNavigation(body);
         };
 
-        this.start = function() {
+        function setupNavigation(body) {
             Lampa.Controller.add('content', {
                 toggle: () => {
-                    if (typeof Lampa.Controller.collectionSet === 'function') {
-                        Lampa.Controller.collectionSet(scroll.render());
-                    }
-                    
-                    if (typeof Lampa.Controller.collectionFocus === 'function') {
-                        Lampa.Controller.collectionFocus(false, scroll.render());
-                    } else {
-                        // Исправленный ручной фокус (Navigator вместо Lampa.Navigator)
-                        let first = scroll.render().find('.selector').eq(0);
-                        if (first.length && typeof Navigator !== 'undefined') {
-                            Navigator.focus(first[0]);
-                        }
-                    }
+                    Lampa.Controller.collectionSet(activity.render());
+                    Lampa.Controller.collectionFocus(false, activity.render());
                 },
-                left: () => { 
-                    if (typeof Navigator !== 'undefined' && Navigator.canmove('left')) Navigator.move('left');
-                    else Lampa.Controller.toggle('menu'); 
-                },
-                right: () => { 
-                    if (typeof Navigator !== 'undefined' && Navigator.canmove('right')) Navigator.move('right'); 
-                },
-                up: () => { 
-                    if (typeof Navigator !== 'undefined' && Navigator.canmove('up')) Navigator.move('up');
-                    else Lampa.Controller.toggle('head'); 
-                },
-                down: () => { 
-                    if (typeof Navigator !== 'undefined' && Navigator.canmove('down')) Navigator.move('down'); 
-                },
-                back: () => { Lampa.Activity.backward(); }
+                up: () => Lampa.Controller.toggle('head'),
+                down: () => {},
+                left: () => Lampa.Controller.toggle('menu'),
+                right: () => {},
+                back: () => Lampa.Activity.backward()
             });
             Lampa.Controller.toggle('content');
-        };
+        }
 
-        this.pause = function() {};
-        this.stop = function() {};
-        
-        this.render = function() { return scroll.render(); };
-        
         this.destroy = function() {
             is_destroyed = true;
             network.clear();
-            scroll.destroy();
+        };
+
+        this.render = function() {
+            return $('<div></div>')[0];
         };
     }
 
@@ -322,6 +461,13 @@
                     component: 'emby_series', 
                     id: item.Id
                 });
+            } else if (item.Type === 'Movie') {
+                Lampa.Activity.push({
+                    url: '',
+                    title: item.Name,
+                    component: 'emby_movie',
+                    id: item.Id
+                });
             } else {
                 playVideo(item);
             }
@@ -335,7 +481,10 @@
 
         const button = $(`
             <div class="full-start__button selector view--emby emby-button" data-subtitle="${PLUGIN_NAME} v${PLUGIN_VERSION}">
-                <svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>
+                <svg width="40" height="40" viewBox="0 0 40 40">
+                    <rect width="40" height="40" rx="8" fill="#00B0FF"/>
+                    <text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text>
+                </svg>
                 <span>${PLUGIN_NAME}</span>
             </div>
         `);
@@ -379,23 +528,31 @@
             name: 'Emby',
             icon: '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>'
         });
-        Lampa.Settings.listener.follow('open', e => { if (e.name === 'emby') renderSettings(e.body); });
+        Lampa.Settings.listener.follow('open', e => { 
+            if (e.name === 'emby') renderSettings(e.body); 
+        });
     }
 
     /* --- Запуск --- */
     function startPlugin() {
         Lampa.Component.add('emby_series', EmbySeriesComponent);
+        Lampa.Component.add('emby_movie', EmbyMovieComponent);
 
         initSettings();
         Lampa.Listener.follow('full', e => {
             if (e.type === 'complite') {
-                addEmbyButton({ render: e.object.activity.render(), movie: e.data.movie || e.data.card });
+                addEmbyButton({ 
+                    render: e.object.activity.render(), 
+                    movie: e.data.movie || e.data.card 
+                });
             }
         });
         console.log(`%c${PLUGIN_NAME} v${PLUGIN_VERSION} загружен`, 'color: #00ff88; font-weight: bold');
     }
 
     if (window.appready) startPlugin();
-    else Lampa.Listener.follow('app', e => { if (e.type === 'ready') startPlugin(); });
+    else Lampa.Listener.follow('app', e => { 
+        if (e.type === 'ready') startPlugin(); 
+    });
 
 })();
