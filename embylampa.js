@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.2.1';
+    const PLUGIN_VERSION = '4.2.2';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -59,16 +59,6 @@
                     font-weight: bold; 
                     font-size: 0.9em; 
                     color: #fff;
-                }
-                .emby-ep-time { 
-                    position: absolute; 
-                    bottom: 0.4em; 
-                    right: 0.4em; 
-                    background: rgba(0,0,0,0.7); 
-                    padding: 0.2em 0.5em; 
-                    border-radius: 0.3em; 
-                    font-size: 0.85em; 
-                    color: #ddd;
                 }
                 
                 .emby-ep-title { 
@@ -185,13 +175,11 @@
         }
     }
 
-    /* --- Получение сезонов из TMDB через Lampa.TMDB --- */
+    /* --- Получение сезонов из TMDB --- */
     function getSeasonsFromTMDB(tmdb_id, callback) {
         if (!tmdb_id) { callback([]); return; }
-        
         let network = new Lampa.Reguest();
         let url = Lampa.TMDB.api('tv/' + tmdb_id + '?api_key=' + Lampa.TMDB.key() + '&language=' + Lampa.Storage.get('language', 'ru'));
-        
         network.silent(url, (data) => {
             if (data && data.seasons) {
                 callback(data.seasons.filter(s => s.season_number > 0));
@@ -201,13 +189,11 @@
         }, () => callback([]));
     }
 
-    /* --- Получение эпизодов из TMDB через Lampa.TMDB --- */
+    /* --- Получение эпизодов из TMDB --- */
     function getEpisodesFromTMDB(tmdb_id, season_number, callback) {
         if (!tmdb_id) { callback([]); return; }
-        
         let network = new Lampa.Reguest();
         let url = Lampa.TMDB.api('tv/' + tmdb_id + '/season/' + season_number + '?api_key=' + Lampa.TMDB.key() + '&language=' + Lampa.Storage.get('language', 'ru'));
-        
         network.silent(url, (data) => {
             if (data && data.episodes) {
                 callback(data.episodes);
@@ -222,27 +208,22 @@
         let network = new Lampa.Reguest();
         const query = `/Items?ParentId=${series_id}&Season=${season_number}&IncludeItemTypes=Episode&Fields=Id,Name,IndexNumber,MediaSources,Path&SortBy=SortName&SortOrder=Ascending`;
         
-        console.log('Requesting episodes from Emby:', buildApiUrl(query));
-        
         network.silent(buildApiUrl(query), (data) => {
-            console.log('Emby episodes response:', data);
             if (data && data.Items) {
-                console.log('All episodes from Emby:');
-                data.Items.forEach(e => {
-                    console.log(`  Episode ${e.IndexNumber}: ID=${e.Id}, Name="${e.Name}", Path=${e.Path}`);
-                });
-                
                 let episode = data.Items.find(e => e.IndexNumber === episode_number);
-                console.log('Looking for episode', episode_number, 'found:', episode);
+                
+                if (episode && episode.MediaSources && episode.MediaSources.length > 0) {
+                    // Получаем детальную информацию о видео, включая правильный ID
+                    let videoId = episode.MediaSources[0].Id.replace('mediasource_', '');
+                    console.log('Episode ID:', episode.Id, 'Video ID:', videoId);
+                    
+                    // Используем ID из MediaSources для воспроизведения
+                    episode._videoId = videoId;
+                }
+                
                 callback(episode || null);
-            } else {
-                console.log('No items in response');
-                callback(null);
-            }
-        }, (error) => {
-            console.error('Error getting episodes:', error);
-            callback(null);
-        });
+            } else callback(null);
+        }, () => callback(null));
     }
 
     /* --- Воспроизведение --- */
@@ -250,17 +231,13 @@
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
         
-        console.log('playVideo called with item:', {
-            id: item.Id,
-            name: item.Name,
-            mediaSources: item.MediaSources
-        });
+        // Используем ID видеофайла если есть, иначе ID элемента
+        let videoId = item._videoId || item.Id;
         
-        // Используем точно такой же URL как для фильмов, но с /emby/
-        let streamUrl = `${base}/emby/Videos/${item.Id}/stream.mp4?static=true&api_key=${apiKey}`;
+        let streamUrl = `${base}/emby/Videos/${videoId}/stream.mp4?static=true&api_key=${apiKey}`;
         
         if (item.MediaSources && item.MediaSources.length > 0) {
-            streamUrl = `${base}/emby/Videos/${item.Id}/stream.mp4?static=true&MediaSourceId=${item.MediaSources[0].Id}&api_key=${apiKey}`;
+            streamUrl = `${base}/emby/Videos/${videoId}/stream.mp4?static=true&MediaSourceId=${item.MediaSources[0].Id}&api_key=${apiKey}`;
         }
         
         console.log('Final stream URL:', streamUrl);
@@ -290,7 +267,6 @@
             if (window.embySeriesData) {
                 emby_series_id = window.embySeriesData.emby_id;
                 tmdb_id = window.embySeriesData.tmdb_id;
-                console.log('Component create - emby_id:', emby_series_id, 'tmdb_id:', tmdb_id);
             }
         };
 
@@ -299,8 +275,6 @@
                 emby_series_id = window.embySeriesData.emby_id;
                 tmdb_id = window.embySeriesData.tmdb_id;
             }
-            
-            console.log('Component start - emby_id:', emby_series_id, 'tmdb_id:', tmdb_id);
             
             let body = $(element);
             body.empty();
@@ -393,9 +367,6 @@
                         let epNumber = parseInt($(this).data('episode'));
                         let seasonNumber = parseInt($(this).data('season'));
                         
-                        console.log('Clicked episode:', epNumber, 'season:', seasonNumber);
-                        console.log('Using emby_series_id:', emby_series_id);
-                        
                         body.empty();
                         body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
                         
@@ -448,8 +419,6 @@
         if (!isConfigured()) return notify('Настройте Emby в параметрах');
 
         findInEmby(movie, (item) => {
-            console.log('Found in Emby:', item);
-            
             if (!item) return notify('Контент не найден в библиотеке Emby.');
 
             if (item.Type === 'Series') {
@@ -460,8 +429,6 @@
                     tmdb_id: tmdbId,
                     title: item.Name
                 };
-                
-                console.log('Series data:', window.embySeriesData);
                 
                 Lampa.Activity.push({
                     url: '',
