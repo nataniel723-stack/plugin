@@ -308,10 +308,15 @@
             if (is_destroyed) return;
             body.empty();
 
+// Временно для отладки - покажет структуру данных
 if (current_episodes.length > 0) {
-    console.log('First episode full data:', JSON.stringify(current_episodes[0], null, 2));
-    console.log('still_path:', current_episodes[0].still_path);
-    console.log('Lampa.TMDB.image test:', Lampa.TMDB.image('w400', current_episodes[0].still_path));
+    let ep = current_episodes[0];
+    console.log('Episode data:', {
+        still_path: ep.still_path,
+        name: ep.name,
+        episode_number: ep.episode_number,
+        all_keys: Object.keys(ep)
+    });
 }
 
             
