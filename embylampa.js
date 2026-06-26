@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.1.2';
+    const PLUGIN_VERSION = '4.1.3';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -161,11 +161,6 @@
             tmdb = movie.data.tmdb_id || movie.data.id;
         }
         
-        // Проверяем source объект
-        if (!tmdb && movie.source) {
-            tmdb = movie.source.tmdb_id || movie.source.id;
-        }
-        
         // Если tmdb строка, пробуем преобразовать в число
         if (typeof tmdb === 'string' && !isNaN(tmdb)) {
             tmdb = parseInt(tmdb);
@@ -179,7 +174,7 @@
         if (!movie) return callback(null);
         
         let tmdb = extractTmdbId(movie);
-        console.log('Extracted TMDB ID:', tmdb, 'from movie:', movie);
+        console.log('Extracted TMDB ID:', tmdb);
         
         let network = new Lampa.Reguest();
         
@@ -275,27 +270,39 @@
         this.emby_series_id = null;
         this.tmdb_id = null;
 
-        this.create = function() {};
+        this.create = function() {
+            // При создании компонента данные уже должны быть в this.object
+            console.log('Emby Series Create:', this.object);
+        };
 
         this.start = function() {
-            let object = component.object || {};
+            console.log('Emby Series Start - this.object:', this.object);
+            console.log('Emby Series Start - this.activity:', this.activity);
+            
+            let object = this.object || {};
             let body = $(element);
             body.empty();
             
-            component.emby_series_id = object.id;
+            // Пробуем получить данные из разных источников
+            component.emby_series_id = object.id || (this.activity && this.activity.id);
             
-            // Извлекаем TMDB ID из всех возможных источников
-            component.tmdb_id = extractTmdbId(object);
+            // Извлекаем TMDB ID
+            component.tmdb_id = object.tmdb_id;
             
-            // Логирование для отладки
-            console.log('Emby Series Component Start:', {
+            // Если нет в object, пробуем из activity
+            if (!component.tmdb_id && this.activity) {
+                component.tmdb_id = this.activity.tmdb_id;
+            }
+            
+            console.log('Component data:', {
                 emby_id: component.emby_series_id,
                 tmdb_id: component.tmdb_id,
-                object: object
+                object: object,
+                activity: this.activity
             });
             
             if (!component.tmdb_id) {
-                body.html('<div class="emby-empty">Не удалось определить TMDB ID сериала. Проверьте консоль для отладки.</div>');
+                body.html('<div class="emby-empty">Не удалось определить TMDB ID сериала. ID: ' + component.emby_series_id + '</div>');
                 setupNavigation();
                 return;
             }
@@ -307,7 +314,7 @@
                 
                 component.seasons = seasons;
                 if (component.seasons.length === 0) {
-                    body.html('<div class="emby-empty">Сезоны не найдены</div>');
+                    body.html('<div class="emby-empty">Сезоны не найдены для TMDB ID: ' + component.tmdb_id + '</div>');
                     setupNavigation();
                 } else {
                     component.current_season = component.seasons[0];
@@ -434,23 +441,31 @@
     function handleEmbyClick(movie) {
         if (!isConfigured()) return notify('Настройте Emby в параметрах');
         
-        console.log('Emby click - movie data:', JSON.stringify(movie));
+        console.log('Emby click - movie:', movie);
 
         findInEmby(movie, (item) => {
             if (!item) return notify('Контент не найден в библиотеке Emby.');
 
             if (item.Type === 'Series') {
                 let tmdbId = extractTmdbId(movie);
-                console.log('Pushing series activity with TMDB ID:', tmdbId);
+                console.log('Creating series activity with:', {
+                    embyId: item.Id,
+                    tmdbId: tmdbId
+                });
+                
+                // Сохраняем данные глобально для доступа из компонента
+                window.embySeriesData = {
+                    emby_id: item.Id,
+                    tmdb_id: tmdbId,
+                    title: item.Name
+                };
                 
                 Lampa.Activity.push({
                     url: '',
                     title: item.Name,
                     component: 'emby_series', 
                     id: item.Id,
-                    tmdb_id: tmdbId,
-                    name: item.Name,
-                    movie: movie
+                    tmdb_id: tmdbId
                 });
             } else if (item.Type === 'Movie') {
                 playVideo(item);
