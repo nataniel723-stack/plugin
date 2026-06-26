@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.2.1';
+    const PLUGIN_VERSION = '4.2.2';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -205,7 +205,7 @@
 
     function getEpisodeFromEmby(series_id, season_number, episode_number, callback) {
         let network = new Lampa.Reguest();
-        const query = `/Items?ParentId=${series_id}&Season=${season_number}&IncludeItemTypes=Episode&Fields=Id,Name,PrimaryImageTag,MediaSources&SortBy=SortName&SortOrder=Ascending`;
+        const query = `/Items?ParentId=${series_id}&Season=${season_number}&IncludeItemTypes=Episode&Fields=Id,Name,PrimaryImageTag,MediaSources,RunTimeTicks&SortBy=SortName&SortOrder=Ascending`;
         network.silent(buildApiUrl(query), (data) => {
             if (data && data.Items) {
                 let episode = data.Items.find(e => e.IndexNumber === episode_number);
@@ -216,10 +216,25 @@
 
     function playVideo(item) {
         const base = getUrl().replace(/\/$/, '');
-        let streamUrl = `${base}/Videos/${item.Id}/stream?api_key=${getApiKey()}&Static=true&MediaSourceId=${item.Id}&PlaySessionId=${Date.now()}`;
+        
+        // Пробуем разные варианты URL для воспроизведения
+        let streamUrl;
+        
         if (item.MediaSources && item.MediaSources.length > 0) {
-            streamUrl = `${base}/Videos/${item.Id}/stream?api_key=${getApiKey()}&Static=true&MediaSourceId=${item.MediaSources[0].Id}&PlaySessionId=${Date.now()}`;
+            let source = item.MediaSources[0];
+            if (source.Container === 'mkv' || source.Container === 'mp4') {
+                // Прямая ссылка на файл если он в поддерживаемом формате
+                streamUrl = `${base}/Videos/${item.Id}/stream.${source.Container}?api_key=${getApiKey()}&MediaSourceId=${source.Id}&Static=true`;
+            } else {
+                // Транскодирование
+                streamUrl = `${base}/Videos/${item.Id}/stream?api_key=${getApiKey()}&MediaSourceId=${source.Id}&Static=true`;
+            }
+        } else {
+            streamUrl = `${base}/Videos/${item.Id}/stream?api_key=${getApiKey()}&Static=true`;
         }
+        
+        console.log('Stream URL:', streamUrl);
+        
         Lampa.Player.play({
             title: item.Name,
             url: streamUrl,
@@ -231,7 +246,7 @@
     /* --- Компонент для сериалов --- */
     function EmbySeriesComponent() {
         let network = new Lampa.Reguest();
-        let scroll = new Lampa.Scroll({mask: true, over: true});
+        let element = $('<div class="emby-container"></div>')[0];
         let is_destroyed = false;
         
         let seasons = [];
@@ -245,7 +260,6 @@
                 emby_series_id = window.embySeriesData.emby_id;
                 tmdb_id = window.embySeriesData.tmdb_id;
             }
-            scroll.render();
         };
 
         this.start = function() {
@@ -254,45 +268,45 @@
                 tmdb_id = window.embySeriesData.tmdb_id;
             }
             
-            scroll.clear();
+            let body = $(element);
+            body.empty();
             
             if (!tmdb_id) {
-                scroll.append('<div class="emby-empty">Не удалось определить TMDB ID сериала</div>');
-                this.pause();
+                body.html('<div class="emby-empty">Не удалось определить TMDB ID сериала</div>');
+                setupNavigation();
                 return;
             }
 
-            scroll.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
+            body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
             
             getSeasonsFromTMDB(tmdb_id, (result) => {
                 if (is_destroyed) return;
                 seasons = result;
                 if (seasons.length === 0) {
-                    scroll.clear();
-                    scroll.append('<div class="emby-empty">Сезоны не найдены</div>');
-                    this.pause();
+                    body.html('<div class="emby-empty">Сезоны не найдены</div>');
+                    setupNavigation();
                 } else {
                     current_season = seasons[0];
-                    loadEpisodes();
+                    loadEpisodes(body);
                 }
             });
         };
 
-        function loadEpisodes() {
+        function loadEpisodes(body) {
             if (is_destroyed) return;
-            scroll.clear();
-            scroll.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
+            body.empty();
+            body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
             
             getEpisodesFromTMDB(tmdb_id, current_season.season_number, (episodes) => {
                 if (is_destroyed) return;
                 current_episodes = episodes;
-                renderEpisodes();
+                renderEpisodes(body);
             });
         }
 
-        function renderEpisodes() {
+        function renderEpisodes(body) {
             if (is_destroyed) return;
-            scroll.clear();
+            body.empty();
             
             // Кнопка выбора сезона
             let filterPanel = $('<div class="emby-filter"></div>');
@@ -310,7 +324,7 @@
                     items: items,
                     onSelect: (a) => {
                         current_season = a.season;
-                        loadEpisodes();
+                        loadEpisodes($(element));
                     },
                     onBack: () => {
                         Lampa.Controller.toggle('content');
@@ -319,7 +333,7 @@
             });
             
             filterPanel.append(seasonBtn);
-            scroll.append(filterPanel);
+            body.append(filterPanel);
 
             // Сетка эпизодов
             let grid = $('<div class="emby-episodes-grid"></div>');
@@ -329,6 +343,7 @@
             } else {
                 current_episodes.forEach((episode) => {
                     let epNum = String(episode.episode_number).padStart(2, '0');
+                    // Используем Lampa.TMDB.image для правильного URL постера
                     let stillPath = episode.still_path ? Lampa.TMDB.image('w400', episode.still_path) : '';
                     let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
 
@@ -347,17 +362,17 @@
                         let epNumber = parseInt($(this).data('episode'));
                         let seasonNumber = parseInt($(this).data('season'));
                         
-                        scroll.clear();
-                        scroll.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
+                        let body = $(element);
+                        body.empty();
+                        body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
                         
                         getEpisodeFromEmby(emby_series_id, seasonNumber, epNumber, (embyEpisode) => {
                             if (is_destroyed) return;
                             if (embyEpisode) {
                                 playVideo(embyEpisode);
                             } else {
-                                scroll.clear();
-                                scroll.append('<div class="emby-empty">Эпизод не найден на Emby сервере</div>');
-                                this.pause();
+                                body.html('<div class="emby-empty">Эпизод не найден на Emby сервере</div>');
+                                setupNavigation();
                             }
                         });
                     });
@@ -366,57 +381,32 @@
                 });
             }
             
-            scroll.append(grid);
-            this.pause();
+            body.append(grid);
+            setupNavigation();
+        }
+
+        function setupNavigation() {
+            Lampa.Controller.add('content', {
+                toggle: () => {
+                    Lampa.Controller.collectionSet(element);
+                    Lampa.Controller.collectionFocus(false, element);
+                },
+                up: () => Lampa.Controller.toggle('head'),
+                down: () => {},
+                left: () => Lampa.Controller.toggle('menu'),
+                right: () => {},
+                back: () => Lampa.Activity.backward()
+            });
+            Lampa.Controller.toggle('content');
         }
 
         this.render = function() {
-            return scroll.render();
+            return element;
         };
-        
-        this.pause = function() {
-            Lampa.Controller.add('content', {
-                toggle: () => {
-                    Lampa.Controller.collectionSet(scroll.render());
-                    Lampa.Controller.collectionFocus(false, scroll.render());
-                },
-                up: () => {
-                    if (window.Navigator && window.Navigator.canmove('up')) {
-                        window.Navigator.move('up');
-                    } else {
-                        Lampa.Controller.toggle('head');
-                    }
-                },
-                down: () => {
-                    if (window.Navigator && window.Navigator.canmove('down')) {
-                        window.Navigator.move('down');
-                    }
-                },
-                left: () => {
-                    if (window.Navigator && window.Navigator.canmove('left')) {
-                        window.Navigator.move('left');
-                    } else {
-                        Lampa.Controller.toggle('menu');
-                    }
-                },
-                right: () => {
-                    if (window.Navigator && window.Navigator.canmove('right')) {
-                        window.Navigator.move('right');
-                    }
-                },
-                back: () => {
-                    Lampa.Activity.backward();
-                }
-            });
-            Lampa.Controller.toggle('content');
-        };
-        
-        this.stop = function() {};
 
         this.destroy = function() {
             is_destroyed = true;
             network.clear();
-            scroll.destroy();
         };
     }
 
