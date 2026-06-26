@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.2.3';
+    const PLUGIN_VERSION = '4.2.4';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -208,27 +208,38 @@
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
         
-        // Получаем URL потокового воспроизведения через API Emby
+        console.log('playVideo called with item ID:', item.Id);
+        
+        // Получаем информацию о медиа-источниках через отдельный запрос
+        let network = new Lampa.Reguest();
         let playUrl = `${base}/emby/Videos/${item.Id}/stream.mp4?static=true&api_key=${apiKey}`;
         
-        if (item.MediaSources && item.MediaSources.length > 0) {
-            let source = item.MediaSources[0];
-            // Используем прямую ссылку если есть
-            if (source.DirectStreamUrl) {
-                playUrl = source.DirectStreamUrl;
-            } else {
+        network.silent(buildApiUrl(`/Items/${item.Id}/PlaybackInfo`), (data) => {
+            console.log('PlaybackInfo response:', JSON.stringify(data));
+            
+            if (data && data.MediaSources && data.MediaSources.length > 0) {
+                let source = data.MediaSources[0];
+                console.log('MediaSource found:', source.Id, source.Path);
                 playUrl = `${base}/emby/Videos/${item.Id}/stream.mp4?static=true&MediaSourceId=${source.Id}&api_key=${apiKey}`;
             }
-        }
-        
-        console.log('Playing URL:', playUrl);
-        console.log('Item MediaSources:', JSON.stringify(item.MediaSources));
-        
-        Lampa.Player.play({
-            title: item.Name,
-            url: playUrl,
-            poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
-            timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id + ''))
+            
+            console.log('Final stream URL:', playUrl);
+            
+            Lampa.Player.play({
+                title: item.Name,
+                url: playUrl,
+                poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
+                timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id + ''))
+            });
+        }, () => {
+            // Если не удалось получить PlaybackInfo, используем базовый URL
+            console.log('Failed to get PlaybackInfo, using basic URL:', playUrl);
+            Lampa.Player.play({
+                title: item.Name,
+                url: playUrl,
+                poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
+                timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id + ''))
+            });
         });
     }
 
@@ -353,21 +364,16 @@
                         body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
                         
                         // Получаем эпизод из Emby
-                        let query = `/Items?ParentId=${emby_series_id}&Season=${seasonNumber}&IncludeItemTypes=Episode&Fields=Id,Name,IndexNumber,MediaSources,Path&SortBy=SortName&SortOrder=Ascending`;
+                        let query = `/Items?ParentId=${emby_series_id}&Season=${seasonNumber}&IncludeItemTypes=Episode&Fields=Id,Name,IndexNumber&SortBy=SortName&SortOrder=Ascending`;
                         
-                        let network = new Lampa.Reguest();
-                        network.silent(buildApiUrl(query), (data) => {
+                        let net = new Lampa.Reguest();
+                        net.silent(buildApiUrl(query), (data) => {
                             if (is_destroyed) return;
                             if (data && data.Items) {
                                 let embyEpisode = data.Items.find(e => e.IndexNumber === epNumber);
                                 
                                 if (embyEpisode) {
-                                    console.log('Emby episode found:', {
-                                        id: embyEpisode.Id,
-                                        name: embyEpisode.Name,
-                                        indexNumber: embyEpisode.IndexNumber,
-                                        mediaSources: embyEpisode.MediaSources
-                                    });
+                                    console.log('Playing episode ID:', embyEpisode.Id, 'Name:', embyEpisode.Name);
                                     playVideo(embyEpisode);
                                 } else {
                                     body.html('<div class="emby-empty">Эпизод не найден на Emby сервере</div>');
