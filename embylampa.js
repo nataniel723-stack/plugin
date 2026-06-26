@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.2.2';
+    const PLUGIN_VERSION = '4.2.3';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -203,48 +203,30 @@
         }, () => callback([]));
     }
 
-    /* --- Получение эпизода из Emby --- */
-    function getEpisodeFromEmby(series_id, season_number, episode_number, callback) {
-        let network = new Lampa.Reguest();
-        const query = `/Items?ParentId=${series_id}&Season=${season_number}&IncludeItemTypes=Episode&Fields=Id,Name,IndexNumber,MediaSources,Path&SortBy=SortName&SortOrder=Ascending`;
-        
-        network.silent(buildApiUrl(query), (data) => {
-            if (data && data.Items) {
-                let episode = data.Items.find(e => e.IndexNumber === episode_number);
-                
-                if (episode && episode.MediaSources && episode.MediaSources.length > 0) {
-                    // Получаем детальную информацию о видео, включая правильный ID
-                    let videoId = episode.MediaSources[0].Id.replace('mediasource_', '');
-                    console.log('Episode ID:', episode.Id, 'Video ID:', videoId);
-                    
-                    // Используем ID из MediaSources для воспроизведения
-                    episode._videoId = videoId;
-                }
-                
-                callback(episode || null);
-            } else callback(null);
-        }, () => callback(null));
-    }
-
     /* --- Воспроизведение --- */
     function playVideo(item) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
         
-        // Используем ID видеофайла если есть, иначе ID элемента
-        let videoId = item._videoId || item.Id;
-        
-        let streamUrl = `${base}/emby/Videos/${videoId}/stream.mp4?static=true&api_key=${apiKey}`;
+        // Получаем URL потокового воспроизведения через API Emby
+        let playUrl = `${base}/emby/Videos/${item.Id}/stream.mp4?static=true&api_key=${apiKey}`;
         
         if (item.MediaSources && item.MediaSources.length > 0) {
-            streamUrl = `${base}/emby/Videos/${videoId}/stream.mp4?static=true&MediaSourceId=${item.MediaSources[0].Id}&api_key=${apiKey}`;
+            let source = item.MediaSources[0];
+            // Используем прямую ссылку если есть
+            if (source.DirectStreamUrl) {
+                playUrl = source.DirectStreamUrl;
+            } else {
+                playUrl = `${base}/emby/Videos/${item.Id}/stream.mp4?static=true&MediaSourceId=${source.Id}&api_key=${apiKey}`;
+            }
         }
         
-        console.log('Final stream URL:', streamUrl);
+        console.log('Playing URL:', playUrl);
+        console.log('Item MediaSources:', JSON.stringify(item.MediaSources));
         
         Lampa.Player.play({
             title: item.Name,
-            url: streamUrl,
+            url: playUrl,
             poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
             timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id + ''))
         });
@@ -370,14 +352,35 @@
                         body.empty();
                         body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
                         
-                        getEpisodeFromEmby(emby_series_id, seasonNumber, epNumber, (embyEpisode) => {
+                        // Получаем эпизод из Emby
+                        let query = `/Items?ParentId=${emby_series_id}&Season=${seasonNumber}&IncludeItemTypes=Episode&Fields=Id,Name,IndexNumber,MediaSources,Path&SortBy=SortName&SortOrder=Ascending`;
+                        
+                        let network = new Lampa.Reguest();
+                        network.silent(buildApiUrl(query), (data) => {
                             if (is_destroyed) return;
-                            if (embyEpisode) {
-                                playVideo(embyEpisode);
+                            if (data && data.Items) {
+                                let embyEpisode = data.Items.find(e => e.IndexNumber === epNumber);
+                                
+                                if (embyEpisode) {
+                                    console.log('Emby episode found:', {
+                                        id: embyEpisode.Id,
+                                        name: embyEpisode.Name,
+                                        indexNumber: embyEpisode.IndexNumber,
+                                        mediaSources: embyEpisode.MediaSources
+                                    });
+                                    playVideo(embyEpisode);
+                                } else {
+                                    body.html('<div class="emby-empty">Эпизод не найден на Emby сервере</div>');
+                                    setupNavigation();
+                                }
                             } else {
                                 body.html('<div class="emby-empty">Эпизод не найден на Emby сервере</div>');
                                 setupNavigation();
                             }
+                        }, () => {
+                            if (is_destroyed) return;
+                            body.html('<div class="emby-empty">Ошибка загрузки эпизода</div>');
+                            setupNavigation();
                         });
                     });
                     
@@ -410,7 +413,6 @@
 
         this.destroy = function() {
             is_destroyed = true;
-            network.clear();
         };
     }
 
