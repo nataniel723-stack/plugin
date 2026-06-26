@@ -303,16 +303,17 @@
             });
         }
 
+        
+        function renderEpisodes(body) {
+            if (is_destroyed) return;
+            body.empty();
+
 if (current_episodes.length > 0) {
     console.log('First episode full data:', JSON.stringify(current_episodes[0], null, 2));
     console.log('still_path:', current_episodes[0].still_path);
     console.log('Lampa.TMDB.image test:', Lampa.TMDB.image('w400', current_episodes[0].still_path));
 }
 
-        
-        function renderEpisodes(body) {
-            if (is_destroyed) return;
-            body.empty();
             
             let filterPanel = $('<div class="emby-filter"></div>');
             let seasonBtn = $(`<div class="emby-filter-btn selector">${current_season.name || 'Сезон ' + current_season.season_number}</div>`);
