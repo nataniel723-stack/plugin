@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.3.0';
+    const PLUGIN_VERSION = '4.3.4';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -161,7 +161,6 @@
         return deviceId;
     }
 
-    /* --- Извлечение TMDB ID --- */
     function extractTmdbId(movie) {
         if (!movie) return null;
         let tmdb = movie.tmdb_id || movie.id;
@@ -178,7 +177,6 @@
         return tmdb;
     }
 
-    /* --- Поиск ID в Emby --- */
     function findInEmby(movie, callback) {
         if (!movie) return callback(null);
         let tmdb = extractTmdbId(movie);
@@ -197,7 +195,6 @@
         }
     }
 
-    /* --- Получение сезонов из TMDB через Lampa.TMDB --- */
     function getSeasonsFromTMDB(tmdb_id, callback) {
         if (!tmdb_id) { callback([]); return; }
         
@@ -213,7 +210,6 @@
         }, () => callback([]));
     }
 
-    /* --- Получение эпизодов из TMDB через Lampa.TMDB --- */
     function getEpisodesFromTMDB(tmdb_id, season_number, callback) {
         if (!tmdb_id) { callback([]); return; }
         
@@ -229,17 +225,13 @@
         }, () => callback([]));
     }
 
-    /* --- Воспроизведение --- */
     function playVideo(item) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
         const deviceId = getDeviceId();
         const playSessionId = Date.now().toString();
         
-        // Используем ID эпизода (который теперь правильный)
         let streamUrl = `${base}/emby/Videos/${item.Id}/stream?Static=true&DeviceId=${deviceId}&PlaySessionId=${playSessionId}&api_key=${apiKey}`;
-        
-        console.log('Playing URL:', streamUrl);
         
         Lampa.Player.play({
             title: item.Name,
@@ -348,13 +340,26 @@
             } else {
                 current_episodes.forEach((episode) => {
                     let epNum = String(episode.episode_number).padStart(2, '0');
-                    let stillPath = episode.still_path ? Lampa.TMDB.image('w400', episode.still_path) : '';
+                    
+                    // Пробуем разные варианты получения изображения
+                    let stillPath = '';
+                    if (episode.still_path) {
+                        stillPath = Lampa.TMDB.image('w400', episode.still_path);
+                    }
+                    
+                    let imageHtml = '';
+                    if (stillPath) {
+                        imageHtml = `<img src="${stillPath}" class="emby-ep-img" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);color:#00B0FF;font-size:3em;font-weight:bold\\'>${epNum}</div>'">`;
+                    } else {
+                        imageHtml = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);color:#00B0FF;font-size:3em;font-weight:bold;text-shadow:2px 2px 4px rgba(0,0,0,0.5)">${epNum}</div>`;
+                    }
+                    
                     let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
 
                     let item = $(`
                         <div class="emby-episode-card selector" data-episode="${episode.episode_number}" data-season="${current_season.season_number}">
                             <div class="emby-ep-img-wrap">
-                                ${stillPath ? `<img src="${stillPath}" class="emby-ep-img" onerror="this.style.display='none'">` : ''}
+                                ${imageHtml}
                                 <div class="emby-ep-num">${epNum} серия</div>
                             </div>
                             <div class="emby-ep-title">${episode.name || 'Эпизод ' + epNum}</div>
@@ -369,60 +374,42 @@
                         body.empty();
                         body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
                         
-                        // Получаем ID сезона в Emby
                         let seasonQuery = `/Items?ParentId=${emby_series_id}&IncludeItemTypes=Season&Fields=Id,IndexNumber`;
                         
                         let net = new Lampa.Reguest();
                         net.silent(buildApiUrl(seasonQuery), (seasonData) => {
                             if (is_destroyed) return;
                             
-                            console.log('Seasons from Emby:', seasonData);
-                            
                             if (seasonData && seasonData.Items) {
                                 let season = seasonData.Items.find(s => s.IndexNumber === seasonNumber);
                                 
                                 if (season) {
-                                    console.log('Found season ID:', season.Id);
-                                    
-                                    // Теперь получаем эпизоды этого сезона
                                     let episodeQuery = `/Items?ParentId=${season.Id}&IncludeItemTypes=Episode&Fields=Id,Name,IndexNumber&SortBy=SortName&SortOrder=Ascending`;
                                     
                                     net.silent(buildApiUrl(episodeQuery), (episodeData) => {
                                         if (is_destroyed) return;
-                                        
-                                        console.log('Episodes from Emby:', episodeData);
                                         
                                         if (episodeData && episodeData.Items) {
                                             let sortedEpisodes = episodeData.Items.sort((a, b) => (a.IndexNumber || 0) - (b.IndexNumber || 0));
                                             let embyEpisode = sortedEpisodes[epNumber - 1];
                                             
                                             if (embyEpisode) {
-                                                console.log('Playing episode ID:', embyEpisode.Id, 'Name:', embyEpisode.Name);
                                                 playVideo(embyEpisode);
                                             } else {
                                                 body.html('<div class="emby-empty">Эпизод не найден</div>');
                                                 setupNavigation();
                                             }
-                                        } else {
-                                            body.html('<div class="emby-empty">Эпизоды не найдены</div>');
-                                            setupNavigation();
                                         }
                                     }, () => {
                                         if (is_destroyed) return;
-                                        body.html('<div class="emby-empty">Ошибка загрузки эпизодов</div>');
+                                        body.html('<div class="emby-empty">Ошибка загрузки</div>');
                                         setupNavigation();
                                     });
-                                } else {
-                                    body.html('<div class="emby-empty">Сезон не найден</div>');
-                                    setupNavigation();
                                 }
-                            } else {
-                                body.html('<div class="emby-empty">Сезоны не найдены</div>');
-                                setupNavigation();
                             }
                         }, () => {
                             if (is_destroyed) return;
-                            body.html('<div class="emby-empty">Ошибка загрузки сезонов</div>');
+                            body.html('<div class="emby-empty">Ошибка загрузки</div>');
                             setupNavigation();
                         });
                     });
@@ -441,11 +428,33 @@
                     Lampa.Controller.collectionSet(element);
                     Lampa.Controller.collectionFocus(false, element);
                 },
-                up: () => Lampa.Controller.toggle('head'),
-                down: () => {},
-                left: () => Lampa.Controller.toggle('menu'),
-                right: () => {},
-                back: () => Lampa.Activity.backward()
+                up: () => {
+                    if (window.Navigator && window.Navigator.canmove && window.Navigator.canmove('up')) {
+                        window.Navigator.move('up');
+                    } else {
+                        Lampa.Controller.toggle('head');
+                    }
+                },
+                down: () => {
+                    if (window.Navigator && window.Navigator.canmove && window.Navigator.canmove('down')) {
+                        window.Navigator.move('down');
+                    }
+                },
+                left: () => {
+                    if (window.Navigator && window.Navigator.canmove && window.Navigator.canmove('left')) {
+                        window.Navigator.move('left');
+                    } else {
+                        Lampa.Controller.toggle('menu');
+                    }
+                },
+                right: () => {
+                    if (window.Navigator && window.Navigator.canmove && window.Navigator.canmove('right')) {
+                        window.Navigator.move('right');
+                    }
+                },
+                back: () => {
+                    Lampa.Activity.backward();
+                }
             });
             Lampa.Controller.toggle('content');
         }
