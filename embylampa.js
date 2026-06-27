@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.8';
+    const PLUGIN_VERSION = '4.4.9';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -257,7 +257,7 @@
                 title: item.Name,
                 url: streamUrl,
                 poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
-                timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id + ''))
+                timeline: Lampa.Timeline.view(Lampa.Utils.hash('movie/' + (item.tmdb_id || item.Id)))
             });
         }
     }
@@ -382,9 +382,9 @@
                     
                     let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
                     
-                    // Используем TMDB ID эпизода для таймлайна
-                    let tmdbId = episode.id;
-                    let timelineHash = Lampa.Utils.hash(tmdbId + '');
+                    // Ключ таймлайна в формате Lampa: tv/{tmdb_id}/{season}/{episode}
+                    let timelineKey = 'tv/' + tmdb_id + '/' + current_season.season_number + '/' + episode.episode_number;
+                    let timelineHash = Lampa.Utils.hash(timelineKey);
                     let timelineData = Lampa.Timeline.view(timelineHash);
                     let progressPercent = 0;
                     if (timelineData && timelineData.time && timelineData.duration) {
@@ -397,7 +397,7 @@
                     }
 
                     let item = $(`
-                        <div class="emby-episode-card selector" data-episode="${episode.episode_number}" data-season="${current_season.season_number}" data-index="${index}" data-tmdb-id="${tmdbId}">
+                        <div class="emby-episode-card selector" data-episode="${episode.episode_number}" data-season="${current_season.season_number}" data-index="${index}">
                             <div class="emby-ep-img-wrap">
                                 ${imageHtml}
                                 <div class="emby-ep-num">${epNum} серия</div>
@@ -438,16 +438,17 @@
                                         if (episodeData && episodeData.Items) {
                                             let sortedEpisodes = episodeData.Items.sort((a, b) => (a.IndexNumber || 0) - (b.IndexNumber || 0));
                                             
-                                            // Создаем плейлист, сопоставляя TMDB ID из current_episodes
+                                            // Создаем плейлист с правильными ключами таймлайнов
                                             let playlist = sortedEpisodes.map((ep, i) => {
                                                 let psId = Date.now() + i;
-                                                let tmdbEp = current_episodes[i]; // TMDB эпизод с тем же индексом
-                                                let tmdbEpId = tmdbEp ? tmdbEp.id : ep.Id; // fallback
+                                                let tmdbEp = current_episodes[i];
+                                                let epNumForTimeline = tmdbEp ? tmdbEp.episode_number : (i + 1);
+                                                let key = 'tv/' + tmdb_id + '/' + seasonNumber + '/' + epNumForTimeline;
                                                 return {
                                                     title: ep.Name,
                                                     url: `${getUrl().replace(/\/$/, '')}/emby/Videos/${ep.Id}/stream?Static=true&DeviceId=${getDeviceId()}&PlaySessionId=${psId}&api_key=${getApiKey()}`,
                                                     poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
-                                                    timeline: Lampa.Timeline.view(Lampa.Utils.hash(tmdbEpId + ''))
+                                                    timeline: Lampa.Timeline.view(Lampa.Utils.hash(key))
                                                 };
                                             });
                                             
