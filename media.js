@@ -7,7 +7,7 @@
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
-    // Стили (единый стиль Lampa)
+    // Стили (минимальные, адаптированы под единый стиль)
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
@@ -37,7 +37,11 @@
                     background: #111;
                     position: relative;
                 }
-                .emby-ep-img { width: 100%; height: 100%; object-fit: cover; }
+                .emby-ep-img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
                 .emby-ep-num {
                     position: absolute;
                     top: 0.3em;
@@ -49,7 +53,10 @@
                     font-size: 0.85em;
                     color: #fff;
                 }
-                .emby-ep-body { flex: 1; min-width: 0; }
+                .emby-ep-body {
+                    flex: 1;
+                    min-width: 0;
+                }
                 .emby-ep-title {
                     font-size: 1.2em;
                     font-weight: 500;
@@ -66,8 +73,13 @@
                     flex-wrap: wrap;
                     margin-top: 0.2em;
                 }
-                .emby-ep-timeline { margin-top: 0.4em; width: 100%; }
-                .emby-ep-timeline .time-line { display: block !important; }
+                .emby-ep-timeline {
+                    margin-top: 0.4em;
+                    width: 100%;
+                }
+                .emby-ep-timeline .time-line {
+                    display: block !important;
+                }
                 .emby-filter {
                     display: flex;
                     align-items: center;
@@ -88,9 +100,23 @@
                     font-size: 1.1em;
                     font-weight: bold;
                 }
-                .emby-filter-btn.focus { background: #fff; color: #000; }
-                .emby-loader { display: flex; justify-content: center; align-items: center; height: 50vh; }
-                .emby-empty { text-align: center; padding: 3em; font-size: 1.2em; opacity: 0.7; width: 100%; }
+                .emby-filter-btn.focus {
+                    background: #fff;
+                    color: #000;
+                }
+                .emby-loader {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 50vh;
+                }
+                .emby-empty {
+                    text-align: center;
+                    padding: 3em;
+                    font-size: 1.2em;
+                    opacity: 0.7;
+                    width: 100%;
+                }
                 @media (max-width: 600px) {
                     .emby-episode-item { flex-wrap: wrap; }
                     .emby-ep-img-wrap { width: 100%; height: auto; aspect-ratio: 16/9; margin-right: 0; margin-bottom: 0.8em; }
@@ -186,27 +212,24 @@
         }, () => callback([]));
     }
 
-    // ---- Воспроизведение с плейлистом и таймлайнами ----
+    // ---- Воспроизведение с правильными таймлайнами ----
     function playVideo(item, tmdbId, seasonNumber, episodeNumber, playlist, currentIndex) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
         const deviceId = getDeviceId();
         const playSessionId = Date.now().toString();
-
+        
         let streamUrl = `${base}/emby/Videos/${item.Id}/stream?Static=true&DeviceId=${deviceId}&PlaySessionId=${playSessionId}&api_key=${apiKey}`;
-
+        
         let timeline = null;
         let source = {};
 
         if (playlist && playlist.length > 0) {
+            // Сериал – плейлист
             timeline = playlist[currentIndex].timeline;
             source = {
                 playlist: playlist,
-                current: currentIndex,
-                type: 'tv',
-                id: tmdbId,
-                season: seasonNumber,
-                episode: episodeNumber
+                current: currentIndex
             };
             Lampa.Player.play({
                 title: item.Name,
@@ -216,6 +239,7 @@
                 source: source
             });
         } else {
+            // Фильм
             let timelineKey = 'movie/' + (tmdbId || item.Id);
             timeline = Lampa.Timeline.view(timelineKey);
             source = { id: tmdbId || item.Id, type: 'movie' };
@@ -229,7 +253,7 @@
         }
     }
 
-    /* --- Компонент для сериалов (возвращаем логику из первого кода, но с новым стилем) --- */
+    /* --- Компонент для сериалов (исправленный, с исходной логикой tmdb_id) --- */
     function EmbySeriesComponent() {
         let network = new Lampa.Reguest();
         let is_destroyed = false;
@@ -241,6 +265,7 @@
         let tmdb_id = null;
 
         this.create = function() {
+            // Получаем данные из глобальной переменной (как в первой версии)
             if (window.embySeriesData) {
                 emby_series_id = window.embySeriesData.emby_id;
                 tmdb_id = window.embySeriesData.tmdb_id;
@@ -331,7 +356,7 @@
                     let imageHtml = stillPath ?
                         `<img src="${stillPath}" class="emby-ep-img" onerror="this.style.display='none'">` :
                         `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);color:#00B0FF;font-size:2em;font-weight:bold;">${epNum}</div>`;
-
+                    
                     let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
                     let airDate = episode.air_date ? Lampa.Utils.parseTime(episode.air_date).full : '';
 
@@ -364,7 +389,7 @@
                         timelineContainer.append(timelineElement);
                     }
 
-                    // Обработчик клика (как в первом коде)
+                    // Обработчик клика (как в первой версии)
                     item.on('hover:enter click', function() {
                         let epNumber = parseInt($(this).data('episode'));
                         let seasonNumber = parseInt($(this).data('season'));
@@ -385,7 +410,7 @@
                                         if (is_destroyed) return;
                                         if (episodeData && episodeData.Items) {
                                             let sortedEpisodes = episodeData.Items.sort((a, b) => (a.IndexNumber || 0) - (b.IndexNumber || 0));
-                                            // Плейлист с таймлайнами
+                                            // Плейлист с таймлайнами (как в первой версии)
                                             let playlist = sortedEpisodes.map((ep, i) => {
                                                 let psId = Date.now() + i;
                                                 let tmdbEp = current_episodes[i];
@@ -393,8 +418,8 @@
                                                 let key = 'tv/' + tmdb_id + '/' + seasonNumber + '/' + epNumForTimeline;
                                                 return {
                                                     title: ep.Name,
-                                                    url: `${getUrl().replace(/\/$/, '')}/emby/Videos/${ep.Id}/stream?Static=true&DeviceId=${getDeviceId()}&PlaySessionId=${psId}&api_key=${getApiKey()}`,
-                                                    poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
+                                                    url: getUrl().replace(/\/$/, '') + '/emby/Videos/' + ep.Id + '/stream?Static=true&DeviceId=' + getDeviceId() + '&PlaySessionId=' + psId + '&api_key=' + getApiKey(),
+                                                    poster: ep.PrimaryImageTag ? getUrl().replace(/\/$/, '') + '/Items/' + ep.Id + '/Images/Primary?tag=' + ep.PrimaryImageTag : '',
                                                     timeline: Lampa.Timeline.view(key)
                                                 };
                                             });
@@ -492,7 +517,7 @@
         };
     }
 
-    /* --- Главная логика --- */
+    /* --- Остальная часть плагина (кнопка, настройки, запуск) --- */
     function handleEmbyClick(movie) {
         if (!isConfigured()) return notify('Настройте Emby в параметрах');
 
@@ -520,12 +545,12 @@
         });
     }
 
-    /* --- Кнопка --- */
+    /* --- Кнопка в интерфейсе --- */
     function addEmbyButton(data) {
         if (!data || !data.render || !data.movie) return;
         if (data.render.find('.emby-button').length) return;
 
-        const button = $(`
+        let button = $(`
             <div class="full-start__button selector view--emby emby-button" data-subtitle="${PLUGIN_NAME} v${PLUGIN_VERSION}">
                 <svg width="40" height="40" viewBox="0 0 40 40">
                     <rect width="40" height="40" rx="8" fill="#00B0FF"/>
@@ -537,7 +562,7 @@
 
         button.on('hover:enter click', () => handleEmbyClick(data.movie));
 
-        const playButton = data.render.find('.button--play, .view--torrent').first();
+        let playButton = data.render.find('.button--play, .view--torrent').first();
         if (playButton.length) playButton.after(button);
         else data.render.find('.buttons, .activity__body').append(button);
     }
@@ -545,10 +570,10 @@
     /* --- Настройки --- */
     function renderSettings(body) {
         body.empty();
-        const wrap = $('<div class="settings-container"></div>');
+        let wrap = $('<div class="settings-container"></div>');
         wrap.append('<div class="settings-param-title">Настройки Emby</div>');
 
-        const urlRow = $(`<div class="settings-param selector"><div class="settings-param__name">Адрес сервера</div><div class="settings-param__value">${getUrl() || 'Не задано'}</div></div>`);
+        let urlRow = $(`<div class="settings-param selector"><div class="settings-param__name">Адрес сервера</div><div class="settings-param__value">${getUrl() || 'Не задано'}</div></div>`);
         urlRow.on('hover:enter click', () => {
             Lampa.Input.edit({title: 'Emby URL', value: getUrl(), free: true}, val => {
                 Lampa.Storage.set(STORAGE_URL, val);
@@ -556,7 +581,7 @@
             });
         });
 
-        const keyRow = $(`<div class="settings-param selector"><div class="settings-param__name">API Key</div><div class="settings-param__value">${getApiKey() ? '••••••••••' : 'Не задано'}</div></div>`);
+        let keyRow = $(`<div class="settings-param selector"><div class="settings-param__name">API Key</div><div class="settings-param__value">${getApiKey() ? '••••••••••' : 'Не задано'}</div></div>`);
         keyRow.on('hover:enter click', () => {
             Lampa.Input.edit({title: 'Emby API Key', value: getApiKey(), free: true}, val => {
                 Lampa.Storage.set(STORAGE_API_KEY, val);
