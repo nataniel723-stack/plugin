@@ -44,7 +44,7 @@
         `);
     }
 
-    // ---- Базовые функции ----
+    // ---- Базовые функции (без изменений) ----
     function getUrl() {
         return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim();
     }
@@ -144,16 +144,17 @@
         let source = {};
 
         // --- Генерация КЛЮЧА ТАЙМЛАЙНА в стандарте Lampa ---
+        // FIXED: ключи должны быть строками
         let timelineKey = null;
         if (tmdbId && seasonNumber !== undefined && episodeNumber !== undefined) {
             // Для сериалов: tv/{TMDB_ID}/{season}/{episode}
-            timelineKey = 'tv/' + tmdbId + '/' + seasonNumber + '/' + episodeNumber;
+            timelineKey = 'tv/' + String(tmdbId) + '/' + String(seasonNumber) + '/' + String(episodeNumber);
         } else if (tmdbId) {
             // Для фильмов: movie/{TMDB_ID}
-            timelineKey = 'movie/' + tmdbId;
+            timelineKey = 'movie/' + String(tmdbId);
         } else {
             // Fallback
-            timelineKey = 'movie/' + item.Id;
+            timelineKey = 'movie/' + String(item.Id);
         }
 
         if (playlist && playlist.length > 0) {
@@ -320,8 +321,8 @@
                     var rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
                     var airDate = episode.air_date ? Lampa.Utils.parseTime(episode.air_date).full : '';
                     
-                    // --- Генерация КЛЮЧА ТАЙМЛАЙНА в стандарте Lampa ---
-                    var timelineKey = 'tv/' + tmdb_id + '/' + current_season.season_number + '/' + episode.episode_number;
+                    // FIXED: ключи должны быть строками
+                    var timelineKey = 'tv/' + String(tmdb_id) + '/' + String(current_season.season_number) + '/' + String(episode.episode_number);
                     var timeline = Lampa.Timeline.view(timelineKey);
                     
                     var infoParts = [];
@@ -386,7 +387,7 @@
                                                 var psId = Date.now() + i;
                                                 var tmdbEp = current_episodes[i];
                                                 var epNumForTimeline = tmdbEp ? tmdbEp.episode_number : (i + 1);
-                                                var key = 'tv/' + tmdb_id + '/' + seasonNumber + '/' + epNumForTimeline;
+                                                var key = 'tv/' + String(tmdb_id) + '/' + String(seasonNumber) + '/' + String(epNumForTimeline);
                                                 return {
                                                     title: ep.Name,
                                                     url: getUrl().replace(/\/$/, '') + '/emby/Videos/' + ep.Id + '/stream?Static=true&DeviceId=' + getDeviceId() + '&PlaySessionId=' + psId + '&api_key=' + getApiKey(),
@@ -436,10 +437,10 @@
                 up: function() {
                     if (Navigator.canmove('up')) {
                         Navigator.move('up');
-                        // --- ИСПРАВЛЕННЫЙ СКРОЛЛИНГ: прокручиваем к элементу с фокусом ---
+                        // FIXED: передаём DOM-элемент, а не объект jQuery
                         var focusElement = $(scroll.render()).find('.selector.focus');
                         if (focusElement.length) {
-                            scroll.update(focusElement, true);
+                            scroll.update(focusElement[0], true);
                         }
                     } else {
                         Lampa.Controller.toggle('head');
@@ -448,10 +449,10 @@
                 down: function() {
                     if (Navigator.canmove('down')) {
                         Navigator.move('down');
-                        // --- ИСПРАВЛЕННЫЙ СКРОЛЛИНГ: прокручиваем к элементу с фокусом ---
+                        // FIXED: передаём DOM-элемент, а не объект jQuery
                         var focusElement = $(scroll.render()).find('.selector.focus');
                         if (focusElement.length) {
-                            scroll.update(focusElement, true);
+                            scroll.update(focusElement[0], true);
                         }
                     }
                 },
