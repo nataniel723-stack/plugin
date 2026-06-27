@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.7';
+    const PLUGIN_VERSION = '4.4.8';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -241,15 +241,12 @@
         
         let streamUrl = `${base}/emby/Videos/${item.Id}/stream?Static=true&DeviceId=${deviceId}&PlaySessionId=${playSessionId}&api_key=${apiKey}`;
         
-        // Сохраняем таймлайн, как в CDN.js
-        let timeline = Lampa.Timeline.view(Lampa.Utils.hash(item.Id + ''));
-        
         if (playlist && playlist.length > 0) {
             Lampa.Player.play({
                 title: item.Name,
                 url: streamUrl,
                 poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
-                timeline: timeline,
+                timeline: playlist[currentIndex].timeline,
                 source: {
                     playlist: playlist,
                     current: currentIndex
@@ -260,7 +257,7 @@
                 title: item.Name,
                 url: streamUrl,
                 poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
-                timeline: timeline
+                timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id + ''))
             });
         }
     }
@@ -309,7 +306,6 @@
                     body.html('<div class="emby-empty">Сезоны не найдены</div>');
                     setupNavigation();
                 } else {
-                    // Восстанавливаем последний сезон
                     let savedSeason = window.embyLastSeason;
                     if (savedSeason && savedSeason.seriesId === emby_series_id) {
                         let found = seasons.find(s => s.season_number === savedSeason.seasonNumber);
@@ -386,8 +382,9 @@
                     
                     let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
                     
-                    // Получаем прогресс просмотра из таймлайна
-                    let timelineHash = Lampa.Utils.hash(episode.id + '');
+                    // Используем TMDB ID эпизода для таймлайна
+                    let tmdbId = episode.id;
+                    let timelineHash = Lampa.Utils.hash(tmdbId + '');
                     let timelineData = Lampa.Timeline.view(timelineHash);
                     let progressPercent = 0;
                     if (timelineData && timelineData.time && timelineData.duration) {
@@ -400,7 +397,7 @@
                     }
 
                     let item = $(`
-                        <div class="emby-episode-card selector" data-episode="${episode.episode_number}" data-season="${current_season.season_number}" data-index="${index}" data-id="${episode.id}">
+                        <div class="emby-episode-card selector" data-episode="${episode.episode_number}" data-season="${current_season.season_number}" data-index="${index}" data-tmdb-id="${tmdbId}">
                             <div class="emby-ep-img-wrap">
                                 ${imageHtml}
                                 <div class="emby-ep-num">${epNum} серия</div>
@@ -441,14 +438,16 @@
                                         if (episodeData && episodeData.Items) {
                                             let sortedEpisodes = episodeData.Items.sort((a, b) => (a.IndexNumber || 0) - (b.IndexNumber || 0));
                                             
-                                            // Создаем плейлист
+                                            // Создаем плейлист, сопоставляя TMDB ID из current_episodes
                                             let playlist = sortedEpisodes.map((ep, i) => {
                                                 let psId = Date.now() + i;
+                                                let tmdbEp = current_episodes[i]; // TMDB эпизод с тем же индексом
+                                                let tmdbEpId = tmdbEp ? tmdbEp.id : ep.Id; // fallback
                                                 return {
                                                     title: ep.Name,
                                                     url: `${getUrl().replace(/\/$/, '')}/emby/Videos/${ep.Id}/stream?Static=true&DeviceId=${getDeviceId()}&PlaySessionId=${psId}&api_key=${getApiKey()}`,
                                                     poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
-                                                    timeline: Lampa.Timeline.view(Lampa.Utils.hash(ep.Id + ''))
+                                                    timeline: Lampa.Timeline.view(Lampa.Utils.hash(tmdbEpId + ''))
                                                 };
                                             });
                                             
