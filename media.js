@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.37';
+    const PLUGIN_VERSION = '4.4.38';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -146,13 +146,10 @@
         // Генерируем ключ в формате Lampa
         let timelineKey = null;
         if (tmdbId && seasonNumber !== undefined && episodeNumber !== undefined) {
-            // Для сериалов: tmdb_{TMDB_ID}_s{season}_e{episode}
             timelineKey = 'tmdb_' + String(tmdbId) + '_s' + String(seasonNumber) + '_e' + String(episodeNumber);
         } else if (tmdbId) {
-            // Для фильмов: tmdb_{TMDB_ID}
             timelineKey = 'tmdb_' + String(tmdbId);
         } else {
-            // Fallback
             timelineKey = 'movie_' + String(item.Id);
         }
 
@@ -186,7 +183,7 @@
         }
     }
 
-    /* --- КОМПОНЕНТ СЕРИАЛОВ (с правильным скроллингом и синхронизацией) --- */
+    /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
     function EmbySeriesComponent(object) {
         var network = new Lampa.Reguest();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
@@ -362,7 +359,7 @@
                     item.data('season', current_season.season_number);
                     item.data('index', index);
 
-                    // Ключевой момент: обновляем скролл при фокусе (как в Lampac)
+                    // Скроллинг при фокусе (как в Lampac)
                     item.on('hover:focus', function(e) {
                         scroll.update($(this), true);
                     });
@@ -478,6 +475,8 @@
             network.clear();
             if (explorer) explorer.destroy();
             if (scroll) scroll.destroy();
+            // Убираем вызов unfollow, т.к. его нет в Lampa 3.1.9
+            // Lampa.Timeline.listener.unfollow('update');
         };
     }
 
