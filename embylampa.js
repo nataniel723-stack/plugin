@@ -2,36 +2,10 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '5.0.0';
+    const PLUGIN_VERSION = '5.0.1';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
-
-    // Внедряем стили (только для кнопки Emby)
-    if (!$('style#emby-plugin-styles').length) {
-        $('head').append(`
-            <style id="emby-plugin-styles">
-                .emby-container { padding: 0; height: 100%; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
-                .emby-episodes-grid { display: flex; flex-wrap: wrap; padding: 1em 1.5em; gap: 1.5em; align-content: flex-start; }
-                .emby-episode-card { width: calc(25% - 1.125em); cursor: pointer; transition: transform 0.2s, background 0.2s; border-radius: 0.5em; padding: 0.5em; box-sizing: border-box; position: relative; overflow: hidden; }
-                .emby-episode-card.focus { background: rgba(255, 255, 255, 0.1); transform: scale(1.05); }
-                .emby-episode-card .emby-progress { position: absolute; bottom: 0; left: 0; height: 3px; background: #00B0FF; z-index: 2; transition: width 0.3s; }
-                .emby-ep-img-wrap { width: 100%; aspect-ratio: 16/9; border-radius: 0.4em; overflow: hidden; position: relative; background: #111; margin-bottom: 0.6em; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-                .emby-ep-img { width: 100%; height: 100%; object-fit: cover; }
-                .emby-ep-num { position: absolute; top: 0.4em; left: 0.4em; background: rgba(0,0,0,0.7); padding: 0.2em 0.5em; border-radius: 0.3em; font-weight: bold; font-size: 0.9em; color: #fff; }
-                .emby-ep-title { font-size: 1.1em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.2em; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
-                .emby-ep-info { font-size: 0.85em; color: #aaa; }
-                .emby-filter { display: flex; align-items: center; justify-content: flex-start; padding: 1.5em 2em 0 2em; gap: 1em; flex-wrap: wrap; position: sticky; top: 0; z-index: 10; background: rgba(0,0,0,0.9); }
-                .emby-filter-btn { background: rgba(255,255,255,0.1); padding: 0.6em 1.5em; border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: bold; }
-                .emby-filter-btn.focus { background: #fff; color: #000; }
-                .emby-loader { display: flex; justify-content: center; align-items: center; height: 50vh; }
-                .emby-empty { text-align: center; padding: 3em; font-size: 1.2em; opacity: 0.7; width: 100%; }
-                @media (max-width: 1200px) { .emby-episode-card { width: calc(33.333% - 1em); } }
-                @media (max-width: 768px) { .emby-episode-card { width: calc(50% - 0.75em); } }
-                @media (max-width: 480px) { .emby-episode-card { width: 100%; } }
-            </style>
-        `);
-    }
 
     function getUrl() {
         return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim();
@@ -104,32 +78,27 @@
 
     function openSeries(item) {
         window.embySeriesId = item.Id;
-        const tmdbId = extractTmdbId(window.currentMovie);
+        const movie = window.currentMovie;
+        const tmdbId = extractTmdbId(movie);
         if (!tmdbId) {
             notify('Не удалось определить TMDB ID');
             return;
         }
 
-        Lampa.TMDB.get('tv', tmdbId, (data) => {
-            if (!data) return notify('Ошибка загрузки данных');
-            // Открываем стандартный список серий Lampa
-            Lampa.Activity.push({
-                url: '',
-                title: data.name,
-                component: 'tmdb_series',
-                movie: {
-                    id: tmdbId,
-                    title: data.name,
-                    tmdb_id: tmdbId,
-                    poster: data.poster_path ? Lampa.TMDB.image('w500', data.poster_path) : '',
-                    seasons: data.seasons,
-                    episodes: data.episodes // может быть пустым, но tmdb_series сам подгрузит
-                }
-            });
+        // Открываем стандартный компонент tmdb_series (как в CDN.js)
+        Lampa.Activity.push({
+            url: '',
+            title: movie.title || movie.name,
+            component: 'tmdb_series',
+            movie: {
+                id: tmdbId,
+                title: movie.title || movie.name,
+                tmdb_id: tmdbId,
+                poster: movie.img || movie.poster || (movie.data && movie.data.img) || ''
+            }
         });
     }
 
-    // Перехват плеера для подмены URL эпизодов
     function hookPlayer() {
         const origPlay = Lampa.Player.play;
         Lampa.Player.play = function(config) {
@@ -138,7 +107,6 @@
                 const episode = config.episode;
                 const network = new Lampa.Reguest();
 
-                // Получаем ID сезона в Emby
                 const seasonQuery = `/Items?ParentId=${window.embySeriesId}&IncludeItemTypes=Season&Fields=Id,IndexNumber`;
                 network.silent(buildApiUrl(seasonQuery), sData => {
                     if (sData?.Items) {
