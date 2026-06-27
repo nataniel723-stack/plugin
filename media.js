@@ -2,12 +2,12 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.11';
+    const PLUGIN_VERSION = '4.4.12';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
-    // Стили (без изменений)
+    // Внедряем стили
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
@@ -120,7 +120,7 @@
         }, () => callback([]));
     }
 
-    // ---- Воспроизведение с правильными таймлайнами ----
+    // ---- Воспроизведение с правильными таймлайнами и source ----
     function playVideo(item, tmdbId, seasonNumber, episodeNumber, playlist, currentIndex) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
@@ -131,34 +131,45 @@
         
         let timelineKey = null;
         let timeline = null;
+        let source = {};
 
         if (playlist && playlist.length > 0) {
-            // Для плейлиста (сериал)
+            // Сериал – плейлист
             timeline = playlist[currentIndex].timeline;
+            // Для плейлиста source не обязателен, но добавим для ясности
+            source = {
+                playlist: playlist,
+                current: currentIndex,
+                type: 'tv',
+                id: tmdbId,
+                season: seasonNumber,
+                episode: episodeNumber
+            };
             Lampa.Player.play({
                 title: item.Name,
                 url: streamUrl,
                 poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
                 timeline: timeline,
-                source: {
-                    playlist: playlist,
-                    current: currentIndex
-                }
+                source: source
             });
         } else {
-            // Одиночный фильм
+            // Фильм
             if (tmdbId) {
                 timelineKey = 'movie/' + tmdbId;
             } else {
-                // fallback
                 timelineKey = 'movie/' + item.Id;
             }
             timeline = Lampa.Timeline.view(timelineKey);
+            source = {
+                id: tmdbId || item.Id,
+                type: 'movie'
+            };
             Lampa.Player.play({
                 title: item.Name,
                 url: streamUrl,
                 poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
-                timeline: timeline
+                timeline: timeline,
+                source: source
             });
         }
     }
@@ -320,7 +331,7 @@
                                             });
                                             let currentEp = sortedEpisodes[epNumber - 1];
                                             if (currentEp) {
-                                                // Передаём tmdb_id, сезон, эпизод (для одиночного воспроизведения не используется, но оставим)
+                                                // Передаём tmdb_id, сезон, эпизод, плейлист и индекс
                                                 playVideo(currentEp, tmdb_id, seasonNumber, epNumber, playlist, epNumber - 1);
                                             }
                                         }
@@ -434,7 +445,7 @@
                 });
             } else if (item.Type === 'Movie') {
                 let tmdbId = extractTmdbId(movie);
-                playVideo(item, tmdbId); // передаём tmdbId
+                playVideo(item, tmdbId);
             } else {
                 notify('Неизвестный тип контента');
             }
