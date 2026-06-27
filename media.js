@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.32';
+    const PLUGIN_VERSION = '4.4.33';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -28,24 +28,18 @@
         </div>
     `);
 
-    // ---- Стили с исправленными отступами ----
+    // ---- Стили ----
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
                 .emby-container { padding: 0; height: 100%; overflow-y: auto; }
                 .emby-loader { display: flex; justify-content: center; align-items: center; height: 50vh; }
                 .emby-empty { text-align: center; padding: 3em; font-size: 1.2em; opacity: 0.7; width: 100%; }
-                .emby-container .online-prestige {
-                    margin: 0.5em 1em;
-                }
-                .emby-container .online-prestige.focus::after {
-                    top: -0.3em;
-                    left: -0.3em;
-                    right: -0.3em;
-                    bottom: -0.3em;
-                }
-                /* Скрываем кнопку поиска, если она есть */
-                .filter--search { display: none !important; }
+                .emby-filter { display: flex; align-items: center; padding: 1.5em 2em 0.5em 2em; gap: 1em; flex-wrap: wrap; position: sticky; top: 0; z-index: 10; background: rgba(0,0,0,0.9); }
+                .emby-filter-btn { background: rgba(255,255,255,0.1); padding: 0.6em 1.5em; border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: bold; }
+                .emby-filter-btn.focus { background: #fff; color: #000; }
+                .emby-container .online-prestige { margin: 0.5em 1em; }
+                .emby-container .online-prestige.focus::after { top: -0.3em; left: -0.3em; right: -0.3em; bottom: -0.3em; }
             </style>
         `);
     }
@@ -137,7 +131,7 @@
         }, () => callback([]));
     }
 
-    // ---- Воспроизведение (с плейлистом и таймлайнами) ----
+    // ---- Воспроизведение ----
     function playVideo(item, tmdbId, seasonNumber, episodeNumber, playlist, currentIndex) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
@@ -180,12 +174,11 @@
         }
     }
 
-    /* --- КОМПОНЕНТ СЕРИАЛОВ (СТРУКТУРА FX.JS С ИСПРАВЛЕНИЯМИ) --- */
+    /* --- КОМПОНЕНТ СЕРИАЛОВ (БЕЗ FILTER, С ПРЯМЫМ SELECT) --- */
     function EmbySeriesComponent(object) {
         var network = new Lampa.Reguest();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
         var explorer = new Lampa.Explorer(object);
-        var filter = new Lampa.Filter(object);
         var is_destroyed = false;
         var element = $('<div class="emby-container"></div>')[0];
         var seasons = [];
@@ -193,6 +186,9 @@
         var current_episodes = [];
         var emby_series_id = null;
         var tmdb_id = null;
+
+        // Кнопка сезона
+        var seasonBtn = null;
 
         this.create = function() {
             // Получаем данные
@@ -208,26 +204,17 @@
                 tmdb_id = extractTmdbId(object.movie);
             }
 
-            // Настройка фильтра
-            filter.render().find('.filter--sort').remove();
-            filter.onSelect = function(type, a, b) {
-                if (type === 'filter' && a.reset) {
-                    // сброс (не используем)
-                } else if (type === 'filter' && a.season) {
-                    current_season = a.season;
-                    loadEpisodes();
-                }
-            };
-            filter.onBack = function() {
-                Lampa.Activity.backward();
-            };
+            // Создаём панель фильтра вручную
+            var filterPanel = $('<div class="emby-filter"></div>');
+            seasonBtn = $(`<div class="emby-filter-btn selector">${current_season ? (current_season.name || 'Сезон ' + current_season.season_number) : 'Сезон'}</div>`);
+            seasonBtn.on('hover:enter click', function() {
+                showSeasonSelector();
+            });
+            filterPanel.append(seasonBtn);
+            $(element).append(filterPanel);
 
-            // Добавляем фильтр и explorer в DOM
-            var filterHtml = filter.render();
-            $(element).append(filterHtml);
+            // Добавляем explorer
             $(element).append(explorer.render());
-
-            // Настраиваем explorer
             explorer.appendFiles(scroll.render());
             explorer.render().find('.explorer__files-head').remove();
         };
@@ -256,13 +243,20 @@
                     } else {
                         current_season = seasons[0];
                     }
-                    updateFilter();
+                    updateSeasonBtn();
                     loadEpisodes();
                 }
             });
         };
 
-        function updateFilter() {
+        function updateSeasonBtn() {
+            if (seasonBtn) {
+                seasonBtn.text(current_season.name || 'Сезон ' + current_season.season_number);
+            }
+        }
+
+        function showSeasonSelector() {
+            if (!seasons.length) return;
             var items = seasons.map(function(s) {
                 return {
                     title: s.name || 'Сезон ' + s.season_number,
@@ -270,12 +264,20 @@
                     selected: s.season_number === current_season.season_number
                 };
             });
-            filter.set('filter', [{
+            Lampa.Select.show({
                 title: Lampa.Lang.translate('torrent_serial_season'),
                 items: items,
-                stype: 'season'
-            }]);
-            filter.chosen('filter', [Lampa.Lang.translate('torrent_serial_season') + ': ' + (current_season.name || 'Сезон ' + current_season.season_number)]);
+                onSelect: function(a) {
+                    current_season = a.season;
+                    updateSeasonBtn();
+                    // Сохраняем выбранный сезон
+                    window.embyLastSeason = { seriesId: emby_series_id, seasonNumber: current_season.season_number };
+                    loadEpisodes();
+                },
+                onBack: function() {
+                    Lampa.Controller.toggle('content');
+                }
+            });
         }
 
         function loadEpisodes() {
@@ -328,7 +330,6 @@
                     var timelineElement = Lampa.Timeline.render(timeline);
                     if (timelineElement) {
                         timelineContainer.append(timelineElement);
-                        Lampa.Timeline.update(timeline);
                     }
 
                     var img = html.find('img')[0];
@@ -406,12 +407,9 @@
                 });
             }
 
-            // Обновляем explorer новыми элементами scroll
             explorer.appendFiles(scroll.render());
-            // Скрываем заголовок explorer (если есть)
             explorer.render().find('.explorer__files-head').remove();
 
-            updateFilter();
             setupNavigation();
             Lampa.Controller.collectionSet(scroll.render(), explorer.render());
             setTimeout(function() {
@@ -436,28 +434,7 @@
                     Navigator.move('down');
                 },
                 right: function() {
-                    // Открываем список сезонов сразу, без промежуточного меню
-                    var items = seasons.map(function(s) {
-                        return {
-                            title: s.name || 'Сезон ' + s.season_number,
-                            season: s,
-                            selected: s.season_number === current_season.season_number
-                        };
-                    });
-                    Lampa.Select.show({
-                        title: Lampa.Lang.translate('torrent_serial_season'),
-                        items: items,
-                        onSelect: function(a) {
-                            // Обновляем текущий сезон и перезагружаем эпизоды
-                            current_season = a.season;
-                            window.embyLastSeason = { seriesId: emby_series_id, seasonNumber: current_season.season_number };
-                            updateFilter();
-                            loadEpisodes();
-                        },
-                        onBack: function() {
-                            Lampa.Controller.toggle('content');
-                        }
-                    });
+                    showSeasonSelector();
                 },
                 left: function() {
                     if (Navigator.canmove('left')) Navigator.move('left');
@@ -479,7 +456,6 @@
             network.clear();
             if (explorer) explorer.destroy();
             if (scroll) scroll.destroy();
-            if (filter) filter.destroy();
         };
     }
 
