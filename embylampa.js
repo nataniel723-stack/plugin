@@ -2,12 +2,12 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.6-timeline';
+    const PLUGIN_VERSION = '4.4.6-final';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
-    // Стили без изменений
+    // Стили (без изменений)
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
@@ -25,6 +25,7 @@
                     gap: 1.5em; 
                     align-content: flex-start;
                 }
+                
                 .emby-episode-card { 
                     width: calc(25% - 1.125em); 
                     cursor: pointer; 
@@ -38,14 +39,7 @@
                     background: rgba(255, 255, 255, 0.1); 
                     transform: scale(1.05); 
                 }
-                .emby-episode-card .emby-timeline {
-                    position: absolute;
-                    bottom: 0;
-                    left: 0;
-                    right: 0;
-                    height: 3px;
-                    z-index: 2;
-                }
+                
                 .emby-ep-img-wrap { 
                     width: 100%; 
                     aspect-ratio: 16 / 9; 
@@ -61,6 +55,7 @@
                     height: 100%; 
                     object-fit: cover; 
                 }
+                
                 .emby-ep-num { 
                     position: absolute; 
                     top: 0.4em; 
@@ -72,6 +67,7 @@
                     font-size: 0.9em; 
                     color: #fff;
                 }
+                
                 .emby-ep-title { 
                     font-size: 1.1em; 
                     white-space: nowrap; 
@@ -84,6 +80,7 @@
                     font-size: 0.85em; 
                     color: #aaa; 
                 }
+
                 .emby-filter { 
                     display: flex; 
                     align-items: center; 
@@ -108,6 +105,7 @@
                     background: #fff; 
                     color: #000; 
                 }
+                
                 .emby-loader { 
                     display: flex; 
                     justify-content: center; 
@@ -121,6 +119,18 @@
                     opacity: 0.7; 
                     width: 100%; 
                 }
+                
+                /* Свой прогресс-бар */
+                .emby-progress {
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    height: 3px;
+                    background: #00B0FF;
+                    z-index: 2;
+                    transition: width 0.3s;
+                }
+
                 @media (max-width: 1200px) { 
                     .emby-episode-card { width: calc(33.333% - 1em); } 
                 }
@@ -251,7 +261,7 @@
         let seasons = [], current_season = null, current_episodes = [];
         let emby_series_id = null, tmdb_id = null;
 
-        // Получаем оригинальное название для ключа таймлайна
+        // Ключ таймлайна как в CDN.js: сезон + эпизод + оригинальное название
         function getTimelineKey(season, episode) {
             let title = window.currentMovie?.original_title || window.currentMovie?.title || 'series';
             return Lampa.Utils.hash(season + episode + title);
@@ -335,10 +345,14 @@
                         `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);color:#00B0FF;font-size:3em;font-weight:bold;text-shadow:2px 2px 4px rgba(0,0,0,0.5)">${epNum}</div>`;
                     let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
 
-                    // Создаём таймлайн как в CDN.js
+                    // Свой прогресс-бар на основе общего ключа
                     let timelineKey = getTimelineKey(current_season.season_number, episode.episode_number);
                     let timeline = Lampa.Timeline.view(timelineKey);
-                    let timelineHtml = Lampa.Timeline.render ? Lampa.Timeline.render(timeline) : '';
+                    let percent = 0;
+                    if (timeline && timeline.time && timeline.duration) {
+                        percent = Math.min(100, (timeline.time / timeline.duration) * 100);
+                    }
+                    let progressHtml = percent > 0 ? `<div class="emby-progress" style="width:${percent}%"></div>` : '';
 
                     let item = $(`
                         <div class="emby-episode-card selector" data-episode="${episode.episode_number}" data-season="${current_season.season_number}">
@@ -348,7 +362,7 @@
                             </div>
                             <div class="emby-ep-title">${episode.name || 'Эпизод ' + epNum}</div>
                             <div class="emby-ep-info">⭐ ${rating}</div>
-                            <div class="emby-timeline">${timelineHtml}</div>
+                            ${progressHtml}
                         </div>
                     `);
 
