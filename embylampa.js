@@ -2,14 +2,146 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.11';
+    const PLUGIN_VERSION = '4.4.12';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
-    // Стили без изменений...
+    // Внедряем стили
     if (!$('style#emby-plugin-styles').length) {
-        $('head').append(`...`); // ваш полный CSS
+        $('head').append(`
+            <style id="emby-plugin-styles">
+                .emby-container { 
+                    padding: 0; 
+                    height: 100%; 
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                    scroll-behavior: smooth;
+                }
+                .emby-episodes-grid { 
+                    display: flex; 
+                    flex-wrap: wrap; 
+                    padding: 1em 1.5em; 
+                    gap: 1.5em; 
+                    align-content: flex-start;
+                }
+                
+                .emby-episode-card { 
+                    width: calc(25% - 1.125em); 
+                    cursor: pointer; 
+                    transition: transform 0.2s, background 0.2s; 
+                    border-radius: 0.5em; 
+                    padding: 0.5em; 
+                    box-sizing: border-box; 
+                    position: relative;
+                    overflow: hidden;
+                }
+                .emby-episode-card.focus { 
+                    background: rgba(255, 255, 255, 0.1); 
+                    transform: scale(1.05); 
+                }
+                
+                .emby-episode-card .emby-progress {
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    height: 3px;
+                    background: #00B0FF;
+                    z-index: 2;
+                    transition: width 0.3s;
+                }
+                
+                .emby-ep-img-wrap { 
+                    width: 100%; 
+                    aspect-ratio: 16 / 9; 
+                    border-radius: 0.4em; 
+                    overflow: hidden; 
+                    position: relative; 
+                    background: #111; 
+                    margin-bottom: 0.6em; 
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+                }
+                .emby-ep-img { 
+                    width: 100%; 
+                    height: 100%; 
+                    object-fit: cover; 
+                }
+                
+                .emby-ep-num { 
+                    position: absolute; 
+                    top: 0.4em; 
+                    left: 0.4em; 
+                    background: rgba(0,0,0,0.7); 
+                    padding: 0.2em 0.5em; 
+                    border-radius: 0.3em; 
+                    font-weight: bold; 
+                    font-size: 0.9em; 
+                    color: #fff;
+                }
+                
+                .emby-ep-title { 
+                    font-size: 1.1em; 
+                    white-space: nowrap; 
+                    overflow: hidden; 
+                    text-overflow: ellipsis; 
+                    margin-bottom: 0.2em; 
+                    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+                }
+                .emby-ep-info { 
+                    font-size: 0.85em; 
+                    color: #aaa; 
+                }
+
+                .emby-filter { 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: flex-start; 
+                    padding: 1.5em 2em 0 2em; 
+                    gap: 1em;
+                    flex-wrap: wrap;
+                    position: sticky;
+                    top: 0;
+                    z-index: 10;
+                    background: rgba(0,0,0,0.9);
+                }
+                .emby-filter-btn { 
+                    background: rgba(255,255,255,0.1); 
+                    padding: 0.6em 1.5em; 
+                    border-radius: 5px; 
+                    cursor: pointer; 
+                    font-size: 1.1em; 
+                    font-weight: bold;
+                }
+                .emby-filter-btn.focus { 
+                    background: #fff; 
+                    color: #000; 
+                }
+                
+                .emby-loader { 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center; 
+                    height: 50vh; 
+                }
+                .emby-empty { 
+                    text-align: center; 
+                    padding: 3em; 
+                    font-size: 1.2em; 
+                    opacity: 0.7; 
+                    width: 100%; 
+                }
+
+                @media (max-width: 1200px) { 
+                    .emby-episode-card { width: calc(33.333% - 1em); } 
+                }
+                @media (max-width: 768px) { 
+                    .emby-episode-card { width: calc(50% - 0.75em); } 
+                }
+                @media (max-width: 480px) { 
+                    .emby-episode-card { width: 100%; } 
+                }
+            </style>
+        `);
     }
 
     function getUrl() {
@@ -88,13 +220,37 @@
         }, () => callback([]));
     }
 
+    // Получаем эпизоды с IMDb ID (external_ids)
     function getEpisodesFromTMDB(tmdb_id, season_number, callback) {
         if (!tmdb_id) { callback([]); return; }
         let network = new Lampa.Reguest();
-        let url = Lampa.TMDB.api('tv/' + tmdb_id + '/season/' + season_number + '?api_key=' + Lampa.TMDB.key() + '&language=' + Lampa.Storage.get('language', 'ru'));
+        // Добавляем append_to_response=external_ids для получения imdb_id
+        let url = Lampa.TMDB.api('tv/' + tmdb_id + '/season/' + season_number + '?api_key=' + Lampa.TMDB.key() + '&language=' + Lampa.Storage.get('language', 'ru') + '&append_to_response=external_ids');
+        
         network.silent(url, (data) => {
             if (data && data.episodes) {
-                callback(data.episodes);
+                // Загружаем external_ids для каждого эпизода
+                let episodes = data.episodes;
+                let loaded = 0;
+                
+                episodes.forEach((ep, i) => {
+                    let epUrl = Lampa.TMDB.api('tv/' + tmdb_id + '/season/' + season_number + '/episode/' + ep.episode_number + '/external_ids?api_key=' + Lampa.TMDB.key());
+                    
+                    let req = new Lampa.Reguest();
+                    req.silent(epUrl, (extData) => {
+                        episodes[i].imdb_id = extData && extData.imdb_id ? extData.imdb_id : null;
+                        loaded++;
+                        if (loaded === episodes.length) {
+                            callback(episodes);
+                        }
+                    }, () => {
+                        episodes[i].imdb_id = null;
+                        loaded++;
+                        if (loaded === episodes.length) {
+                            callback(episodes);
+                        }
+                    });
+                });
             } else {
                 callback([]);
             }
@@ -121,14 +277,12 @@
                 }
             });
         } else {
-            // Для фильмов
-            let key = 'movie/' + (item.tmdb_id || item.Id);
-            let timeline = Lampa.Timeline.view(Lampa.Utils.hash(key));
+            let movieKey = 'movie/' + (item.tmdb_id || item.Id);
             Lampa.Player.play({
                 title: item.Name,
                 url: streamUrl,
                 poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
-                timeline: timeline
+                timeline: Lampa.Timeline.view(Lampa.Utils.hash(movieKey))
             });
         }
     }
@@ -253,17 +407,17 @@
                     
                     let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
                     
-                    // Ключ таймлайна: хеш от tv/{tmdb_id}/{season}/{episode}
-                    let timelineKey = 'tv/' + tmdb_id + '/' + current_season.season_number + '/' + episode.episode_number;
-                    let timelineHash = Lampa.Utils.hash(timelineKey);
-                    let timeline = Lampa.Timeline.view(timelineHash);
+                    // Таймлайн по IMDb ID эпизода
+                    let imdbId = episode.imdb_id;
                     let progressPercent = 0;
-                    if (timeline && timeline.time && timeline.duration) {
-                        progressPercent = Math.min(100, (timeline.time / timeline.duration) * 100);
-                    }
                     
-                    // Отладка в консоль
-                    console.log('EP ' + epNum + ' key: ' + timelineKey + ' hash: ' + timelineHash + ' progress: ' + progressPercent + '%');
+                    if (imdbId) {
+                        let hash = Lampa.Utils.hash(imdbId);
+                        let timeline = Lampa.Timeline.view(hash);
+                        if (timeline && timeline.time && timeline.duration) {
+                            progressPercent = Math.min(100, (timeline.time / timeline.duration) * 100);
+                        }
+                    }
                     
                     let progressBar = '';
                     if (progressPercent > 0) {
@@ -271,7 +425,7 @@
                     }
 
                     let item = $(`
-                        <div class="emby-episode-card selector" data-episode="${episode.episode_number}" data-season="${current_season.season_number}" data-index="${index}">
+                        <div class="emby-episode-card selector" data-episode="${episode.episode_number}" data-season="${current_season.season_number}" data-index="${index}" data-imdb="${imdbId || ''}">
                             <div class="emby-ep-img-wrap">
                                 ${imageHtml}
                                 <div class="emby-ep-num">${epNum} серия</div>
@@ -312,19 +466,18 @@
                                         if (episodeData && episodeData.Items) {
                                             let sortedEpisodes = episodeData.Items.sort((a, b) => (a.IndexNumber || 0) - (b.IndexNumber || 0));
                                             
-                                            // Создаем плейлист с правильными таймлайнами
+                                            // Создаем плейлист с таймлайнами по IMDb ID
                                             let playlist = sortedEpisodes.map((ep, i) => {
                                                 let psId = Date.now() + i;
                                                 let tmdbEp = current_episodes[i];
-                                                let epNumForTimeline = tmdbEp ? tmdbEp.episode_number : (i + 1);
-                                                let key = 'tv/' + tmdb_id + '/' + seasonNumber + '/' + epNumForTimeline;
-                                                let hash = Lampa.Utils.hash(key);
-                                                console.log('Playlist ep ' + epNumForTimeline + ' key: ' + key + ' hash: ' + hash);
+                                                let imdb = tmdbEp ? tmdbEp.imdb_id : null;
+                                                let timeline = imdb ? Lampa.Timeline.view(Lampa.Utils.hash(imdb)) : null;
+                                                
                                                 return {
                                                     title: ep.Name,
                                                     url: `${getUrl().replace(/\/$/, '')}/emby/Videos/${ep.Id}/stream?Static=true&DeviceId=${getDeviceId()}&PlaySessionId=${psId}&api_key=${getApiKey()}`,
                                                     poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
-                                                    timeline: Lampa.Timeline.view(hash)
+                                                    timeline: timeline
                                                 };
                                             });
                                             
@@ -453,7 +606,6 @@
                     component: 'emby_series'
                 });
             } else if (item.Type === 'Movie') {
-                // Для фильмов используем ключ movie/{tmdb_id}
                 let key = 'movie/' + extractTmdbId(movie);
                 let timeline = Lampa.Timeline.view(Lampa.Utils.hash(key));
                 const base = getUrl().replace(/\/$/, '');
