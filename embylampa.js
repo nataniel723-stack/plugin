@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.9';
+    const PLUGIN_VERSION = '4.4.10';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -242,6 +242,7 @@
         let streamUrl = `${base}/emby/Videos/${item.Id}/stream?Static=true&DeviceId=${deviceId}&PlaySessionId=${playSessionId}&api_key=${apiKey}`;
         
         if (playlist && playlist.length > 0) {
+            console.log('PLAYLIST TIMELINE:', playlist.map(p => p.timeline));
             Lampa.Player.play({
                 title: item.Name,
                 url: streamUrl,
@@ -253,11 +254,13 @@
                 }
             });
         } else {
+            let movieKey = 'movie/' + (item.tmdb_id || item.Id);
+            console.log('MOVIE TIMELINE KEY:', movieKey);
             Lampa.Player.play({
                 title: item.Name,
                 url: streamUrl,
                 poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
-                timeline: Lampa.Timeline.view(Lampa.Utils.hash('movie/' + (item.tmdb_id || item.Id)))
+                timeline: Lampa.Timeline.view(movieKey)
             });
         }
     }
@@ -384,12 +387,13 @@
                     
                     // Ключ таймлайна в формате Lampa: tv/{tmdb_id}/{season}/{episode}
                     let timelineKey = 'tv/' + tmdb_id + '/' + current_season.season_number + '/' + episode.episode_number;
-                    let timelineHash = Lampa.Utils.hash(timelineKey);
-                    let timelineData = Lampa.Timeline.view(timelineHash);
+                    let timeline = Lampa.Timeline.view(timelineKey);
                     let progressPercent = 0;
-                    if (timelineData && timelineData.time && timelineData.duration) {
-                        progressPercent = Math.min(100, (timelineData.time / timelineData.duration) * 100);
+                    if (timeline && timeline.time && timeline.duration) {
+                        progressPercent = Math.min(100, (timeline.time / timeline.duration) * 100);
                     }
+                    
+                    console.log('TIMELINE KEY:', timelineKey, 'PROGRESS:', progressPercent);
                     
                     let progressBar = '';
                     if (progressPercent > 0) {
@@ -444,11 +448,12 @@
                                                 let tmdbEp = current_episodes[i];
                                                 let epNumForTimeline = tmdbEp ? tmdbEp.episode_number : (i + 1);
                                                 let key = 'tv/' + tmdb_id + '/' + seasonNumber + '/' + epNumForTimeline;
+                                                console.log('PLAYLIST ITEM TIMELINE KEY:', key);
                                                 return {
                                                     title: ep.Name,
                                                     url: `${getUrl().replace(/\/$/, '')}/emby/Videos/${ep.Id}/stream?Static=true&DeviceId=${getDeviceId()}&PlaySessionId=${psId}&api_key=${getApiKey()}`,
                                                     poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
-                                                    timeline: Lampa.Timeline.view(Lampa.Utils.hash(key))
+                                                    timeline: Lampa.Timeline.view(key)
                                                 };
                                             });
                                             
