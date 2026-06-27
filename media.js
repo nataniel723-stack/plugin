@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.35-fix';
+    const PLUGIN_VERSION = '4.4.36-fix';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -32,14 +32,14 @@
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
-                .emby-container { padding: 0; height: 100%; overflow-y: auto; }
+                .emby-container { padding: 0; height: 100%; overflow-y: hidden; }
                 .emby-loader { display: flex; justify-content: center; align-items: center; height: 50vh; }
                 .emby-empty { text-align: center; padding: 3em; font-size: 1.2em; opacity: 0.7; width: 100%; }
                 .emby-filter { display: flex; align-items: center; padding: 1.5em 2em 0.5em 2em; gap: 1em; flex-wrap: wrap; position: sticky; top: 0; z-index: 10; background: rgba(0,0,0,0.9); }
                 .emby-filter-btn { background: rgba(255,255,255,0.1); padding: 0.6em 1.5em; border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: bold; }
                 .emby-filter-btn.focus { background: #fff; color: #000; }
-                .emby-container .online-prestige { margin: 0.5em 1em; }
-                .emby-container .online-prestige.focus::after { top: -0.3em; left: -0.3em; right: -0.3em; bottom: -0.3em; }
+                .emby-series-list { max-height: calc(100% - 50px); overflow-y: auto; padding-bottom: 50px; will-change: transform; }
+                .emby-series-item { height: 150px; margin-bottom: 10px; box-sizing: border-box; }
             </style>
         `);
     }
@@ -190,7 +190,7 @@
         });
     }
 
-    /* --- КОМПОНЕНТ СЕРИАЛОВ (с исправленным скроллингом) --- */
+    /* --- КОМПОНЕНТ СЕРИАЛОВ (исправленный скроллинг) --- */
     function EmbySeriesComponent(object) {
         var network = new Lampa.Reguest();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
@@ -218,7 +218,7 @@
                 tmdb_id = extractTmdbId(object.movie);
             }
 
-            // Создаём панель фильтра вручную
+            // Создаем панель фильтра вручную
             var filterPanel = $('<div class="emby-filter"></div>');
             seasonBtn = $(`<div class="emby-filter-btn selector">${current_season ? (current_season.name || 'Сезон ' + current_season.season_number) : 'Сезон'}</div>`);
             seasonBtn.on('hover:enter click', function() {
@@ -379,13 +379,13 @@
                         body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
 
                         var net = new Lampa.Reguest();
-                        var seasonQuery = `/Items?ParentId=${emby_series_id}&IncludeItemTypes=Season&Fields=Id,IndexNumber`;
+                        var seasonQuery = '/Items?ParentId=' + emby_series_id + '&IncludeItemTypes=Season&Fields=Id,IndexNumber';
                         net.silent(buildApiUrl(seasonQuery), function(seasonData) {
                             if (is_destroyed) return;
                             if (seasonData && seasonData.Items) {
                                 var season = seasonData.Items.find(function(s) { return s.IndexNumber === seasonNumber; });
                                 if (season) {
-                                    var episodeQuery = `/Items?ParentId=${season.Id}&IncludeItemTypes=Episode&Fields=Id,Name,IndexNumber,PrimaryImageTag&SortBy=SortName&SortOrder=Ascending`;
+                                    var episodeQuery = '/Items?ParentId=' + season.Id + '&IncludeItemTypes=Episode&Fields=Id,Name,IndexNumber,PrimaryImageTag&SortBy=SortName&SortOrder=Ascending';
                                     net.silent(buildApiUrl(episodeQuery), function(episodeData) {
                                         if (is_destroyed) return;
                                         if (episodeData && episodeData.Items) {
@@ -397,8 +397,8 @@
                                                 var key = 'tv/' + String(tmdb_id) + '/' + String(seasonNumber) + '/' + String(epNumForTimeline);
                                                 return {
                                                     title: ep.Name,
-                                                    url: `${getUrl().replace(/\/$/, '')}/emby/Videos/${ep.Id}/stream?Static=true&DeviceId=${getDeviceId()}&PlaySessionId=${psId}&api_key=${getApiKey()}`,
-                                                    poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
+                                                    url: getUrl().replace(/\/$/, '') + '/emby/Videos/' + ep.Id + '/stream?Static=true&DeviceId=' + getDeviceId() + '&PlaySessionId=' + psId + '&api_key=' + getApiKey(),
+                                                    poster: ep.PrimaryImageTag ? getUrl().replace(/\/$/, '') + '/Items/' + ep.Id + '/Images/Primary?tag=' + ep.PrimaryImageTag : '',
                                                     timeline: Lampa.Timeline.view(key)
                                                 };
                                             });
