@@ -2,44 +2,58 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.14';
+    const PLUGIN_VERSION = '4.4.16';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
     // ---- Добавляем стандартный шаблон online_prestige_full (если отсутствует) ----
-    if (!Lampa.Template.has('online_prestige_full')) {
-        Lampa.Template.add('online_prestige_full', `
-            <div class="online-prestige online-prestige--full selector">
-                <div class="online-prestige__img">
-                    <img alt="">
-                    <div class="online-prestige__loader"></div>
+    // В старых версиях Lampa нет Lampa.Template.has, поэтому просто добавляем
+    Lampa.Template.add('online_prestige_full', `
+        <div class="online-prestige online-prestige--full selector">
+            <div class="online-prestige__img">
+                <img alt="">
+                <div class="online-prestige__loader"></div>
+            </div>
+            <div class="online-prestige__body">
+                <div class="online-prestige__head">
+                    <div class="online-prestige__title">{title}</div>
+                    <div class="online-prestige__time">{time}</div>
                 </div>
-                <div class="online-prestige__body">
-                    <div class="online-prestige__head">
-                        <div class="online-prestige__title">{title}</div>
-                        <div class="online-prestige__time">{time}</div>
-                    </div>
-                    <div class="online-prestige__timeline"></div>
-                    <div class="online-prestige__footer">
-                        <div class="online-prestige__info">{info}</div>
-                        <div class="online-prestige__quality">{quality}</div>
-                    </div>
+                <div class="online-prestige__timeline"></div>
+                <div class="online-prestige__footer">
+                    <div class="online-prestige__info">{info}</div>
+                    <div class="online-prestige__quality">{quality}</div>
                 </div>
             </div>
-        `);
-    }
+        </div>
+    `);
 
-    // ---- Стили (минимальные, остальное берётся из стандартных стилей Lampa) ----
+    // ---- Стили (минимальные) ----
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
-                .emby-container { padding: 0; height: 100%; overflow-y: auto; }
-                .emby-filter { display: flex; align-items: center; padding: 1.5em 2em 0.5em 2em; gap: 1em; flex-wrap: wrap; position: sticky; top: 0; z-index: 10; background: rgba(0,0,0,0.9); }
+                .emby-container { padding: 0; height: 100%; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
+                .emby-episodes-list { padding: 1em 2em; }
+                .emby-episode-item { display: flex; align-items: center; padding: 0.8em 1em; border-radius: 0.5em; cursor: pointer; transition: background 0.2s, transform 0.2s; margin-bottom: 0.8em; background: rgba(255,255,255,0.05); }
+                .emby-episode-item.focus { background: rgba(255,255,255,0.15); transform: scale(1.02); }
+                .emby-ep-img-wrap { width: 12em; height: 6.75em; flex-shrink: 0; border-radius: 0.3em; overflow: hidden; margin-right: 1.5em; background: #111; position: relative; }
+                .emby-ep-img { width: 100%; height: 100%; object-fit: cover; }
+                .emby-ep-num { position: absolute; top: 0.3em; left: 0.3em; background: rgba(0,0,0,0.7); padding: 0.1em 0.6em; border-radius: 0.3em; font-weight: bold; font-size: 0.85em; color: #fff; }
+                .emby-ep-body { flex: 1; min-width: 0; }
+                .emby-ep-title { font-size: 1.2em; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                .emby-ep-meta { font-size: 0.85em; color: #aaa; display: flex; align-items: center; gap: 1em; flex-wrap: wrap; margin-top: 0.2em; }
+                .emby-ep-timeline { margin-top: 0.4em; width: 100%; }
+                .emby-ep-timeline .time-line { display: block !important; }
+                .emby-filter { display: flex; align-items: center; justify-content: flex-start; padding: 1.5em 2em 0.5em 2em; gap: 1em; flex-wrap: wrap; position: sticky; top: 0; z-index: 10; background: rgba(0,0,0,0.9); }
                 .emby-filter-btn { background: rgba(255,255,255,0.1); padding: 0.6em 1.5em; border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: bold; }
                 .emby-filter-btn.focus { background: #fff; color: #000; }
                 .emby-loader { display: flex; justify-content: center; align-items: center; height: 50vh; }
                 .emby-empty { text-align: center; padding: 3em; font-size: 1.2em; opacity: 0.7; width: 100%; }
+                @media (max-width: 600px) {
+                    .emby-episode-item { flex-wrap: wrap; }
+                    .emby-ep-img-wrap { width: 100%; height: auto; aspect-ratio: 16/9; margin-right: 0; margin-bottom: 0.8em; }
+                }
             </style>
         `);
     }
@@ -131,7 +145,7 @@
         }, () => callback([]));
     }
 
-    // ---- Воспроизведение с плейлистом и таймлайнами ----
+    // ---- Воспроизведение с правильными таймлайнами ----
     function playVideo(item, tmdbId, seasonNumber, episodeNumber, playlist, currentIndex) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
@@ -174,7 +188,7 @@
         }
     }
 
-    /* --- Компонент для сериалов (использует стандартный шаблон Lampa) --- */
+    /* --- Компонент для сериалов --- */
     function EmbySeriesComponent() {
         let network = new Lampa.Reguest();
         let is_destroyed = false;
@@ -185,19 +199,11 @@
         let emby_series_id = null;
         let tmdb_id = null;
 
-        // Компоненты Lampa
-        let explorer = null;
-        let scroll = null;
-        let filter = null;
-
         this.create = function() {
             if (window.embySeriesData) {
                 emby_series_id = window.embySeriesData.emby_id;
                 tmdb_id = window.embySeriesData.tmdb_id;
             }
-            explorer = new Lampa.Explorer();
-            scroll = new Lampa.Scroll({ mask: true, over: true });
-            filter = new Lampa.Filter();
         };
 
         this.start = function() {
@@ -213,29 +219,6 @@
                 return;
             }
 
-            // Инициализация фильтра
-            filter.render().find('.filter--sort').remove(); // убираем сортировку
-            filter.onSelect = function(type, a, b) {
-                if (type === 'filter' && a.reset) {
-                    // Сброс не нужен, но можно перезагрузить
-                } else if (type === 'filter' && a.season) {
-                    current_season = a.season;
-                    loadEpisodes(body);
-                }
-            };
-            filter.onBack = function() {
-                // Возврат назад
-                Lampa.Activity.backward();
-            };
-
-            // Добавляем фильтр в начало
-            let filterHtml = filter.render();
-            body.append(filterHtml);
-
-            // Настройка explorer
-            explorer.appendFiles(scroll.render());
-
-            // Загрузка сезонов
             body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
             getSeasonsFromTMDB(tmdb_id, (result) => {
                 if (is_destroyed) return;
@@ -251,30 +234,14 @@
                     } else {
                         current_season = seasons[0];
                     }
-                    // Обновляем фильтр
-                    updateFilter();
                     loadEpisodes(body);
                 }
             });
         };
 
-        function updateFilter() {
-            let items = seasons.map(s => ({
-                title: s.name || `Сезон ${s.season_number}`,
-                season: s,
-                selected: s.season_number === current_season.season_number
-            }));
-            filter.set('filter', [{
-                title: Lampa.Lang.translate('torrent_serial_season'),
-                items: items,
-                stype: 'season'
-            }]);
-            filter.chosen('filter', [Lampa.Lang.translate('torrent_serial_season') + ': ' + (current_season.name || 'Сезон ' + current_season.season_number)]);
-        }
-
         function loadEpisodes(body) {
             if (is_destroyed) return;
-            body.find('.emby-loader').remove();
+            body.empty();
             body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
             getEpisodesFromTMDB(tmdb_id, current_season.season_number, (episodes) => {
                 if (is_destroyed) return;
@@ -285,74 +252,76 @@
 
         function renderEpisodes(body) {
             if (is_destroyed) return;
-            body.find('.emby-loader').remove();
+            body.empty();
 
-            scroll.clear();
-            let items = [];
+            // Фильтр (выбор сезона)
+            let filterPanel = $('<div class="emby-filter"></div>');
+            let seasonBtn = $(`<div class="emby-filter-btn selector">${current_season.name || 'Сезон ' + current_season.season_number}</div>`);
+            seasonBtn.on('hover:enter click', () => {
+                let items = seasons.map(s => ({
+                    title: s.name || `Сезон ${s.season_number}`,
+                    season: s,
+                    selected: s.season_number === current_season.season_number
+                }));
+                Lampa.Select.show({
+                    title: 'Выберите сезон',
+                    items: items,
+                    onSelect: (a) => {
+                        current_season = a.season;
+                        loadEpisodes(body);
+                    },
+                    onBack: () => {
+                        Lampa.Controller.toggle('content');
+                    }
+                });
+            });
+            filterPanel.append(seasonBtn);
+            body.append(filterPanel);
+
+            // Список эпизодов
+            let list = $('<div class="emby-episodes-list"></div>');
 
             if (current_episodes.length === 0) {
-                let empty = $('<div class="emby-empty">Эпизоды не найдены</div>');
-                scroll.append(empty);
+                list.append('<div class="emby-empty">Эпизоды не найдены</div>');
             } else {
                 current_episodes.forEach((episode, index) => {
                     let epNum = String(episode.episode_number).padStart(2, '0');
                     let stillPath = episode.still_path ? 'https://image.tmdb.org/t/p/w300' + episode.still_path : '';
+                    let imageHtml = stillPath ?
+                        `<img src="${stillPath}" class="emby-ep-img" onerror="this.style.display='none'">` :
+                        `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);color:#00B0FF;font-size:2em;font-weight:bold;">${epNum}</div>`;
                     
-                    // Данные для шаблона
-                    let title = episode.name || 'Эпизод ' + epNum;
                     let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
                     let airDate = episode.air_date ? Lampa.Utils.parseTime(episode.air_date).full : '';
-                    
-                    // Таймлайн
+
+                    // Ключ таймлайна (стандартный для Lampa)
                     let timelineKey = 'tv/' + tmdb_id + '/' + current_season.season_number + '/' + episode.episode_number;
                     let timeline = Lampa.Timeline.view(timelineKey);
-                    
-                    // Формируем info (рейтинг + дата)
-                    let infoParts = [];
-                    if (rating !== '0.0') infoParts.push(`⭐ ${rating}`);
-                    if (airDate) infoParts.push(airDate);
-                    let info = infoParts.join(' ● ');
-                    
-                    // Время (длительность) - у нас нет, оставляем пустым
-                    let time = '';
-                    let quality = '';
 
-                    // Создаём HTML через шаблон
-                    let html = Lampa.Template.get('online_prestige_full', {
-                        title: title,
-                        time: time,
-                        info: info,
-                        quality: quality
-                    });
+                    // Создаём элемент списка
+                    let item = $(`
+                        <div class="emby-episode-item selector" data-episode="${episode.episode_number}" data-season="${current_season.season_number}" data-index="${index}">
+                            <div class="emby-ep-img-wrap">
+                                ${imageHtml}
+                                <div class="emby-ep-num">${epNum}</div>
+                            </div>
+                            <div class="emby-ep-body">
+                                <div class="emby-ep-title">${episode.name || 'Эпизод ' + epNum}</div>
+                                <div class="emby-ep-meta">
+                                    <span>⭐ ${rating}</span>
+                                    ${airDate ? `<span>${airDate}</span>` : ''}
+                                </div>
+                                <div class="emby-ep-timeline"></div>
+                            </div>
+                        </div>
+                    `);
 
-                    // Вставляем таймлайн
-                    let timelineContainer = html.find('.online-prestige__timeline');
+                    // Вставляем таймлайн через стандартный рендеринг Lampa
+                    let timelineContainer = item.find('.emby-ep-timeline');
                     let timelineElement = Lampa.Timeline.render(timeline);
                     if (timelineElement) {
                         timelineContainer.append(timelineElement);
                     }
-
-                    // Загружаем картинку
-                    let img = html.find('img')[0];
-                    if (stillPath) {
-                        img.onload = function() {
-                            html.find('.online-prestige__img').addClass('online-prestige__img--loaded');
-                            html.find('.online-prestige__loader').remove();
-                        };
-                        img.onerror = function() {
-                            img.src = './img/img_broken.svg';
-                        };
-                        img.src = stillPath;
-                    } else {
-                        img.src = './img/img_broken.svg';
-                        html.find('.online-prestige__loader').remove();
-                    }
-
-                    // Сохраняем данные в элемент
-                    let item = $(html);
-                    item.data('episode', episode.episode_number);
-                    item.data('season', current_season.season_number);
-                    item.data('index', index);
 
                     // Обработчик клика
                     item.on('hover:enter click', function() {
@@ -360,7 +329,6 @@
                         let seasonNumber = parseInt($(this).data('season'));
                         window.embyLastSeason = { seriesId: emby_series_id, seasonNumber: seasonNumber };
 
-                        // Показываем лоадер
                         body.empty();
                         body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
 
@@ -407,55 +375,63 @@
                         });
                     });
 
-                    // Добавляем в скролл
-                    scroll.append(item);
-                    items.push(item);
+                    list.append(item);
                 });
             }
 
-            // Обновляем explorer
-            explorer.appendFiles(scroll.render());
-            // Скрываем стандартный заголовок explorer (он нам не нужен)
-            explorer.render().find('.explorer__files-head').remove();
-
-            // Обновляем фильтр
-            updateFilter();
-
-            // Навигация
+            body.append(list);
+            element.scrollTop = 0;
             setupNavigation();
-            // Устанавливаем фокус
-            Lampa.Controller.collectionSet(scroll.render(), explorer.render());
-            setTimeout(() => {
-                Lampa.Controller.collectionFocus(false, scroll.render());
-            }, 100);
+        }
+
+        function scrollToFocused() {
+            let focused = $(element).find('.selector.focus');
+            if (focused.length) {
+                let containerRect = element.getBoundingClientRect();
+                let elementRect = focused[0].getBoundingClientRect();
+                if (elementRect.bottom > containerRect.bottom - 20) {
+                    element.scrollBy({ top: elementRect.bottom - containerRect.bottom + 100, behavior: 'smooth' });
+                }
+                if (elementRect.top < containerRect.top + 80) {
+                    element.scrollBy({ top: elementRect.top - containerRect.top - 100, behavior: 'smooth' });
+                }
+            }
         }
 
         function setupNavigation() {
             Lampa.Controller.add('content', {
                 toggle: () => {
-                    Lampa.Controller.collectionSet(scroll.render(), explorer.render());
-                    Lampa.Controller.collectionFocus(false, scroll.render());
+                    Lampa.Controller.collectionSet(element);
+                    Lampa.Controller.collectionFocus(false, element);
+                    setTimeout(scrollToFocused, 100);
                 },
                 up: () => {
-                    if (Navigator.canmove('up')) {
-                        Navigator.move('up');
+                    if (window.Navigator && window.Navigator.canmove && window.Navigator.canmove('up')) {
+                        window.Navigator.move('up');
+                        setTimeout(scrollToFocused, 50);
                     } else {
-                        // Попробуем переключить на фильтр или заголовок
                         Lampa.Controller.toggle('head');
                     }
                 },
                 down: () => {
-                    Navigator.move('down');
-                },
-                right: () => {
-                    // если есть фильтр, покажем его
-                    if (filter && filter.render) {
-                        filter.show(Lampa.Lang.translate('title_filter'), 'filter');
+                    if (window.Navigator && window.Navigator.canmove && window.Navigator.canmove('down')) {
+                        window.Navigator.move('down');
+                        setTimeout(scrollToFocused, 50);
                     }
                 },
                 left: () => {
-                    if (Navigator.canmove('left')) Navigator.move('left');
-                    else Lampa.Controller.toggle('menu');
+                    if (window.Navigator && window.Navigator.canmove && window.Navigator.canmove('left')) {
+                        window.Navigator.move('left');
+                        setTimeout(scrollToFocused, 50);
+                    } else {
+                        Lampa.Controller.toggle('menu');
+                    }
+                },
+                right: () => {
+                    if (window.Navigator && window.Navigator.canmove && window.Navigator.canmove('right')) {
+                        window.Navigator.move('right');
+                        setTimeout(scrollToFocused, 50);
+                    }
                 },
                 back: () => {
                     Lampa.Activity.backward();
@@ -471,13 +447,10 @@
         this.destroy = function() {
             is_destroyed = true;
             network.clear();
-            if (explorer) explorer.destroy();
-            if (scroll) scroll.destroy();
-            if (filter) filter.destroy();
         };
     }
 
-    /* --- Остальная часть плагина (кнопка, настройки, запуск) --- */
+    /* --- Главная логика --- */
     function handleEmbyClick(movie) {
         if (!isConfigured()) return notify('Настройте Emby в параметрах');
 
@@ -505,6 +478,7 @@
         });
     }
 
+    /* --- Кнопка --- */
     function addEmbyButton(data) {
         if (!data || !data.render || !data.movie) return;
         if (data.render.find('.emby-button').length) return;
@@ -523,6 +497,7 @@
         else data.render.find('.buttons, .activity__body').append(button);
     }
 
+    /* --- Настройки --- */
     function renderSettings(body) {
         body.empty();
         const wrap = $('<div class="settings-container"></div>');
@@ -556,6 +531,7 @@
         });
     }
 
+    /* --- Запуск --- */
     function startPlugin() {
         Lampa.Component.add('emby_series', EmbySeriesComponent);
         initSettings();
