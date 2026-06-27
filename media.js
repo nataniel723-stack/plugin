@@ -365,7 +365,7 @@
                     item.data('season', current_season.season_number);
                     item.data('index', index);
 
-                    // --- ИСПРАВЛЕНИЕ СКРОЛЛИНГА: добавляем обработчик hover:focus ---
+                    // Обработчики событий для каждого эпизода
                     item.on('hover:focus', function(e) {
                         scroll.update($(this), true);
                     });
@@ -379,13 +379,13 @@
                         body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
 
                         var net = new Lampa.Reguest();
-                        var seasonQuery = '/Items?ParentId=' + emby_series_id + '&IncludeItemTypes=Season&Fields=Id,IndexNumber';
+                        var seasonQuery = `/Items?ParentId=${emby_series_id}&IncludeItemTypes=Season&Fields=Id,IndexNumber`;
                         net.silent(buildApiUrl(seasonQuery), function(seasonData) {
                             if (is_destroyed) return;
                             if (seasonData && seasonData.Items) {
                                 var season = seasonData.Items.find(function(s) { return s.IndexNumber === seasonNumber; });
                                 if (season) {
-                                    var episodeQuery = '/Items?ParentId=' + season.Id + '&IncludeItemTypes=Episode&Fields=Id,Name,IndexNumber,PrimaryImageTag&SortBy=SortName&SortOrder=Ascending';
+                                    var episodeQuery = `/Items?ParentId=${season.Id}&IncludeItemTypes=Episode&Fields=Id,Name,IndexNumber,PrimaryImageTag&SortBy=SortName&SortOrder=Ascending`;
                                     net.silent(buildApiUrl(episodeQuery), function(episodeData) {
                                         if (is_destroyed) return;
                                         if (episodeData && episodeData.Items) {
@@ -397,8 +397,8 @@
                                                 var key = 'tv/' + String(tmdb_id) + '/' + String(seasonNumber) + '/' + String(epNumForTimeline);
                                                 return {
                                                     title: ep.Name,
-                                                    url: getUrl().replace(/\/$/, '') + '/emby/Videos/' + ep.Id + '/stream?Static=true&DeviceId=' + getDeviceId() + '&PlaySessionId=' + psId + '&api_key=' + getApiKey(),
-                                                    poster: ep.PrimaryImageTag ? getUrl().replace(/\/$/, '') + '/Items/' + ep.Id + '/Images/Primary?tag=' + ep.PrimaryImageTag : '',
+                                                    url: `${getUrl().replace(/\/$/, '')}/emby/Videos/${ep.Id}/stream?Static=true&DeviceId=${getDeviceId()}&PlaySessionId=${psId}&api_key=${getApiKey()}`,
+                                                    poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
                                                     timeline: Lampa.Timeline.view(key)
                                                 };
                                             });
@@ -430,14 +430,13 @@
 
             setupNavigation();
             Lampa.Controller.collectionSet(scroll.render(), explorer.render());
-            setTimeout(function() {
+            requestAnimationFrame(() => {
                 Lampa.Controller.collectionFocus(false, scroll.render());
-                // Прокручиваем к первому элементу после фокуса
                 var firstItem = $(scroll.render()).find('.selector').first();
                 if (firstItem.length) {
                     scroll.update(firstItem[0], true);
                 }
-            }, 100);
+            });
         }
 
         function setupNavigation() {
@@ -445,24 +444,22 @@
                 toggle: function() {
                     Lampa.Controller.collectionSet(scroll.render(), explorer.render());
                     Lampa.Controller.collectionFocus(false, scroll.render());
-                    // --- ИСПРАВЛЕНИЕ СКРОЛЛИНГА: обновляем скролл с задержкой ---
-                    setTimeout(function() {
+                    requestAnimationFrame(() => {
                         var focusElement = $(scroll.render()).find('.selector.focus');
                         if (focusElement.length) {
                             scroll.update(focusElement[0], true);
                         }
-                    }, 50);
+                    });
                 },
                 up: function() {
                     if (Navigator.canmove('up')) {
                         Navigator.move('up');
-                        // --- ИСПРАВЛЕНИЕ СКРОЛЛИНГА: обновляем скролл с задержкой ---
-                        setTimeout(function() {
+                        requestAnimationFrame(() => {
                             var focusElement = $(scroll.render()).find('.selector.focus');
                             if (focusElement.length) {
                                 scroll.update(focusElement[0], true);
                             }
-                        }, 50);
+                        });
                     } else {
                         Lampa.Controller.toggle('head');
                     }
@@ -470,13 +467,12 @@
                 down: function() {
                     if (Navigator.canmove('down')) {
                         Navigator.move('down');
-                        // --- ИСПРАВЛЕНИЕ СКРОЛЛИНГА: обновляем скролл с задержкой ---
-                        setTimeout(function() {
+                        requestAnimationFrame(() => {
                             var focusElement = $(scroll.render()).find('.selector.focus');
                             if (focusElement.length) {
                                 scroll.update(focusElement[0], true);
                             }
-                        }, 50);
+                        });
                     }
                 },
                 right: function() {
