@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.34';
+    const PLUGIN_VERSION = '4.4.35';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -44,7 +44,7 @@
         `);
     }
 
-    // ---- Базовые функции (без изменений) ----
+    // ---- Базовые функции ----
     function getUrl() {
         return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim();
     }
@@ -131,7 +131,7 @@
         }, () => callback([]));
     }
 
-    // ---- Воспроизведение с правильными ключами таймлайнов ----
+    // ---- Воспроизведение с правильными ключами таймлайнов и синхронизацией ----
     function playVideo(item, tmdbId, seasonNumber, episodeNumber, playlist, currentIndex) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
@@ -143,17 +143,13 @@
         let timeline = null;
         let source = {};
 
-        // --- Генерация КЛЮЧА ТАЙМЛАЙНА в стандарте Lampa ---
-        // FIXED: ключи должны быть строками
+        // Формируем ключ таймлайна (всегда строка)
         let timelineKey = null;
         if (tmdbId && seasonNumber !== undefined && episodeNumber !== undefined) {
-            // Для сериалов: tv/{TMDB_ID}/{season}/{episode}
             timelineKey = 'tv/' + String(tmdbId) + '/' + String(seasonNumber) + '/' + String(episodeNumber);
         } else if (tmdbId) {
-            // Для фильмов: movie/{TMDB_ID}
             timelineKey = 'movie/' + String(tmdbId);
         } else {
-            // Fallback
             timelineKey = 'movie/' + String(item.Id);
         }
 
@@ -185,9 +181,16 @@
                 source: source
             });
         }
+
+        // Подписываемся на обновления таймлайна, чтобы синхронизировать с ядром
+        Lampa.Timeline.listener.follow('update', function(e) {
+            if (e.key === timelineKey) {
+                Lampa.Timeline.update(e.data);
+            }
+        });
     }
 
-    /* --- КОМПОНЕНТ СЕРИАЛОВ (с исправленным скроллингом) --- */
+    /* --- КОМПОНЕНТ СЕРИАЛОВ (с исправленным скроллингом и синхронизацией) --- */
     function EmbySeriesComponent(object) {
         var network = new Lampa.Reguest();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
@@ -321,7 +324,6 @@
                     var rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
                     var airDate = episode.air_date ? Lampa.Utils.parseTime(episode.air_date).full : '';
                     
-                    // FIXED: ключи должны быть строками
                     var timelineKey = 'tv/' + String(tmdb_id) + '/' + String(current_season.season_number) + '/' + String(episode.episode_number);
                     var timeline = Lampa.Timeline.view(timelineKey);
                     
@@ -425,6 +427,11 @@
             Lampa.Controller.collectionSet(scroll.render(), explorer.render());
             setTimeout(function() {
                 Lampa.Controller.collectionFocus(false, scroll.render());
+                // Прокручиваем к первому элементу после фокуса
+                var firstItem = $(scroll.render()).find('.selector').first();
+                if (firstItem.length) {
+                    scroll.update(firstItem[0], true);
+                }
             }, 100);
         }
 
@@ -433,11 +440,15 @@
                 toggle: function() {
                     Lampa.Controller.collectionSet(scroll.render(), explorer.render());
                     Lampa.Controller.collectionFocus(false, scroll.render());
+                    // Обновляем скролл к текущему фокусу
+                    var focusElement = $(scroll.render()).find('.selector.focus');
+                    if (focusElement.length) {
+                        scroll.update(focusElement[0], true);
+                    }
                 },
                 up: function() {
                     if (Navigator.canmove('up')) {
                         Navigator.move('up');
-                        // FIXED: передаём DOM-элемент, а не объект jQuery
                         var focusElement = $(scroll.render()).find('.selector.focus');
                         if (focusElement.length) {
                             scroll.update(focusElement[0], true);
@@ -449,7 +460,6 @@
                 down: function() {
                     if (Navigator.canmove('down')) {
                         Navigator.move('down');
-                        // FIXED: передаём DOM-элемент, а не объект jQuery
                         var focusElement = $(scroll.render()).find('.selector.focus');
                         if (focusElement.length) {
                             scroll.update(focusElement[0], true);
