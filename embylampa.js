@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '5.0.1';
+    const PLUGIN_VERSION = '5.0.2';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -79,23 +79,18 @@
     function openSeries(item) {
         window.embySeriesId = item.Id;
         const movie = window.currentMovie;
-        const tmdbId = extractTmdbId(movie);
-        if (!tmdbId) {
+        // Гарантируем наличие tmdb_id
+        if (!movie.tmdb_id) movie.tmdb_id = extractTmdbId(movie);
+        if (!movie.tmdb_id) {
             notify('Не удалось определить TMDB ID');
             return;
         }
-
-        // Открываем стандартный компонент tmdb_series (как в CDN.js)
+        // Передаём оригинальный movie в стандартный компонент
         Lampa.Activity.push({
             url: '',
             title: movie.title || movie.name,
             component: 'tmdb_series',
-            movie: {
-                id: tmdbId,
-                title: movie.title || movie.name,
-                tmdb_id: tmdbId,
-                poster: movie.img || movie.poster || (movie.data && movie.data.img) || ''
-            }
+            movie: movie
         });
     }
 
