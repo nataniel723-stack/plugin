@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.31';
+    const PLUGIN_VERSION = '4.4.32';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -35,7 +35,6 @@
                 .emby-container { padding: 0; height: 100%; overflow-y: auto; }
                 .emby-loader { display: flex; justify-content: center; align-items: center; height: 50vh; }
                 .emby-empty { text-align: center; padding: 3em; font-size: 1.2em; opacity: 0.7; width: 100%; }
-                /* Добавляем отступы, чтобы рамка фокуса не обрезалась */
                 .emby-container .online-prestige {
                     margin: 0.5em 1em;
                 }
@@ -45,6 +44,8 @@
                     right: -0.3em;
                     bottom: -0.3em;
                 }
+                /* Скрываем кнопку поиска, если она есть */
+                .filter--search { display: none !important; }
             </style>
         `);
     }
@@ -327,7 +328,6 @@
                     var timelineElement = Lampa.Timeline.render(timeline);
                     if (timelineElement) {
                         timelineContainer.append(timelineElement);
-                        // Принудительно обновляем таймлайн, чтобы прогресс отобразился
                         Lampa.Timeline.update(timeline);
                     }
 
@@ -436,7 +436,7 @@
                     Navigator.move('down');
                 },
                 right: function() {
-                    // Вместо стандартного фильтра открываем сразу выбор сезона
+                    // Открываем список сезонов сразу, без промежуточного меню
                     var items = seasons.map(function(s) {
                         return {
                             title: s.name || 'Сезон ' + s.season_number,
@@ -448,7 +448,10 @@
                         title: Lampa.Lang.translate('torrent_serial_season'),
                         items: items,
                         onSelect: function(a) {
+                            // Обновляем текущий сезон и перезагружаем эпизоды
                             current_season = a.season;
+                            window.embyLastSeason = { seriesId: emby_series_id, seasonNumber: current_season.season_number };
+                            updateFilter();
                             loadEpisodes();
                         },
                         onBack: function() {
