@@ -2,12 +2,12 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.18';
+    const PLUGIN_VERSION = '4.4.19';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
-    // Стили
+    // Стили (без изменений)
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
@@ -36,7 +36,7 @@
         `);
     }
 
-    // ---- Базовые функции ----
+    // ---- Базовые функции (без изменений) ----
     function getUrl() {
         return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim();
     }
@@ -123,7 +123,7 @@
         }, () => callback([]));
     }
 
-    // ---- Воспроизведение с правильными таймлайнами ----
+    // ---- Воспроизведение (без изменений) ----
     function playVideo(item, tmdbId, seasonNumber, episodeNumber, playlist, currentIndex) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
@@ -166,7 +166,7 @@
         }
     }
 
-    /* --- Компонент для сериалов (переписан по образцу Filmix) --- */
+    /* --- Компонент для сериалов (исправленный) --- */
     function EmbySeriesComponent(object) {
         var network = new Lampa.Reguest();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
@@ -180,15 +180,22 @@
         var emby_series_id = null;
         var tmdb_id = null;
 
-        // ---- Инициализация ----
         this.create = function() {
             // Получаем данные из object или из глобальной переменной
-            if (object && object.emby_id && object.tmdb_id) {
-                emby_series_id = object.emby_id;
-                tmdb_id = object.tmdb_id;
-            } else if (window.embySeriesData) {
-                emby_series_id = window.embySeriesData.emby_id;
-                tmdb_id = window.embySeriesData.tmdb_id;
+            if (object) {
+                if (object.emby_id) emby_series_id = object.emby_id;
+                if (object.tmdb_id) tmdb_id = object.tmdb_id;
+                // Если tmdb_id не задан, но есть movie, попробуем извлечь
+                if (!tmdb_id && object.movie) {
+                    tmdb_id = extractTmdbId(object.movie);
+                }
+            }
+            // Если всё ещё нет, пробуем глобальную переменную
+            if (!emby_series_id || !tmdb_id) {
+                if (window.embySeriesData) {
+                    if (!emby_series_id) emby_series_id = window.embySeriesData.emby_id;
+                    if (!tmdb_id) tmdb_id = window.embySeriesData.tmdb_id;
+                }
             }
 
             // Настройка фильтра
@@ -210,11 +217,10 @@
             $(element).append(filterHtml);
         };
 
-        // ---- Старт ----
         this.start = function() {
             var body = $(element);
             body.find('.emby-loader').remove();
-            if (!tmdb_id) {
+            if (!emby_series_id || !tmdb_id) {
                 body.html('<div class="emby-empty">Не удалось определить TMDB ID сериала</div>');
                 setupNavigation();
                 return;
@@ -276,7 +282,6 @@
 
             scroll.clear();
             explorer.appendFiles(scroll.render());
-            // Убираем заголовок explorer (он нам не нужен)
             explorer.render().find('.explorer__files-head').remove();
 
             if (current_episodes.length === 0) {
@@ -368,7 +373,6 @@
                 });
             }
 
-            // Обновляем explorer
             explorer.appendFiles(scroll.render());
             explorer.render().find('.explorer__files-head').remove();
 
@@ -423,7 +427,7 @@
         };
     }
 
-    /* --- Остальная часть плагина (кнопка, настройки, запуск) --- */
+    /* --- Остальная часть плагина --- */
     function handleEmbyClick(movie) {
         if (!isConfigured()) return notify('Настройте Emby в параметрах');
 
@@ -432,7 +436,8 @@
 
             if (item.Type === 'Series') {
                 var tmdbId = extractTmdbId(movie);
-                var params = {
+                // Передаём объект с полями
+                var obj = {
                     emby_id: item.Id,
                     tmdb_id: tmdbId,
                     title: item.Name,
@@ -442,7 +447,7 @@
                     url: '',
                     title: item.Name,
                     component: 'emby_series',
-                    params: params
+                    object: obj
                 });
             } else if (item.Type === 'Movie') {
                 var tmdbId = extractTmdbId(movie);
@@ -453,7 +458,7 @@
         });
     }
 
-    /* --- Кнопка в интерфейсе --- */
+    /* --- Кнопка --- */
     function addEmbyButton(data) {
         if (!data || !data.render || !data.movie) return;
         if (data.render.find('.emby-button').length) return;
