@@ -35,6 +35,9 @@
                 .emby-container { padding: 0; height: 100%; overflow-y: auto; }
                 .emby-loader { display: flex; justify-content: center; align-items: center; height: 50vh; }
                 .emby-empty { text-align: center; padding: 3em; font-size: 1.2em; opacity: 0.7; width: 100%; }
+                .emby-filter { display: flex; align-items: center; padding: 1.5em 2em 0.5em 2em; gap: 1em; flex-wrap: wrap; position: sticky; top: 0; z-index: 10; background: rgba(0,0,0,0.9); }
+                .emby-filter-btn { background: rgba(255,255,255,0.1); padding: 0.6em 1.5em; border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: bold; }
+                .emby-filter-btn.focus { background: #fff; color: #000; }
                 .emby-container .online-prestige { margin: 0.5em 1em; }
                 .emby-container .online-prestige.focus::after { top: -0.3em; left: -0.3em; right: -0.3em; bottom: -0.3em; }
             </style>
@@ -128,7 +131,7 @@
         }, () => callback([]));
     }
 
-    // ---- Воспроизведение с синхронизацией таймлайнов ----
+    // ---- Воспроизведение с правильными ключами таймлайнов ----
     function playVideo(item, tmdbId, seasonNumber, episodeNumber, playlist, currentIndex) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
@@ -140,18 +143,20 @@
         let timeline = null;
         let source = {};
 
-        // Формируем ключ таймлайна в формате Lampa
+        // --- Генерация КЛЮЧА ТАЙМЛАЙНА в стандарте Lampa ---
         let timelineKey = null;
         if (tmdbId && seasonNumber !== undefined && episodeNumber !== undefined) {
+            // Для сериалов: tv/{TMDB_ID}/{season}/{episode}
             timelineKey = 'tv/' + tmdbId + '/' + seasonNumber + '/' + episodeNumber;
         } else if (tmdbId) {
+            // Для фильмов: movie/{TMDB_ID}
             timelineKey = 'movie/' + tmdbId;
         } else {
+            // Fallback
             timelineKey = 'movie/' + item.Id;
         }
 
         if (playlist && playlist.length > 0) {
-            // Для сериала используем таймлайн из плейлиста
             timeline = playlist[currentIndex].timeline;
             source = {
                 playlist: playlist,
@@ -161,36 +166,31 @@
                 season: seasonNumber,
                 episode: episodeNumber
             };
+            Lampa.Player.play({
+                title: item.Name,
+                url: streamUrl,
+                poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
+                timeline: timeline,
+                source: source
+            });
         } else {
-            // Для фильма
             timeline = Lampa.Timeline.view(timelineKey);
             source = { id: tmdbId || item.Id, type: 'movie' };
+            Lampa.Player.play({
+                title: item.Name,
+                url: streamUrl,
+                poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
+                timeline: timeline,
+                source: source
+            });
         }
-
-        // Запускаем воспроизведение
-        Lampa.Player.play({
-            title: item.Name,
-            url: streamUrl,
-            poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
-            timeline: timeline,
-            source: source
-        });
-
-        // Подписываемся на обновления таймлайна, чтобы синхронизировать с Lampa
-        Lampa.Timeline.listener.follow('update', function(e) {
-            if (e.key === timelineKey) {
-                // Обновляем таймлайн в нашем плеере
-                Lampa.Timeline.update(e.data);
-            }
-        });
     }
 
-    /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
+    /* --- КОМПОНЕНТ СЕРИАЛОВ (с исправленным скроллингом) --- */
     function EmbySeriesComponent(object) {
         var network = new Lampa.Reguest();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
         var explorer = new Lampa.Explorer(object);
-        var filter = new Lampa.Filter(object);
         var is_destroyed = false;
         var element = $('<div class="emby-container"></div>')[0];
         var seasons = [];
@@ -198,7 +198,7 @@
         var current_episodes = [];
         var emby_series_id = null;
         var tmdb_id = null;
-        var focusedItem = null;
+        var seasonBtn = null;
 
         this.create = function() {
             // Получаем данные
@@ -214,35 +214,19 @@
                 tmdb_id = extractTmdbId(object.movie);
             }
 
-            // Настройка фильтра - убираем стандартный фильтр, оставляем только кнопку
-            filter.render().find('.filter--sort').remove();
-            filter.onSelect = function(type, a, b) {
-                // Не используем стандартный фильтр
-            };
-            filter.onBack = function() {
-                Lampa.Activity.backward();
-            };
+            // Создаём панель фильтра вручную
+            var filterPanel = $('<div class="emby-filter"></div>');
+            seasonBtn = $(`<div class="emby-filter-btn selector">${current_season ? (current_season.name || 'Сезон ' + current_season.season_number) : 'Сезон'}</div>`);
+            seasonBtn.on('hover:enter click', function() {
+                showSeasonSelector();
+            });
+            filterPanel.append(seasonBtn);
+            $(element).append(filterPanel);
 
-            // Скрываем кнопку поиска (лупу)
-            filter.render().find('.filter--search').hide();
-
-            // Добавляем фильтр и explorer в DOM
-            var filterHtml = filter.render();
-            $(element).append(filterHtml);
+            // Добавляем explorer
             $(element).append(explorer.render());
-
-            // Настраиваем explorer
             explorer.appendFiles(scroll.render());
             explorer.render().find('.explorer__files-head').remove();
-
-            // Переопределяем обработку правой кнопки для выбора сезона
-            var self = this;
-            filter.onSelect = function(type, a, b) {
-                if (type === 'filter' && a && a.season) {
-                    current_season = a.season;
-                    self.loadEpisodes();
-                }
-            };
         };
 
         this.start = function() {
@@ -269,13 +253,43 @@
                     } else {
                         current_season = seasons[0];
                     }
-                    updateFilter();
+                    updateSeasonBtn();
                     loadEpisodes();
                 }
             });
         };
 
-        this.loadEpisodes = function() {
+        function updateSeasonBtn() {
+            if (seasonBtn) {
+                seasonBtn.text(current_season.name || 'Сезон ' + current_season.season_number);
+            }
+        }
+
+        function showSeasonSelector() {
+            if (!seasons.length) return;
+            var items = seasons.map(function(s) {
+                return {
+                    title: s.name || 'Сезон ' + s.season_number,
+                    season: s,
+                    selected: s.season_number === current_season.season_number
+                };
+            });
+            Lampa.Select.show({
+                title: Lampa.Lang.translate('torrent_serial_season'),
+                items: items,
+                onSelect: function(a) {
+                    current_season = a.season;
+                    updateSeasonBtn();
+                    window.embyLastSeason = { seriesId: emby_series_id, seasonNumber: current_season.season_number };
+                    loadEpisodes();
+                },
+                onBack: function() {
+                    Lampa.Controller.toggle('content');
+                }
+            });
+        }
+
+        function loadEpisodes() {
             if (is_destroyed) return;
             var body = $(element);
             body.find('.emby-loader').remove();
@@ -285,23 +299,6 @@
                 current_episodes = episodes;
                 renderEpisodes();
             });
-        };
-
-        function updateFilter() {
-            var items = seasons.map(function(s) {
-                return {
-                    title: s.name || 'Сезон ' + s.season_number,
-                    season: s,
-                    selected: s.season_number === current_season.season_number
-                };
-            });
-            // Обновляем фильтр
-            filter.set('filter', [{
-                title: 'Сезон',
-                items: items,
-                stype: 'season'
-            }]);
-            filter.chosen('filter', ['Сезон: ' + (current_season.name || 'Сезон ' + current_season.season_number)]);
         }
 
         function renderEpisodes() {
@@ -323,7 +320,7 @@
                     var rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
                     var airDate = episode.air_date ? Lampa.Utils.parseTime(episode.air_date).full : '';
                     
-                    // Ключ таймлайна в формате Lampa
+                    // --- Генерация КЛЮЧА ТАЙМЛАЙНА в стандарте Lampa ---
                     var timelineKey = 'tv/' + tmdb_id + '/' + current_season.season_number + '/' + episode.episode_number;
                     var timeline = Lampa.Timeline.view(timelineKey);
                     
@@ -364,19 +361,10 @@
                     item.data('episode', episode.episode_number);
                     item.data('season', current_season.season_number);
                     item.data('index', index);
-                    item.data('timeline-key', timelineKey);
-
-                    // Обработка фокуса для скроллинга
-                    item.on('hover:focus', function(e) {
-                        focusedItem = this;
-                        // Прокручиваем к элементу
-                        scroll.update($(this), true);
-                    });
 
                     item.on('hover:enter click', function() {
                         var epNumber = parseInt($(this).data('episode'));
                         var seasonNumber = parseInt($(this).data('season'));
-                        var timelineKey = $(this).data('timeline-key');
                         window.embyLastSeason = { seriesId: emby_series_id, seasonNumber: seasonNumber };
 
                         body.empty();
@@ -429,22 +417,13 @@
                 });
             }
 
-            // Обновляем explorer
             explorer.appendFiles(scroll.render());
             explorer.render().find('.explorer__files-head').remove();
 
-            updateFilter();
             setupNavigation();
-            
-            // Устанавливаем коллекцию для навигации
             Lampa.Controller.collectionSet(scroll.render(), explorer.render());
             setTimeout(function() {
                 Lampa.Controller.collectionFocus(false, scroll.render());
-                // Прокручиваем к первому элементу
-                var firstItem = $(scroll.render()).find('.selector').first();
-                if (firstItem.length) {
-                    scroll.update(firstItem, true);
-                }
             }, 100);
         }
 
@@ -453,20 +432,15 @@
                 toggle: function() {
                     Lampa.Controller.collectionSet(scroll.render(), explorer.render());
                     Lampa.Controller.collectionFocus(false, scroll.render());
-                    if (focusedItem) {
-                        scroll.update($(focusedItem), true);
-                    }
                 },
                 up: function() {
                     if (Navigator.canmove('up')) {
                         Navigator.move('up');
-                        // Обновляем скролл после перемещения
-                        setTimeout(function() {
-                            var focused = $(scroll.render()).find('.selector.focus');
-                            if (focused.length) {
-                                scroll.update(focused, true);
-                            }
-                        }, 50);
+                        // --- ИСПРАВЛЕННЫЙ СКРОЛЛИНГ: прокручиваем к элементу с фокусом ---
+                        var focusElement = $(scroll.render()).find('.selector.focus');
+                        if (focusElement.length) {
+                            scroll.update(focusElement, true);
+                        }
                     } else {
                         Lampa.Controller.toggle('head');
                     }
@@ -474,47 +448,15 @@
                 down: function() {
                     if (Navigator.canmove('down')) {
                         Navigator.move('down');
-                        // Обновляем скролл после перемещения
-                        setTimeout(function() {
-                            var focused = $(scroll.render()).find('.selector.focus');
-                            if (focused.length) {
-                                scroll.update(focused, true);
-                            }
-                        }, 50);
+                        // --- ИСПРАВЛЕННЫЙ СКРОЛЛИНГ: прокручиваем к элементу с фокусом ---
+                        var focusElement = $(scroll.render()).find('.selector.focus');
+                        if (focusElement.length) {
+                            scroll.update(focusElement, true);
+                        }
                     }
                 },
                 right: function() {
-                    // Открываем выбор сезона напрямую
-                    var items = seasons.map(function(s) {
-                        return {
-                            title: s.name || 'Сезон ' + s.season_number,
-                            season: s,
-                            selected: s.season_number === current_season.season_number
-                        };
-                    });
-                    Lampa.Select.show({
-                        title: 'Выберите сезон',
-                        items: items,
-                        onSelect: function(a) {
-                            if (a && a.season) {
-                                current_season = a.season;
-                                // Перезагружаем эпизоды
-                                var body = $(element);
-                                body.empty();
-                                // Восстанавливаем фильтр и explorer
-                                var filterHtml = filter.render();
-                                $(element).append(filterHtml);
-                                $(element).append(explorer.render());
-                                explorer.appendFiles(scroll.render());
-                                explorer.render().find('.explorer__files-head').remove();
-                                updateFilter();
-                                loadEpisodes();
-                            }
-                        },
-                        onBack: function() {
-                            Lampa.Controller.toggle('content');
-                        }
-                    });
+                    showSeasonSelector();
                 },
                 left: function() {
                     if (Navigator.canmove('left')) Navigator.move('left');
@@ -536,7 +478,6 @@
             network.clear();
             if (explorer) explorer.destroy();
             if (scroll) scroll.destroy();
-            if (filter) filter.destroy();
         };
     }
 
