@@ -2,35 +2,33 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.22';
+    const PLUGIN_VERSION = '4.4.24';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
-    // ---- Регистрируем стандартный шаблон online_prestige_full (если отсутствует) ----
-    if (!Lampa.Template.has('online_prestige_full')) {
-        Lampa.Template.add('online_prestige_full', `
-            <div class="online-prestige online-prestige--full selector">
-                <div class="online-prestige__img">
-                    <img alt="">
-                    <div class="online-prestige__loader"></div>
+    // ---- Регистрируем стандартный шаблон online_prestige_full (без проверки has) ----
+    Lampa.Template.add('online_prestige_full', `
+        <div class="online-prestige online-prestige--full selector">
+            <div class="online-prestige__img">
+                <img alt="">
+                <div class="online-prestige__loader"></div>
+            </div>
+            <div class="online-prestige__body">
+                <div class="online-prestige__head">
+                    <div class="online-prestige__title">{title}</div>
+                    <div class="online-prestige__time">{time}</div>
                 </div>
-                <div class="online-prestige__body">
-                    <div class="online-prestige__head">
-                        <div class="online-prestige__title">{title}</div>
-                        <div class="online-prestige__time">{time}</div>
-                    </div>
-                    <div class="online-prestige__timeline"></div>
-                    <div class="online-prestige__footer">
-                        <div class="online-prestige__info">{info}</div>
-                        <div class="online-prestige__quality">{quality}</div>
-                    </div>
+                <div class="online-prestige__timeline"></div>
+                <div class="online-prestige__footer">
+                    <div class="online-prestige__info">{info}</div>
+                    <div class="online-prestige__quality">{quality}</div>
                 </div>
             </div>
-        `);
-    }
+        </div>
+    `);
 
-    // ---- Стили (минимальные, остальное из стандартных стилей Lampa) ----
+    // ---- Стили (минимальные) ----
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
@@ -171,7 +169,7 @@
         }
     }
 
-    /* --- Компонент для сериалов (полностью как в fx.js) --- */
+    /* --- Компонент для сериалов (как в fx.js, но с правильным tmdb_id) --- */
     function EmbySeriesComponent(object) {
         var network = new Lampa.Reguest();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
