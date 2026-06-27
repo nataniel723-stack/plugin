@@ -7,112 +7,31 @@
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
-    // Внедряем стили
+    // Стили
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
                 .emby-container { padding: 0; height: 100%; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
-                .emby-episodes-list { padding: 1em 1.5em; }
-                .emby-episode-item { 
-                    display: flex; 
-                    align-items: stretch; 
-                    background: rgba(0,0,0,0.3); 
-                    border-radius: 0.5em; 
-                    margin-bottom: 1em; 
-                    padding: 0.5em; 
-                    cursor: pointer; 
-                    transition: background 0.2s, transform 0.2s;
-                }
-                .emby-episode-item.focus { 
-                    background: rgba(255,255,255,0.1); 
-                    transform: scale(1.02); 
-                }
-                .emby-episode-item .emby-ep-img-wrap { 
-                    width: 12em; 
-                    flex-shrink: 0; 
-                    aspect-ratio: 16 / 9; 
-                    border-radius: 0.4em; 
-                    overflow: hidden; 
-                    background: #111; 
-                    position: relative;
-                }
-                .emby-episode-item .emby-ep-img { 
-                    width: 100%; 
-                    height: 100%; 
-                    object-fit: cover; 
-                }
-                .emby-episode-item .emby-ep-num { 
-                    position: absolute; 
-                    top: 0.4em; 
-                    left: 0.4em; 
-                    background: rgba(0,0,0,0.7); 
-                    padding: 0.2em 0.5em; 
-                    border-radius: 0.3em; 
-                    font-weight: bold; 
-                    font-size: 0.9em; 
-                    color: #fff;
-                }
-                .emby-episode-item .emby-ep-body { 
-                    flex: 1; 
-                    padding: 0.2em 1em; 
-                    display: flex; 
-                    flex-direction: column; 
-                    justify-content: space-between;
-                }
-                .emby-episode-item .emby-ep-title { 
-                    font-size: 1.2em; 
-                    font-weight: bold; 
-                    margin-bottom: 0.2em; 
-                }
-                .emby-episode-item .emby-ep-info { 
-                    font-size: 0.9em; 
-                    color: #aaa; 
-                    display: flex; 
-                    gap: 1em; 
-                    flex-wrap: wrap;
-                }
-                .emby-episode-item .emby-ep-timeline { 
-                    margin-top: 0.6em; 
-                }
-                .emby-episode-item .emby-ep-timeline .time-line { 
-                    display: block !important; 
-                }
-                .emby-filter { 
-                    display: flex; 
-                    align-items: center; 
-                    justify-content: flex-start; 
-                    padding: 1.5em 2em 0 2em; 
-                    gap: 1em; 
-                    flex-wrap: wrap; 
-                    position: sticky; 
-                    top: 0; 
-                    z-index: 10; 
-                    background: rgba(0,0,0,0.9); 
-                }
-                .emby-filter-btn { 
-                    background: rgba(255,255,255,0.1); 
-                    padding: 0.6em 1.5em; 
-                    border-radius: 5px; 
-                    cursor: pointer; 
-                    font-size: 1.1em; 
-                    font-weight: bold; 
-                }
-                .emby-filter-btn.focus { 
-                    background: #fff; 
-                    color: #000; 
-                }
-                .emby-loader { 
-                    display: flex; 
-                    justify-content: center; 
-                    align-items: center; 
-                    height: 50vh; 
-                }
-                .emby-empty { 
-                    text-align: center; 
-                    padding: 3em; 
-                    font-size: 1.2em; 
-                    opacity: 0.7; 
-                    width: 100%; 
+                .emby-episodes-list { padding: 1em 2em; }
+                .emby-episode-item { display: flex; align-items: center; padding: 0.8em 1em; border-radius: 0.5em; cursor: pointer; transition: background 0.2s, transform 0.2s; margin-bottom: 0.8em; background: rgba(255,255,255,0.05); }
+                .emby-episode-item.focus { background: rgba(255,255,255,0.15); transform: scale(1.02); }
+                .emby-ep-img-wrap { width: 12em; height: 6.75em; flex-shrink: 0; border-radius: 0.3em; overflow: hidden; margin-right: 1.5em; background: #111; position: relative; }
+                .emby-ep-img { width: 100%; height: 100%; object-fit: cover; }
+                .emby-ep-num { position: absolute; top: 0.3em; left: 0.3em; background: rgba(0,0,0,0.7); padding: 0.1em 0.6em; border-radius: 0.3em; font-weight: bold; font-size: 0.85em; color: #fff; }
+                .emby-ep-body { flex: 1; min-width: 0; }
+                .emby-ep-title { font-size: 1.2em; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                .emby-ep-meta { font-size: 0.85em; color: #aaa; display: flex; align-items: center; gap: 1em; flex-wrap: wrap; margin-top: 0.2em; }
+                .emby-ep-meta span { display: inline-flex; align-items: center; gap: 0.3em; }
+                .emby-ep-timeline { margin-top: 0.4em; width: 100%; }
+                .emby-ep-timeline .time-line { display: block !important; }
+                .emby-filter { display: flex; align-items: center; justify-content: flex-start; padding: 1.5em 2em 0.5em 2em; gap: 1em; flex-wrap: wrap; position: sticky; top: 0; z-index: 10; background: rgba(0,0,0,0.9); }
+                .emby-filter-btn { background: rgba(255,255,255,0.1); padding: 0.6em 1.5em; border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: bold; }
+                .emby-filter-btn.focus { background: #fff; color: #000; }
+                .emby-loader { display: flex; justify-content: center; align-items: center; height: 50vh; }
+                .emby-empty { text-align: center; padding: 3em; font-size: 1.2em; opacity: 0.7; width: 100%; }
+                @media (max-width: 600px) {
+                    .emby-episode-item { flex-wrap: wrap; }
+                    .emby-ep-img-wrap { width: 100%; height: auto; aspect-ratio: 16/9; margin-right: 0; margin-bottom: 0.8em; }
                 }
             </style>
         `);
@@ -214,11 +133,11 @@
         
         let streamUrl = `${base}/emby/Videos/${item.Id}/stream?Static=true&DeviceId=${deviceId}&PlaySessionId=${playSessionId}&api_key=${apiKey}`;
         
-        let timelineKey = null;
         let timeline = null;
         let source = {};
 
         if (playlist && playlist.length > 0) {
+            // Сериал – плейлист
             timeline = playlist[currentIndex].timeline;
             source = {
                 playlist: playlist,
@@ -236,11 +155,8 @@
                 source: source
             });
         } else {
-            if (tmdbId) {
-                timelineKey = 'movie/' + tmdbId;
-            } else {
-                timelineKey = 'movie/' + item.Id;
-            }
+            // Фильм
+            let timelineKey = 'movie/' + (tmdbId || item.Id);
             timeline = Lampa.Timeline.view(timelineKey);
             source = {
                 id: tmdbId || item.Id,
@@ -321,6 +237,7 @@
             if (is_destroyed) return;
             body.empty();
 
+            // Фильтр (выбор сезона)
             let filterPanel = $('<div class="emby-filter"></div>');
             let seasonBtn = $(`<div class="emby-filter-btn selector">${current_season.name || 'Сезон ' + current_season.season_number}</div>`);
             seasonBtn.on('hover:enter click', () => {
@@ -344,6 +261,7 @@
             filterPanel.append(seasonBtn);
             body.append(filterPanel);
 
+            // Список эпизодов
             let list = $('<div class="emby-episodes-list"></div>');
 
             if (current_episodes.length === 0) {
@@ -353,14 +271,17 @@
                     let epNum = String(episode.episode_number).padStart(2, '0');
                     let stillPath = episode.still_path ? 'https://image.tmdb.org/t/p/w300' + episode.still_path : '';
                     let imageHtml = stillPath ?
-                        `<img src="${stillPath}" class="emby-ep-img" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);color:#00B0FF;font-size:2em;font-weight:bold\\'>${epNum}</div>'">` :
-                        `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);color:#00B0FF;font-size:2em;font-weight:bold;text-shadow:2px 2px 4px rgba(0,0,0,0.5)">${epNum}</div>`;
+                        `<img src="${stillPath}" class="emby-ep-img" onerror="this.style.display='none'">` :
+                        `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);color:#00B0FF;font-size:2em;font-weight:bold;">${epNum}</div>`;
+                    
                     let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
+                    let airDate = episode.air_date ? Lampa.Utils.parseTime(episode.air_date).full : '';
 
-                    // ---- Таймлайн ----
+                    // Ключ таймлайна
                     let timelineKey = 'tv/' + tmdb_id + '/' + current_season.season_number + '/' + episode.episode_number;
                     let timeline = Lampa.Timeline.view(timelineKey);
 
+                    // Создаём элемент списка
                     let item = $(`
                         <div class="emby-episode-item selector" data-episode="${episode.episode_number}" data-season="${current_season.season_number}" data-index="${index}">
                             <div class="emby-ep-img-wrap">
@@ -368,20 +289,24 @@
                                 <div class="emby-ep-num">${epNum}</div>
                             </div>
                             <div class="emby-ep-body">
-                                <div>
-                                    <div class="emby-ep-title">${episode.name || 'Эпизод ' + epNum}</div>
-                                    <div class="emby-ep-info">
-                                        <span>⭐ ${rating}</span>
-                                        ${episode.air_date ? `<span>${Lampa.Utils.parseTime(episode.air_date).full || episode.air_date}</span>` : ''}
-                                    </div>
+                                <div class="emby-ep-title">${episode.name || 'Эпизод ' + epNum}</div>
+                                <div class="emby-ep-meta">
+                                    <span>⭐ ${rating}</span>
+                                    ${airDate ? `<span>${airDate}</span>` : ''}
                                 </div>
-                                <div class="emby-ep-timeline">
-                                    ${Lampa.Timeline.render(timeline)}
-                                </div>
+                                <div class="emby-ep-timeline"></div>
                             </div>
                         </div>
                     `);
 
+                    // Вставляем таймлайн через стандартный рендеринг Lampa
+                    let timelineContainer = item.find('.emby-ep-timeline');
+                    let timelineElement = Lampa.Timeline.render(timeline);
+                    if (timelineElement) {
+                        timelineContainer.append(timelineElement);
+                    }
+
+                    // Обработчик клика
                     item.on('hover:enter click', function() {
                         let epNumber = parseInt($(this).data('episode'));
                         let seasonNumber = parseInt($(this).data('season'));
@@ -402,7 +327,7 @@
                                         if (is_destroyed) return;
                                         if (episodeData && episodeData.Items) {
                                             let sortedEpisodes = episodeData.Items.sort((a, b) => (a.IndexNumber || 0) - (b.IndexNumber || 0));
-                                            // Строим плейлист с правильными таймлайнами
+                                            // Плейлист
                                             let playlist = sortedEpisodes.map((ep, i) => {
                                                 let psId = Date.now() + i;
                                                 let tmdbEp = current_episodes[i];
