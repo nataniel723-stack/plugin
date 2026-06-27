@@ -223,7 +223,6 @@
                 timelineKey = getTimelineKey(tmdbId, 'movie');
             }
         }
-        // fallback: используем старый ключ, если tmdbId не задан
         if (!timelineKey) {
             timelineKey = Lampa.Utils.hash(item.Id + '');
         }
@@ -396,15 +395,17 @@
                     
                     let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
 
-                    // ---- Получаем прогресс для этого эпизода ----
+                    // ---- Получаем прогресс для этого эпизода (исправлено) ----
                     let timelineKey = getTimelineKey(tmdb_id, 'episode', current_season.season_number, episode.episode_number);
-                    let progress = Lampa.Timeline.get(timelineKey);
-                    let progressPercent = progress ? Math.round(progress * 100) : 0;
-                    let progressHtml = `
+                    // FIXED: используем Lampa.Timeline.view вместо Lampa.Timeline.get
+                    let timelineObj = Lampa.Timeline.view(timelineKey);
+                    let progress = timelineObj ? timelineObj.progress || 0 : 0;
+                    let progressPercent = Math.round(progress * 100);
+                    let progressHtml = progressPercent > 0 ? `
                         <div class="emby-ep-progress">
                             <div class="emby-ep-progress-fill" style="width:${progressPercent}%;"></div>
                         </div>
-                    `;
+                    ` : '';
 
                     let item = $(`
                         <div class="emby-episode-card selector" data-episode="${episode.episode_number}" data-season="${current_season.season_number}">
@@ -415,12 +416,12 @@
                             <div class="emby-ep-title">${episode.name || 'Эпизод ' + epNum}</div>
                             <div class="emby-ep-info">
                                 <span>⭐ ${rating}</span>
-                                ${progressPercent > 0 ? progressHtml : ''}
+                                ${progressHtml}
                             </div>
                         </div>
                     `);
 
-                    // Обработчик клика - ВАЖНО: hover:enter click
+                    // Обработчик клика
                     item.on('hover:enter click', function() {
                         let epNumber = parseInt($(this).data('episode'));
                         let seasonNumber = parseInt($(this).data('season'));
@@ -448,7 +449,6 @@
                                             let embyEpisode = sortedEpisodes[epNumber - 1];
                                             
                                             if (embyEpisode) {
-                                                // Передаём tmdb_id, сезон и эпизод для правильного таймлайна
                                                 playVideo(embyEpisode, tmdb_id, seasonNumber, epNumber);
                                             } else {
                                                 body.html('<div class="emby-empty">Эпизод не найден</div>');
@@ -475,13 +475,11 @@
             
             body.append(grid);
             
-            // Скроллим к началу
             element.scrollTop = 0;
             
             setupNavigation();
         }
 
-        // Функция для скролла к активному элементу
         function scrollToFocused() {
             let focused = $(element).find('.selector.focus');
             if (focused.length) {
@@ -577,7 +575,6 @@
                     component: 'emby_series'
                 });
             } else if (item.Type === 'Movie') {
-                // Передаём tmdbId для фильма
                 let tmdbId = extractTmdbId(movie);
                 playVideo(item, tmdbId);
             } else {
