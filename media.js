@@ -2,12 +2,12 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.3';
+    const PLUGIN_VERSION = '4.4.30';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
-    // ---- Регистрируем стандартный шаблон (без проверки has) ----
+    // ---- Регистрируем стандартный шаблон ----
     Lampa.Template.add('online_prestige_full', `
         <div class="online-prestige online-prestige--full selector">
             <div class="online-prestige__img">
@@ -28,7 +28,7 @@
         </div>
     `);
 
-    // ---- Стили (минимальные, остальные из ядра) ----
+    // ---- Стили ----
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
@@ -39,7 +39,7 @@
         `);
     }
 
-    // ---- Базовые функции (без изменений) ----
+    // ---- Базовые функции ----
     function getUrl() {
         return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim();
     }
@@ -126,7 +126,7 @@
         }, () => callback([]));
     }
 
-    // ---- Воспроизведение (с плейлистом и таймлайнами) ----
+    // ---- Воспроизведение ----
     function playVideo(item, tmdbId, seasonNumber, episodeNumber, playlist, currentIndex) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
@@ -169,7 +169,7 @@
         }
     }
 
-    /* --- КОМПОНЕНТ СЕРИАЛОВ (ПОЛНАЯ СТРУКТУРА FX.JS) --- */
+    /* --- КОМПОНЕНТ СЕРИАЛОВ (СТРУКТУРА FX.JS С ИСПРАВЛЕНИЯМИ) --- */
     function EmbySeriesComponent(object) {
         var network = new Lampa.Reguest();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
@@ -184,7 +184,7 @@
         var tmdb_id = null;
 
         this.create = function() {
-            // Получаем данные из object или глобальной переменной
+            // Получаем данные
             if (object && object.emby_id) emby_series_id = object.emby_id;
             if (object && object.tmdb_id) tmdb_id = object.tmdb_id;
             if (!emby_series_id || !tmdb_id) {
@@ -201,7 +201,7 @@
             filter.render().find('.filter--sort').remove();
             filter.onSelect = function(type, a, b) {
                 if (type === 'filter' && a.reset) {
-                    // сброс (не используем)
+                    // сброс
                 } else if (type === 'filter' && a.season) {
                     current_season = a.season;
                     loadEpisodes();
@@ -211,11 +211,12 @@
                 Lampa.Activity.backward();
             };
 
-            // Добавляем фильтр в начало
+            // Добавляем фильтр и explorer в DOM
             var filterHtml = filter.render();
             $(element).append(filterHtml);
+            $(element).append(explorer.render());
 
-            // Добавляем explorer
+            // Настраиваем explorer
             explorer.appendFiles(scroll.render());
             explorer.render().find('.explorer__files-head').remove();
         };
@@ -393,7 +394,9 @@
                 });
             }
 
+            // Обновляем explorer новыми элементами scroll
             explorer.appendFiles(scroll.render());
+            // Скрываем заголовок explorer (если есть)
             explorer.render().find('.explorer__files-head').remove();
 
             updateFilter();
