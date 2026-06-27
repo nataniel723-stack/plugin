@@ -2,12 +2,12 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.27';
+    const PLUGIN_VERSION = '4.4.28';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
-    // ---- Регистрируем стандартный шаблон ----
+    // ---- Регистрируем стандартный шаблон online_prestige_full ----
     Lampa.Template.add('online_prestige_full', `
         <div class="online-prestige online-prestige--full selector">
             <div class="online-prestige__img">
@@ -28,39 +28,16 @@
         </div>
     `);
 
-    // ---- Стили ----
+    // ---- Стили (минимальные, остальные загружаются из ядра) ----
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
-                .emby-container { padding: 0; height: 100%; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
-                .emby-episodes-list { padding: 1em 2em; }
-                .emby-filter { display: flex; align-items: center; justify-content: flex-start; padding: 1.5em 2em 0.5em 2em; gap: 1em; flex-wrap: wrap; position: sticky; top: 0; z-index: 10; background: rgba(0,0,0,0.9); }
-                .emby-filter-btn { background: rgba(255,255,255,0.1); padding: 0.6em 1.5em; border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: bold; }
-                .emby-filter-btn.focus { background: #fff; color: #000; }
+                .emby-container { padding: 0; height: 100%; overflow-y: auto; }
                 .emby-loader { display: flex; justify-content: center; align-items: center; height: 50vh; }
                 .emby-empty { text-align: center; padding: 3em; font-size: 1.2em; opacity: 0.7; width: 100%; }
-                /* Стили для online-prestige (если не загружены из других плагинов) */
-                .online-prestige { position: relative; border-radius: 0.3em; background-color: rgba(0,0,0,0.3); display: flex; will-change: transform; }
-                .online-prestige__body { padding: 1.2em; line-height: 1.3; flex-grow: 1; position: relative; }
-                .online-prestige__img { position: relative; width: 13em; flex-shrink: 0; min-height: 8.2em; }
-                .online-prestige__img > img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 0.3em; opacity: 0; transition: opacity 0.3s; }
-                .online-prestige__img--loaded > img { opacity: 1; }
-                .online-prestige__loader { position: absolute; top: 50%; left: 50%; width: 2em; height: 2em; margin-left: -1em; margin-top: -1em; background: url(./img/loader.svg) no-repeat center center; background-size: contain; }
-                .online-prestige__head, .online-prestige__footer { display: flex; justify-content: space-between; align-items: center; }
-                .online-prestige__timeline { margin: 0.8em 0; }
-                .online-prestige__timeline > .time-line { display: block !important; }
-                .online-prestige__title { font-size: 1.7em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 1; line-clamp: 1; -webkit-box-orient: vertical; }
-                .online-prestige__time { padding-left: 2em; }
-                .online-prestige__info { display: flex; align-items: center; }
-                .online-prestige__info > * { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 1; line-clamp: 1; -webkit-box-orient: vertical; }
-                .online-prestige__quality { padding-left: 1em; white-space: nowrap; }
-                .online-prestige.focus::after { content: ''; position: absolute; top: -0.6em; left: -0.6em; right: -0.6em; bottom: -0.6em; border-radius: 0.7em; border: solid 0.3em #fff; z-index: -1; pointer-events: none; }
-                .online-prestige + .online-prestige { margin-top: 1.5em; }
-                @media (max-width: 480px) {
-                    .online-prestige__img { width: 7em; min-height: 6em; }
-                    .online-prestige__body { padding: 0.8em 1.2em; }
-                    .online-prestige__title { font-size: 1.4em; }
-                }
+                .emby-filter { display: flex; align-items: center; padding: 1.5em 2em 0.5em 2em; gap: 1em; flex-wrap: wrap; position: sticky; top: 0; z-index: 10; background: rgba(0,0,0,0.9); }
+                .emby-filter-btn { background: rgba(255,255,255,0.1); padding: 0.6em 1.5em; border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: bold; }
+                .emby-filter-btn.focus { background: #fff; color: #000; }
             </style>
         `);
     }
@@ -195,8 +172,8 @@
         }
     }
 
-    /* --- Компонент для сериалов (простой и надёжный) --- */
-    function EmbySeriesComponent() {
+    /* --- Компонент для сериалов --- */
+    function EmbySeriesComponent(object) {
         let network = new Lampa.Reguest();
         let is_destroyed = false;
         let element = $('<div class="emby-container"></div>')[0];
@@ -207,17 +184,22 @@
         let tmdb_id = null;
 
         this.create = function() {
-            if (window.embySeriesData) {
-                emby_series_id = window.embySeriesData.emby_id;
-                tmdb_id = window.embySeriesData.tmdb_id;
+            // Получаем данные из object или глобальной переменной
+            if (object && object.emby_id) emby_series_id = object.emby_id;
+            if (object && object.tmdb_id) tmdb_id = object.tmdb_id;
+            if (!emby_series_id || !tmdb_id) {
+                if (window.embySeriesData) {
+                    emby_series_id = window.embySeriesData.emby_id;
+                    tmdb_id = window.embySeriesData.tmdb_id;
+                }
+            }
+            // Если всё ещё нет, пытаемся извлечь из object.movie
+            if (!tmdb_id && object && object.movie) {
+                tmdb_id = extractTmdbId(object.movie);
             }
         };
 
         this.start = function() {
-            if (!emby_series_id && window.embySeriesData) {
-                emby_series_id = window.embySeriesData.emby_id;
-                tmdb_id = window.embySeriesData.tmdb_id;
-            }
             let body = $(element);
             body.empty();
             if (!tmdb_id) {
@@ -261,7 +243,7 @@
             if (is_destroyed) return;
             body.empty();
 
-            // Фильтр (выбор сезона)
+            // Фильтр сезона
             let filterPanel = $('<div class="emby-filter"></div>');
             let seasonBtn = $(`<div class="emby-filter-btn selector">${current_season.name || 'Сезон ' + current_season.season_number}</div>`);
             seasonBtn.on('hover:enter click', () => {
@@ -285,7 +267,7 @@
             filterPanel.append(seasonBtn);
             body.append(filterPanel);
 
-            // Список эпизодов
+            // Список серий
             let list = $('<div class="emby-episodes-list"></div>');
 
             if (current_episodes.length === 0) {
@@ -344,7 +326,7 @@
                     item.data('index', index);
                     item.addClass('selector');
 
-                    // Обработчик клика
+                    // Клик по серии
                     item.on('hover:enter click', function() {
                         let epNumber = parseInt($(this).data('episode'));
                         let seasonNumber = parseInt($(this).data('season'));
@@ -490,15 +472,23 @@
 
             if (item.Type === 'Series') {
                 let tmdbId = extractTmdbId(movie);
+                // Сохраняем в глобальную переменную
                 window.embySeriesData = {
                     emby_id: item.Id,
                     tmdb_id: tmdbId,
                     title: item.Name
                 };
+                // Передаём movie для отображения информации, и object для компонента
                 Lampa.Activity.push({
                     url: '',
                     title: item.Name,
-                    component: 'emby_series'
+                    component: 'emby_series',
+                    movie: movie,
+                    object: {
+                        emby_id: item.Id,
+                        tmdb_id: tmdbId,
+                        movie: movie
+                    }
                 });
             } else if (item.Type === 'Movie') {
                 let tmdbId = extractTmdbId(movie);
