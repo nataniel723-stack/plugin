@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.36';
+    const PLUGIN_VERSION = '4.4.37';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -131,7 +131,7 @@
         }, () => callback([]));
     }
 
-    // ---- Воспроизведение с правильными ключами таймлайнов ----
+    // ---- Воспроизведение с правильными ключами таймлайнов (формат Lampa) ----
     function playVideo(item, tmdbId, seasonNumber, episodeNumber, playlist, currentIndex) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
@@ -143,14 +143,17 @@
         let timeline = null;
         let source = {};
 
-        // Формируем ключ таймлайна
+        // Генерируем ключ в формате Lampa
         let timelineKey = null;
         if (tmdbId && seasonNumber !== undefined && episodeNumber !== undefined) {
-            timelineKey = 'tv/' + String(tmdbId) + '/' + String(seasonNumber) + '/' + String(episodeNumber);
+            // Для сериалов: tmdb_{TMDB_ID}_s{season}_e{episode}
+            timelineKey = 'tmdb_' + String(tmdbId) + '_s' + String(seasonNumber) + '_e' + String(episodeNumber);
         } else if (tmdbId) {
-            timelineKey = 'movie/' + String(tmdbId);
+            // Для фильмов: tmdb_{TMDB_ID}
+            timelineKey = 'tmdb_' + String(tmdbId);
         } else {
-            timelineKey = 'movie/' + String(item.Id);
+            // Fallback
+            timelineKey = 'movie_' + String(item.Id);
         }
 
         if (playlist && playlist.length > 0) {
@@ -183,7 +186,7 @@
         }
     }
 
-    /* --- КОМПОНЕНТ СЕРИАЛОВ (с исправленным скроллингом и обновлением таймлайнов) --- */
+    /* --- КОМПОНЕНТ СЕРИАЛОВ (с правильным скроллингом и синхронизацией) --- */
     function EmbySeriesComponent(object) {
         var network = new Lampa.Reguest();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
@@ -196,9 +199,6 @@
         var emby_series_id = null;
         var tmdb_id = null;
         var seasonBtn = null;
-
-        // Хранилище элементов серий для обновления таймлайнов
-        var episodeItems = {};
 
         this.create = function() {
             // Получаем данные
@@ -227,21 +227,6 @@
             $(element).append(explorer.render());
             explorer.appendFiles(scroll.render());
             explorer.render().find('.explorer__files-head').remove();
-
-            // Подписываемся на обновления таймлайнов
-            Lampa.Timeline.listener.follow('update', function(e) {
-                if (e.key && episodeItems[e.key]) {
-                    // Обновляем таймлайн для конкретной серии
-                    var timelineContainer = episodeItems[e.key].find('.online-prestige__timeline');
-                    if (timelineContainer.length) {
-                        timelineContainer.empty();
-                        var newTimeline = Lampa.Timeline.render(e.data);
-                        if (newTimeline) {
-                            timelineContainer.append(newTimeline);
-                        }
-                    }
-                }
-            });
         };
 
         this.start = function() {
@@ -322,7 +307,6 @@
             body.find('.emby-loader').remove();
 
             scroll.clear();
-            episodeItems = {};
 
             if (current_episodes.length === 0) {
                 var empty = $('<div class="emby-empty">Эпизоды не найдены</div>');
@@ -336,7 +320,8 @@
                     var rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
                     var airDate = episode.air_date ? Lampa.Utils.parseTime(episode.air_date).full : '';
                     
-                    var timelineKey = 'tv/' + String(tmdb_id) + '/' + String(current_season.season_number) + '/' + String(episode.episode_number);
+                    // Ключ в формате Lampa
+                    var timelineKey = 'tmdb_' + String(tmdb_id) + '_s' + String(current_season.season_number) + '_e' + String(episode.episode_number);
                     var timeline = Lampa.Timeline.view(timelineKey);
                     
                     var infoParts = [];
@@ -377,8 +362,10 @@
                     item.data('season', current_season.season_number);
                     item.data('index', index);
 
-                    // Сохраняем элемент по ключу таймлайна для обновления
-                    episodeItems[timelineKey] = item;
+                    // Ключевой момент: обновляем скролл при фокусе (как в Lampac)
+                    item.on('hover:focus', function(e) {
+                        scroll.update($(this), true);
+                    });
 
                     item.on('hover:enter click', function() {
                         var epNumber = parseInt($(this).data('episode'));
@@ -404,7 +391,7 @@
                                                 var psId = Date.now() + i;
                                                 var tmdbEp = current_episodes[i];
                                                 var epNumForTimeline = tmdbEp ? tmdbEp.episode_number : (i + 1);
-                                                var key = 'tv/' + String(tmdb_id) + '/' + String(seasonNumber) + '/' + String(epNumForTimeline);
+                                                var key = 'tmdb_' + String(tmdb_id) + '_s' + String(seasonNumber) + '_e' + String(epNumForTimeline);
                                                 return {
                                                     title: ep.Name,
                                                     url: getUrl().replace(/\/$/, '') + '/emby/Videos/' + ep.Id + '/stream?Static=true&DeviceId=' + getDeviceId() + '&PlaySessionId=' + psId + '&api_key=' + getApiKey(),
@@ -445,7 +432,7 @@
                 // Прокручиваем к первому элементу
                 var firstItem = $(scroll.render()).find('.selector').first();
                 if (firstItem.length) {
-                    scroll.update(firstItem[0], true);
+                    scroll.update(firstItem, true);
                 }
             }, 100);
         }
@@ -455,18 +442,10 @@
                 toggle: function() {
                     Lampa.Controller.collectionSet(scroll.render(), explorer.render());
                     Lampa.Controller.collectionFocus(false, scroll.render());
-                    var focusElement = $(scroll.render()).find('.selector.focus');
-                    if (focusElement.length) {
-                        scroll.update(focusElement[0], true);
-                    }
                 },
                 up: function() {
                     if (Navigator.canmove('up')) {
                         Navigator.move('up');
-                        var focusElement = $(scroll.render()).find('.selector.focus');
-                        if (focusElement.length) {
-                            scroll.update(focusElement[0], true);
-                        }
                     } else {
                         Lampa.Controller.toggle('head');
                     }
@@ -474,10 +453,6 @@
                 down: function() {
                     if (Navigator.canmove('down')) {
                         Navigator.move('down');
-                        var focusElement = $(scroll.render()).find('.selector.focus');
-                        if (focusElement.length) {
-                            scroll.update(focusElement[0], true);
-                        }
                     }
                 },
                 right: function() {
@@ -503,8 +478,6 @@
             network.clear();
             if (explorer) explorer.destroy();
             if (scroll) scroll.destroy();
-            // Отписываемся от обновлений таймлайна
-            Lampa.Timeline.listener.unfollow('update');
         };
     }
 
