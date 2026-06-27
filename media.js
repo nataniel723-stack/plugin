@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.39';
+    const PLUGIN_VERSION = '4.4.40';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -44,7 +44,7 @@
         `);
     }
 
-    // ---- Базовые функции ----
+    // ---- Базовые функции (без изменений) ----
     function getUrl() {
         return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim();
     }
@@ -131,7 +131,7 @@
         }, () => callback([]));
     }
 
-    // ---- Воспроизведение ----
+    // ---- Воспроизведение с правильными ключами таймлайнов (формат Lampa) ----
     function playVideo(item, tmdbId, seasonNumber, episodeNumber, playlist, currentIndex) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
@@ -143,6 +143,7 @@
         let timeline = null;
         let source = {};
 
+        // Генерируем ключ в формате Lampa
         let timelineKey = null;
         if (tmdbId && seasonNumber !== undefined && episodeNumber !== undefined) {
             timelineKey = 'tmdb_' + String(tmdbId) + '_s' + String(seasonNumber) + '_e' + String(episodeNumber);
@@ -182,11 +183,11 @@
         }
     }
 
-    /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
+    /* --- КОМПОНЕНТ СЕРИАЛОВ (ПОЛНОСТЬЮ КАК В FX.JS) --- */
     function EmbySeriesComponent(object) {
         var network = new Lampa.Reguest();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
-        var explorer = new Lampa.Explorer(object);
+        var filter = new Lampa.Filter(object);
         var is_destroyed = false;
         var element = $('<div class="emby-container"></div>')[0];
         var seasons = [];
@@ -194,9 +195,10 @@
         var current_episodes = [];
         var emby_series_id = null;
         var tmdb_id = null;
-        var seasonBtn = null;
+        var lastFocused = null;
 
         this.create = function() {
+            // Получаем данные
             if (object && object.emby_id) emby_series_id = object.emby_id;
             if (object && object.tmdb_id) tmdb_id = object.tmdb_id;
             if (!emby_series_id || !tmdb_id) {
@@ -209,17 +211,31 @@
                 tmdb_id = extractTmdbId(object.movie);
             }
 
-            var filterPanel = $('<div class="emby-filter"></div>');
-            seasonBtn = $(`<div class="emby-filter-btn selector">${current_season ? (current_season.name || 'Сезон ' + current_season.season_number) : 'Сезон'}</div>`);
-            seasonBtn.on('hover:enter click', function() {
-                showSeasonSelector();
-            });
-            filterPanel.append(seasonBtn);
-            $(element).append(filterPanel);
+            // Настройка фильтра
+            filter.render().find('.filter--sort').remove();
+            filter.onSelect = function(type, a, b) {
+                if (type === 'filter' && a.reset) {
+                    // сброс (не используем)
+                } else if (type === 'filter' && a.season) {
+                    current_season = a.season;
+                    loadEpisodes();
+                }
+            };
+            filter.onBack = function() {
+                Lampa.Activity.backward();
+            };
+            filter.onSearch = function() {
+                // поиск не используем
+            };
 
-            $(element).append(explorer.render());
-            explorer.appendFiles(scroll.render());
-            explorer.render().find('.explorer__files-head').remove();
+            // Добавляем фильтр в начало
+            var filterHtml = filter.render();
+            $(element).append(filterHtml);
+
+            // Добавляем скролл в конец
+            $(element).append(scroll.render());
+
+            // Скрываем заголовок explorer (если используется) - у нас его нет
         };
 
         this.start = function() {
@@ -246,20 +262,13 @@
                     } else {
                         current_season = seasons[0];
                     }
-                    updateSeasonBtn();
+                    updateFilter();
                     loadEpisodes();
                 }
             });
         };
 
-        function updateSeasonBtn() {
-            if (seasonBtn) {
-                seasonBtn.text(current_season.name || 'Сезон ' + current_season.season_number);
-            }
-        }
-
-        function showSeasonSelector() {
-            if (!seasons.length) return;
+        function updateFilter() {
             var items = seasons.map(function(s) {
                 return {
                     title: s.name || 'Сезон ' + s.season_number,
@@ -267,19 +276,12 @@
                     selected: s.season_number === current_season.season_number
                 };
             });
-            Lampa.Select.show({
+            filter.set('filter', [{
                 title: Lampa.Lang.translate('torrent_serial_season'),
                 items: items,
-                onSelect: function(a) {
-                    current_season = a.season;
-                    updateSeasonBtn();
-                    window.embyLastSeason = { seriesId: emby_series_id, seasonNumber: current_season.season_number };
-                    loadEpisodes();
-                },
-                onBack: function() {
-                    Lampa.Controller.toggle('content');
-                }
-            });
+                stype: 'season'
+            }]);
+            filter.chosen('filter', [Lampa.Lang.translate('torrent_serial_season') + ': ' + (current_season.name || 'Сезон ' + current_season.season_number)]);
         }
 
         function loadEpisodes() {
@@ -313,6 +315,7 @@
                     var rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
                     var airDate = episode.air_date ? Lampa.Utils.parseTime(episode.air_date).full : '';
                     
+                    // Ключ в формате Lampa
                     var timelineKey = 'tmdb_' + String(tmdb_id) + '_s' + String(current_season.season_number) + '_e' + String(episode.episode_number);
                     var timeline = Lampa.Timeline.view(timelineKey);
                     
@@ -354,9 +357,10 @@
                     item.data('season', current_season.season_number);
                     item.data('index', index);
 
-                    // Обновление скролла при фокусе (для клавиатуры и мыши)
-                    item.on('hover:focus focus', function(e) {
-                        scroll.update($(this), true);
+                    // Скроллинг при фокусе (как в Lampac)
+                    item.on('hover:focus', function(e) {
+                        lastFocused = e.target;
+                        scroll.update($(lastFocused), true);
                     });
 
                     item.on('hover:enter click', function() {
@@ -414,25 +418,58 @@
                 });
             }
 
-            explorer.appendFiles(scroll.render());
-            explorer.render().find('.explorer__files-head').remove();
+            // Обновляем фильтр (чтобы показать текущий сезон)
+            updateFilter();
 
-            // Настройка навигации и активация фокуса
             setupNavigation();
+            // Устанавливаем коллекцию для навигации (только скролл)
+            Lampa.Controller.collectionSet(scroll.render());
+            setTimeout(function() {
+                Lampa.Controller.collectionFocus(false, scroll.render());
+                // Прокручиваем к первому элементу
+                var firstItem = $(scroll.render()).find('.selector').first();
+                if (firstItem.length) {
+                    lastFocused = firstItem[0];
+                    scroll.update(firstItem, true);
+                }
+            }, 100);
         }
 
         function setupNavigation() {
-            // Удаляем старый контроллер, если есть
-            Lampa.Controller.remove('content');
-
             Lampa.Controller.add('content', {
                 toggle: function() {
-                    // Привязываем коллекцию и устанавливаем фокус
-                    Lampa.Controller.collectionSet(scroll.render(), explorer.render());
+                    Lampa.Controller.collectionSet(scroll.render());
                     Lampa.Controller.collectionFocus(false, scroll.render());
+                    if (lastFocused) {
+                        scroll.update($(lastFocused), true);
+                    }
+                },
+                up: function() {
+                    if (Navigator.canmove('up')) {
+                        Navigator.move('up');
+                        // Обновляем скролл после перемещения (если не сработал hover:focus)
+                        var focusElement = $(scroll.render()).find('.selector.focus');
+                        if (focusElement.length) {
+                            lastFocused = focusElement[0];
+                            scroll.update(focusElement, true);
+                        }
+                    } else {
+                        Lampa.Controller.toggle('head');
+                    }
+                },
+                down: function() {
+                    if (Navigator.canmove('down')) {
+                        Navigator.move('down');
+                        var focusElement = $(scroll.render()).find('.selector.focus');
+                        if (focusElement.length) {
+                            lastFocused = focusElement[0];
+                            scroll.update(focusElement, true);
+                        }
+                    }
                 },
                 right: function() {
-                    showSeasonSelector();
+                    // Открываем выбор сезона через фильтр
+                    filter.show(Lampa.Lang.translate('title_filter'), 'filter');
                 },
                 left: function() {
                     if (Navigator.canmove('left')) Navigator.move('left');
@@ -441,7 +478,6 @@
                 back: function() {
                     Lampa.Activity.backward();
                 }
-                // up/down не переопределяем — они работают автоматически через коллекцию
             });
             Lampa.Controller.toggle('content');
         }
@@ -453,13 +489,12 @@
         this.destroy = function() {
             is_destroyed = true;
             network.clear();
-            if (explorer) explorer.destroy();
             if (scroll) scroll.destroy();
-            Lampa.Controller.remove('content');
+            if (filter) filter.destroy();
         };
     }
 
-    /* --- Остальная часть плагина --- */
+    /* --- Остальная часть плагина (кнопка, настройки, запуск) --- */
     function handleEmbyClick(movie) {
         if (!isConfigured()) return notify('Настройте Emby в параметрах');
 
