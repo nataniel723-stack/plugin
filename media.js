@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.38';
+    const PLUGIN_VERSION = '4.4.39';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -131,7 +131,7 @@
         }, () => callback([]));
     }
 
-    // ---- Воспроизведение с правильными ключами таймлайнов (формат Lampa) ----
+    // ---- Воспроизведение ----
     function playVideo(item, tmdbId, seasonNumber, episodeNumber, playlist, currentIndex) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
@@ -143,7 +143,6 @@
         let timeline = null;
         let source = {};
 
-        // Генерируем ключ в формате Lampa
         let timelineKey = null;
         if (tmdbId && seasonNumber !== undefined && episodeNumber !== undefined) {
             timelineKey = 'tmdb_' + String(tmdbId) + '_s' + String(seasonNumber) + '_e' + String(episodeNumber);
@@ -198,7 +197,6 @@
         var seasonBtn = null;
 
         this.create = function() {
-            // Получаем данные
             if (object && object.emby_id) emby_series_id = object.emby_id;
             if (object && object.tmdb_id) tmdb_id = object.tmdb_id;
             if (!emby_series_id || !tmdb_id) {
@@ -211,7 +209,6 @@
                 tmdb_id = extractTmdbId(object.movie);
             }
 
-            // Создаём панель фильтра вручную
             var filterPanel = $('<div class="emby-filter"></div>');
             seasonBtn = $(`<div class="emby-filter-btn selector">${current_season ? (current_season.name || 'Сезон ' + current_season.season_number) : 'Сезон'}</div>`);
             seasonBtn.on('hover:enter click', function() {
@@ -220,7 +217,6 @@
             filterPanel.append(seasonBtn);
             $(element).append(filterPanel);
 
-            // Добавляем explorer
             $(element).append(explorer.render());
             explorer.appendFiles(scroll.render());
             explorer.render().find('.explorer__files-head').remove();
@@ -317,7 +313,6 @@
                     var rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
                     var airDate = episode.air_date ? Lampa.Utils.parseTime(episode.air_date).full : '';
                     
-                    // Ключ в формате Lampa
                     var timelineKey = 'tmdb_' + String(tmdb_id) + '_s' + String(current_season.season_number) + '_e' + String(episode.episode_number);
                     var timeline = Lampa.Timeline.view(timelineKey);
                     
@@ -359,8 +354,8 @@
                     item.data('season', current_season.season_number);
                     item.data('index', index);
 
-                    // Скроллинг при фокусе (как в Lampac)
-                    item.on('hover:focus', function(e) {
+                    // Обновление скролла при фокусе (для клавиатуры и мыши)
+                    item.on('hover:focus focus', function(e) {
                         scroll.update($(this), true);
                     });
 
@@ -422,35 +417,19 @@
             explorer.appendFiles(scroll.render());
             explorer.render().find('.explorer__files-head').remove();
 
+            // Настройка навигации и активация фокуса
             setupNavigation();
-            Lampa.Controller.collectionSet(scroll.render(), explorer.render());
-            setTimeout(function() {
-                Lampa.Controller.collectionFocus(false, scroll.render());
-                // Прокручиваем к первому элементу
-                var firstItem = $(scroll.render()).find('.selector').first();
-                if (firstItem.length) {
-                    scroll.update(firstItem, true);
-                }
-            }, 100);
         }
 
         function setupNavigation() {
+            // Удаляем старый контроллер, если есть
+            Lampa.Controller.remove('content');
+
             Lampa.Controller.add('content', {
                 toggle: function() {
+                    // Привязываем коллекцию и устанавливаем фокус
                     Lampa.Controller.collectionSet(scroll.render(), explorer.render());
                     Lampa.Controller.collectionFocus(false, scroll.render());
-                },
-                up: function() {
-                    if (Navigator.canmove('up')) {
-                        Navigator.move('up');
-                    } else {
-                        Lampa.Controller.toggle('head');
-                    }
-                },
-                down: function() {
-                    if (Navigator.canmove('down')) {
-                        Navigator.move('down');
-                    }
                 },
                 right: function() {
                     showSeasonSelector();
@@ -462,6 +441,7 @@
                 back: function() {
                     Lampa.Activity.backward();
                 }
+                // up/down не переопределяем — они работают автоматически через коллекцию
             });
             Lampa.Controller.toggle('content');
         }
@@ -475,12 +455,11 @@
             network.clear();
             if (explorer) explorer.destroy();
             if (scroll) scroll.destroy();
-            // Убираем вызов unfollow, т.к. его нет в Lampa 3.1.9
-            // Lampa.Timeline.listener.unfollow('update');
+            Lampa.Controller.remove('content');
         };
     }
 
-    /* --- Остальная часть плагина (кнопка, настройки, запуск) --- */
+    /* --- Остальная часть плагина --- */
     function handleEmbyClick(movie) {
         if (!isConfigured()) return notify('Настройте Emby в параметрах');
 
