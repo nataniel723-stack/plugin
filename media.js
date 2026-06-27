@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.12';
+    const PLUGIN_VERSION = '4.4.13';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -12,23 +12,108 @@
         $('head').append(`
             <style id="emby-plugin-styles">
                 .emby-container { padding: 0; height: 100%; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
-                .emby-episodes-grid { display: flex; flex-wrap: wrap; padding: 1em 1.5em; gap: 1.5em; align-content: flex-start; }
-                .emby-episode-card { width: calc(25% - 1.125em); cursor: pointer; transition: transform 0.2s, background 0.2s; border-radius: 0.5em; padding: 0.5em; box-sizing: border-box; position: relative; overflow: hidden; }
-                .emby-episode-card.focus { background: rgba(255,255,255,0.1); transform: scale(1.05); }
-                .emby-episode-card .emby-progress { position: absolute; bottom: 0; left: 0; height: 3px; background: #00B0FF; z-index: 2; transition: width 0.3s; }
-                .emby-ep-img-wrap { width: 100%; aspect-ratio: 16 / 9; border-radius: 0.4em; overflow: hidden; position: relative; background: #111; margin-bottom: 0.6em; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-                .emby-ep-img { width: 100%; height: 100%; object-fit: cover; }
-                .emby-ep-num { position: absolute; top: 0.4em; left: 0.4em; background: rgba(0,0,0,0.7); padding: 0.2em 0.5em; border-radius: 0.3em; font-weight: bold; font-size: 0.9em; color: #fff; }
-                .emby-ep-title { font-size: 1.1em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.2em; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
-                .emby-ep-info { font-size: 0.85em; color: #aaa; }
-                .emby-filter { display: flex; align-items: center; justify-content: flex-start; padding: 1.5em 2em 0 2em; gap: 1em; flex-wrap: wrap; position: sticky; top: 0; z-index: 10; background: rgba(0,0,0,0.9); }
-                .emby-filter-btn { background: rgba(255,255,255,0.1); padding: 0.6em 1.5em; border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: bold; }
-                .emby-filter-btn.focus { background: #fff; color: #000; }
-                .emby-loader { display: flex; justify-content: center; align-items: center; height: 50vh; }
-                .emby-empty { text-align: center; padding: 3em; font-size: 1.2em; opacity: 0.7; width: 100%; }
-                @media (max-width: 1200px) { .emby-episode-card { width: calc(33.333% - 1em); } }
-                @media (max-width: 768px) { .emby-episode-card { width: calc(50% - 0.75em); } }
-                @media (max-width: 480px) { .emby-episode-card { width: 100%; } }
+                .emby-episodes-list { padding: 1em 1.5em; }
+                .emby-episode-item { 
+                    display: flex; 
+                    align-items: stretch; 
+                    background: rgba(0,0,0,0.3); 
+                    border-radius: 0.5em; 
+                    margin-bottom: 1em; 
+                    padding: 0.5em; 
+                    cursor: pointer; 
+                    transition: background 0.2s, transform 0.2s;
+                }
+                .emby-episode-item.focus { 
+                    background: rgba(255,255,255,0.1); 
+                    transform: scale(1.02); 
+                }
+                .emby-episode-item .emby-ep-img-wrap { 
+                    width: 12em; 
+                    flex-shrink: 0; 
+                    aspect-ratio: 16 / 9; 
+                    border-radius: 0.4em; 
+                    overflow: hidden; 
+                    background: #111; 
+                    position: relative;
+                }
+                .emby-episode-item .emby-ep-img { 
+                    width: 100%; 
+                    height: 100%; 
+                    object-fit: cover; 
+                }
+                .emby-episode-item .emby-ep-num { 
+                    position: absolute; 
+                    top: 0.4em; 
+                    left: 0.4em; 
+                    background: rgba(0,0,0,0.7); 
+                    padding: 0.2em 0.5em; 
+                    border-radius: 0.3em; 
+                    font-weight: bold; 
+                    font-size: 0.9em; 
+                    color: #fff;
+                }
+                .emby-episode-item .emby-ep-body { 
+                    flex: 1; 
+                    padding: 0.2em 1em; 
+                    display: flex; 
+                    flex-direction: column; 
+                    justify-content: space-between;
+                }
+                .emby-episode-item .emby-ep-title { 
+                    font-size: 1.2em; 
+                    font-weight: bold; 
+                    margin-bottom: 0.2em; 
+                }
+                .emby-episode-item .emby-ep-info { 
+                    font-size: 0.9em; 
+                    color: #aaa; 
+                    display: flex; 
+                    gap: 1em; 
+                    flex-wrap: wrap;
+                }
+                .emby-episode-item .emby-ep-timeline { 
+                    margin-top: 0.6em; 
+                }
+                .emby-episode-item .emby-ep-timeline .time-line { 
+                    display: block !important; 
+                }
+                .emby-filter { 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: flex-start; 
+                    padding: 1.5em 2em 0 2em; 
+                    gap: 1em; 
+                    flex-wrap: wrap; 
+                    position: sticky; 
+                    top: 0; 
+                    z-index: 10; 
+                    background: rgba(0,0,0,0.9); 
+                }
+                .emby-filter-btn { 
+                    background: rgba(255,255,255,0.1); 
+                    padding: 0.6em 1.5em; 
+                    border-radius: 5px; 
+                    cursor: pointer; 
+                    font-size: 1.1em; 
+                    font-weight: bold; 
+                }
+                .emby-filter-btn.focus { 
+                    background: #fff; 
+                    color: #000; 
+                }
+                .emby-loader { 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center; 
+                    height: 50vh; 
+                }
+                .emby-empty { 
+                    text-align: center; 
+                    padding: 3em; 
+                    font-size: 1.2em; 
+                    opacity: 0.7; 
+                    width: 100%; 
+                }
             </style>
         `);
     }
@@ -120,7 +205,7 @@
         }, () => callback([]));
     }
 
-    // ---- Воспроизведение с правильными таймлайнами и source ----
+    // ---- Воспроизведение с правильными таймлайнами ----
     function playVideo(item, tmdbId, seasonNumber, episodeNumber, playlist, currentIndex) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
@@ -134,9 +219,7 @@
         let source = {};
 
         if (playlist && playlist.length > 0) {
-            // Сериал – плейлист
             timeline = playlist[currentIndex].timeline;
-            // Для плейлиста source не обязателен, но добавим для ясности
             source = {
                 playlist: playlist,
                 current: currentIndex,
@@ -153,7 +236,6 @@
                 source: source
             });
         } else {
-            // Фильм
             if (tmdbId) {
                 timelineKey = 'movie/' + tmdbId;
             } else {
@@ -262,37 +344,41 @@
             filterPanel.append(seasonBtn);
             body.append(filterPanel);
 
-            let grid = $('<div class="emby-episodes-grid"></div>');
+            let list = $('<div class="emby-episodes-list"></div>');
 
             if (current_episodes.length === 0) {
-                grid.append('<div class="emby-empty">Эпизоды не найдены</div>');
+                list.append('<div class="emby-empty">Эпизоды не найдены</div>');
             } else {
                 current_episodes.forEach((episode, index) => {
                     let epNum = String(episode.episode_number).padStart(2, '0');
-                    let stillPath = episode.still_path ? 'https://image.tmdb.org/t/p/w400' + episode.still_path : '';
+                    let stillPath = episode.still_path ? 'https://image.tmdb.org/t/p/w300' + episode.still_path : '';
                     let imageHtml = stillPath ?
-                        `<img src="${stillPath}" class="emby-ep-img" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);color:#00B0FF;font-size:3em;font-weight:bold\\'>${epNum}</div>'">` :
-                        `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);color:#00B0FF;font-size:3em;font-weight:bold;text-shadow:2px 2px 4px rgba(0,0,0,0.5)">${epNum}</div>`;
+                        `<img src="${stillPath}" class="emby-ep-img" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);color:#00B0FF;font-size:2em;font-weight:bold\\'>${epNum}</div>'">` :
+                        `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);color:#00B0FF;font-size:2em;font-weight:bold;text-shadow:2px 2px 4px rgba(0,0,0,0.5)">${epNum}</div>`;
                     let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
 
-                    // ---- Правильный ключ таймлайна (стандарт Lampa) ----
+                    // ---- Таймлайн ----
                     let timelineKey = 'tv/' + tmdb_id + '/' + current_season.season_number + '/' + episode.episode_number;
                     let timeline = Lampa.Timeline.view(timelineKey);
-                    let progressPercent = 0;
-                    if (timeline && timeline.time && timeline.duration) {
-                        progressPercent = Math.min(100, (timeline.time / timeline.duration) * 100);
-                    }
-                    let progressBar = progressPercent > 0 ? `<div class="emby-progress" style="width:${progressPercent}%"></div>` : '';
 
                     let item = $(`
-                        <div class="emby-episode-card selector" data-episode="${episode.episode_number}" data-season="${current_season.season_number}" data-index="${index}">
+                        <div class="emby-episode-item selector" data-episode="${episode.episode_number}" data-season="${current_season.season_number}" data-index="${index}">
                             <div class="emby-ep-img-wrap">
                                 ${imageHtml}
-                                <div class="emby-ep-num">${epNum} серия</div>
+                                <div class="emby-ep-num">${epNum}</div>
                             </div>
-                            <div class="emby-ep-title">${episode.name || 'Эпизод ' + epNum}</div>
-                            <div class="emby-ep-info">⭐ ${rating}</div>
-                            ${progressBar}
+                            <div class="emby-ep-body">
+                                <div>
+                                    <div class="emby-ep-title">${episode.name || 'Эпизод ' + epNum}</div>
+                                    <div class="emby-ep-info">
+                                        <span>⭐ ${rating}</span>
+                                        ${episode.air_date ? `<span>${Lampa.Utils.parseTime(episode.air_date).full || episode.air_date}</span>` : ''}
+                                    </div>
+                                </div>
+                                <div class="emby-ep-timeline">
+                                    ${Lampa.Timeline.render(timeline)}
+                                </div>
+                            </div>
                         </div>
                     `);
 
@@ -331,7 +417,6 @@
                                             });
                                             let currentEp = sortedEpisodes[epNumber - 1];
                                             if (currentEp) {
-                                                // Передаём tmdb_id, сезон, эпизод, плейлист и индекс
                                                 playVideo(currentEp, tmdb_id, seasonNumber, epNumber, playlist, epNumber - 1);
                                             }
                                         }
@@ -349,11 +434,11 @@
                         });
                     });
 
-                    grid.append(item);
+                    list.append(item);
                 });
             }
 
-            body.append(grid);
+            body.append(list);
             element.scrollTop = 0;
             setupNavigation();
         }
