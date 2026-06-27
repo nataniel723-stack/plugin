@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.30';
+    const PLUGIN_VERSION = '4.4.31';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -28,13 +28,23 @@
         </div>
     `);
 
-    // ---- Стили ----
+    // ---- Стили с исправленными отступами ----
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
                 .emby-container { padding: 0; height: 100%; overflow-y: auto; }
                 .emby-loader { display: flex; justify-content: center; align-items: center; height: 50vh; }
                 .emby-empty { text-align: center; padding: 3em; font-size: 1.2em; opacity: 0.7; width: 100%; }
+                /* Добавляем отступы, чтобы рамка фокуса не обрезалась */
+                .emby-container .online-prestige {
+                    margin: 0.5em 1em;
+                }
+                .emby-container .online-prestige.focus::after {
+                    top: -0.3em;
+                    left: -0.3em;
+                    right: -0.3em;
+                    bottom: -0.3em;
+                }
             </style>
         `);
     }
@@ -126,7 +136,7 @@
         }, () => callback([]));
     }
 
-    // ---- Воспроизведение ----
+    // ---- Воспроизведение (с плейлистом и таймлайнами) ----
     function playVideo(item, tmdbId, seasonNumber, episodeNumber, playlist, currentIndex) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
@@ -201,7 +211,7 @@
             filter.render().find('.filter--sort').remove();
             filter.onSelect = function(type, a, b) {
                 if (type === 'filter' && a.reset) {
-                    // сброс
+                    // сброс (не используем)
                 } else if (type === 'filter' && a.season) {
                     current_season = a.season;
                     loadEpisodes();
@@ -317,6 +327,8 @@
                     var timelineElement = Lampa.Timeline.render(timeline);
                     if (timelineElement) {
                         timelineContainer.append(timelineElement);
+                        // Принудительно обновляем таймлайн, чтобы прогресс отобразился
+                        Lampa.Timeline.update(timeline);
                     }
 
                     var img = html.find('img')[0];
@@ -424,7 +436,25 @@
                     Navigator.move('down');
                 },
                 right: function() {
-                    filter.show(Lampa.Lang.translate('title_filter'), 'filter');
+                    // Вместо стандартного фильтра открываем сразу выбор сезона
+                    var items = seasons.map(function(s) {
+                        return {
+                            title: s.name || 'Сезон ' + s.season_number,
+                            season: s,
+                            selected: s.season_number === current_season.season_number
+                        };
+                    });
+                    Lampa.Select.show({
+                        title: Lampa.Lang.translate('torrent_serial_season'),
+                        items: items,
+                        onSelect: function(a) {
+                            current_season = a.season;
+                            loadEpisodes();
+                        },
+                        onBack: function() {
+                            Lampa.Controller.toggle('content');
+                        }
+                    });
                 },
                 left: function() {
                     if (Navigator.canmove('left')) Navigator.move('left');
