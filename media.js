@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.35';
+    const PLUGIN_VERSION = '4.4.36';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -131,7 +131,7 @@
         }, () => callback([]));
     }
 
-    // ---- Воспроизведение с правильными ключами таймлайнов и синхронизацией ----
+    // ---- Воспроизведение с правильными ключами таймлайнов ----
     function playVideo(item, tmdbId, seasonNumber, episodeNumber, playlist, currentIndex) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
@@ -143,7 +143,7 @@
         let timeline = null;
         let source = {};
 
-        // Формируем ключ таймлайна (всегда строка)
+        // Формируем ключ таймлайна
         let timelineKey = null;
         if (tmdbId && seasonNumber !== undefined && episodeNumber !== undefined) {
             timelineKey = 'tv/' + String(tmdbId) + '/' + String(seasonNumber) + '/' + String(episodeNumber);
@@ -181,16 +181,9 @@
                 source: source
             });
         }
-
-        // Подписываемся на обновления таймлайна, чтобы синхронизировать с ядром
-        Lampa.Timeline.listener.follow('update', function(e) {
-            if (e.key === timelineKey) {
-                Lampa.Timeline.update(e.data);
-            }
-        });
     }
 
-    /* --- КОМПОНЕНТ СЕРИАЛОВ (с исправленным скроллингом и синхронизацией) --- */
+    /* --- КОМПОНЕНТ СЕРИАЛОВ (с исправленным скроллингом и обновлением таймлайнов) --- */
     function EmbySeriesComponent(object) {
         var network = new Lampa.Reguest();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
@@ -203,6 +196,9 @@
         var emby_series_id = null;
         var tmdb_id = null;
         var seasonBtn = null;
+
+        // Хранилище элементов серий для обновления таймлайнов
+        var episodeItems = {};
 
         this.create = function() {
             // Получаем данные
@@ -231,6 +227,21 @@
             $(element).append(explorer.render());
             explorer.appendFiles(scroll.render());
             explorer.render().find('.explorer__files-head').remove();
+
+            // Подписываемся на обновления таймлайнов
+            Lampa.Timeline.listener.follow('update', function(e) {
+                if (e.key && episodeItems[e.key]) {
+                    // Обновляем таймлайн для конкретной серии
+                    var timelineContainer = episodeItems[e.key].find('.online-prestige__timeline');
+                    if (timelineContainer.length) {
+                        timelineContainer.empty();
+                        var newTimeline = Lampa.Timeline.render(e.data);
+                        if (newTimeline) {
+                            timelineContainer.append(newTimeline);
+                        }
+                    }
+                }
+            });
         };
 
         this.start = function() {
@@ -311,6 +322,7 @@
             body.find('.emby-loader').remove();
 
             scroll.clear();
+            episodeItems = {};
 
             if (current_episodes.length === 0) {
                 var empty = $('<div class="emby-empty">Эпизоды не найдены</div>');
@@ -364,6 +376,9 @@
                     item.data('episode', episode.episode_number);
                     item.data('season', current_season.season_number);
                     item.data('index', index);
+
+                    // Сохраняем элемент по ключу таймлайна для обновления
+                    episodeItems[timelineKey] = item;
 
                     item.on('hover:enter click', function() {
                         var epNumber = parseInt($(this).data('episode'));
@@ -427,7 +442,7 @@
             Lampa.Controller.collectionSet(scroll.render(), explorer.render());
             setTimeout(function() {
                 Lampa.Controller.collectionFocus(false, scroll.render());
-                // Прокручиваем к первому элементу после фокуса
+                // Прокручиваем к первому элементу
                 var firstItem = $(scroll.render()).find('.selector').first();
                 if (firstItem.length) {
                     scroll.update(firstItem[0], true);
@@ -440,7 +455,6 @@
                 toggle: function() {
                     Lampa.Controller.collectionSet(scroll.render(), explorer.render());
                     Lampa.Controller.collectionFocus(false, scroll.render());
-                    // Обновляем скролл к текущему фокусу
                     var focusElement = $(scroll.render()).find('.selector.focus');
                     if (focusElement.length) {
                         scroll.update(focusElement[0], true);
@@ -489,6 +503,8 @@
             network.clear();
             if (explorer) explorer.destroy();
             if (scroll) scroll.destroy();
+            // Отписываемся от обновлений таймлайна
+            Lampa.Timeline.listener.unfollow('update');
         };
     }
 
