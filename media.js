@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.35-flex-fix';
+    const PLUGIN_VERSION = '4.4.36-flex-fix'; // Обновил версию
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -32,24 +32,22 @@
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
-                /* ЖЕСТКИЙ КАРКАС: залог правильной математики Lampa.Scroll */
+                /* Мягкий, но жестко ограниченный по высоте каркас */
                 .emby-container {
-                    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-                    display: flex; flex-direction: column; overflow: hidden;
-                    z-index: 1;
+                    display: flex; flex-direction: column; height: 100%; position: relative; z-index: 1;
                 }
                 
-                /* Панель фильтров не сжимается */
+                /* Панель фильтров (кнопка Сезон) */
                 .emby-filter {
                     flex-shrink: 0; padding: 1.5em 3em 0.5em 3em;
                     display: flex; align-items: center; gap: 1em; flex-wrap: wrap;
                 }
-                .emby-filter-btn { background: rgba(255,255,255,0.1); padding: 0.6em 1.5em; border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: bold; }
+                .emby-filter-btn { background: rgba(255,255,255,0.1); padding: 0.6em 1.5em; border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: bold; transition: background 0.3s; }
                 .emby-filter-btn.focus { background: #fff; color: #000; }
 
-                /* Сам скролл занимает строго оставшееся место экрана */
+                /* Сам скролл: занимает строго оставшееся место, скрывая то, что не влезло */
                 .emby-container > .scroll {
-                    flex-grow: 1; min-height: 0; position: relative; width: 100%; overflow: hidden;
+                    flex-grow: 1; height: 100%; position: relative; width: 100%; overflow: hidden;
                 }
                 .emby-container .scroll__body { padding-bottom: 2em; }
 
@@ -237,7 +235,7 @@
             
             filterPanel.append(seasonBtn);
             
-            // Собираем чистый DOM без Lampa.Explorer
+            // Собираем структуру: панель + скролл
             element.append(filterPanel);
             element.append(scroll.render());
         };
@@ -370,7 +368,7 @@
                     item.data('season', current_season.season_number);
                     item.data('index', index);
 
-                    // Команда скроллу двигаться за элементом
+                    // СИНХРОНИЗАЦИЯ СКРОЛЛА С ФОКУСОМ
                     item.on('hover:focus', function(e) {
                         scroll.update($(this), true);
                     });
@@ -380,7 +378,6 @@
                         var seasonNumber = parseInt($(this).data('season'));
                         window.embyLastSeason = { seriesId: emby_series_id, seasonNumber: seasonNumber };
 
-                        // Оверлей загрузки
                         var overlayLoader = $('<div class="emby-loader-overlay"><div class="broadcast__spin"></div></div>');
                         element.append(overlayLoader);
 
@@ -453,7 +450,6 @@
         function setupNavigation() {
             Lampa.Controller.add('content', {
                 toggle: function() {
-                    // Передаем весь element, чтобы Lampa видела и кнопку "Сезон", и серии
                     Lampa.Controller.collectionSet(element);
                     Lampa.Controller.collectionFocus(false, element);
                 },
@@ -479,7 +475,8 @@
         }
 
         this.render = function() {
-            return element[0];
+            // ИСПРАВЛЕНИЕ: Возвращаем объект jQuery, как того требует архитектура Lampa
+            return element; 
         };
 
         this.destroy = function() {
