@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.35-fix';
+    const PLUGIN_VERSION = '4.4.35-flex-fix';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -32,15 +32,32 @@
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
-                /* ИСПРАВЛЕНИЕ 1: Убрано overflow-y: auto, добавлено overflow: hidden для работы Lampa.Scroll */
-                .emby-container { padding: 0; height: 100%; overflow: hidden; position: relative; } 
-                .emby-loader { display: flex; justify-content: center; align-items: center; height: 50vh; }
-                /* Добавлен стиль для оверлея загрузки поверх контента */
-                .emby-loader-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; display: flex; justify-content: center; align-items: center; } 
-                .emby-empty { text-align: center; padding: 3em; font-size: 1.2em; opacity: 0.7; width: 100%; }
-                .emby-filter { display: flex; align-items: center; padding: 1.5em 2em 0.5em 2em; gap: 1em; flex-wrap: wrap; position: sticky; top: 0; z-index: 10; background: rgba(0,0,0,0.9); }
+                /* ЖЕСТКИЙ КАРКАС: залог правильной математики Lampa.Scroll */
+                .emby-container {
+                    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+                    display: flex; flex-direction: column; overflow: hidden;
+                    z-index: 1;
+                }
+                
+                /* Панель фильтров не сжимается */
+                .emby-filter {
+                    flex-shrink: 0; padding: 1.5em 3em 0.5em 3em;
+                    display: flex; align-items: center; gap: 1em; flex-wrap: wrap;
+                }
                 .emby-filter-btn { background: rgba(255,255,255,0.1); padding: 0.6em 1.5em; border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: bold; }
                 .emby-filter-btn.focus { background: #fff; color: #000; }
+
+                /* Сам скролл занимает строго оставшееся место экрана */
+                .emby-container > .scroll {
+                    flex-grow: 1; min-height: 0; position: relative; width: 100%; overflow: hidden;
+                }
+                .emby-container .scroll__body { padding-bottom: 2em; }
+
+                /* Вспомогательные элементы */
+                .emby-loader { display: flex; justify-content: center; align-items: center; height: 100%; flex-grow: 1; }
+                .emby-loader-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; display: flex; justify-content: center; align-items: center; } 
+                .emby-empty { text-align: center; padding: 3em; font-size: 1.2em; opacity: 0.7; width: 100%; }
+                
                 .emby-container .online-prestige { margin: 0.5em 1em; }
                 .emby-container .online-prestige.focus::after { top: -0.3em; left: -0.3em; right: -0.3em; bottom: -0.3em; }
             </style>
@@ -48,16 +65,9 @@
     }
 
     // ---- Базовые функции ----
-    function getUrl() {
-        return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim();
-    }
-    
-    function getApiKey() {
-        return (Lampa.Storage.get(STORAGE_API_KEY, '78b3967970814692b20b095e5b13f0eb') || '').trim();
-    }
-    
+    function getUrl() { return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim(); }
+    function getApiKey() { return (Lampa.Storage.get(STORAGE_API_KEY, '78b3967970814692b20b095e5b13f0eb') || '').trim(); }
     function isConfigured() { return getUrl().length > 5 && getApiKey().length > 5; }
-    
     function notify(msg) { Lampa.Noty.show(msg); }
 
     function buildApiUrl(endpoint) {
@@ -137,7 +147,6 @@
         }, () => callback([]));
     }
 
-    // ---- Воспроизведение с правильными ключами таймлайнов и синхронизацией ----
     function playVideo(item, tmdbId, seasonNumber, episodeNumber, playlist, currentIndex) {
         const base = getUrl().replace(/\/$/, '');
         const apiKey = getApiKey();
@@ -198,9 +207,9 @@
     function EmbySeriesComponent(object) {
         var network = new Lampa.Reguest();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
-        var explorer = new Lampa.Explorer(object);
         var is_destroyed = false;
-        var element = $('<div class="emby-container"></div>')[0];
+        var element = $('<div class="emby-container"></div>'); // Главный flex-контейнер
+        var filterPanel = $('<div class="emby-filter"></div>'); // Панель с кнопкой
         var seasons = [];
         var current_season = null;
         var current_episodes = [];
@@ -221,35 +230,33 @@
                 tmdb_id = extractTmdbId(object.movie);
             }
 
-            var filterPanel = $('<div class="emby-filter"></div>');
             seasonBtn = $(`<div class="emby-filter-btn selector">${current_season ? (current_season.name || 'Сезон ' + current_season.season_number) : 'Сезон'}</div>`);
             seasonBtn.on('hover:enter click', function() {
                 showSeasonSelector();
             });
+            
             filterPanel.append(seasonBtn);
-            $(element).append(filterPanel);
-
-            $(element).append(explorer.render());
-            explorer.appendFiles(scroll.render());
-            explorer.render().find('.explorer__files-head').remove();
+            
+            // Собираем чистый DOM без Lampa.Explorer
+            element.append(filterPanel);
+            element.append(scroll.render());
         };
 
         this.start = function() {
-            var body = $(element);
-            body.find('.emby-loader').remove();
+            element.find('.emby-loader').remove();
             if (!tmdb_id) {
-                body.append('<div class="emby-empty">Не удалось определить TMDB ID сериала</div>');
+                scroll.append($('<div class="emby-empty">Не удалось определить TMDB ID сериала</div>'));
                 setupNavigation();
                 return;
             }
 
-            body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
+            element.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
             getSeasonsFromTMDB(tmdb_id, function(result) {
                 if (is_destroyed) return;
                 seasons = result;
                 if (seasons.length === 0) {
-                    body.find('.emby-loader').remove();
-                    body.append('<div class="emby-empty">Сезоны не найдены</div>');
+                    element.find('.emby-loader').remove();
+                    scroll.append($('<div class="emby-empty">Сезоны не найдены</div>'));
                     setupNavigation();
                 } else {
                     var savedSeason = window.embyLastSeason;
@@ -297,9 +304,8 @@
 
         function loadEpisodes() {
             if (is_destroyed) return;
-            var body = $(element);
-            body.find('.emby-loader').remove();
-            body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
+            element.find('.emby-loader').remove();
+            element.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
             getEpisodesFromTMDB(tmdb_id, current_season.season_number, function(episodes) {
                 if (is_destroyed) return;
                 current_episodes = episodes;
@@ -309,14 +315,11 @@
 
         function renderEpisodes() {
             if (is_destroyed) return;
-            var body = $(element);
-            body.find('.emby-loader').remove();
-
+            element.find('.emby-loader').remove();
             scroll.clear();
 
             if (current_episodes.length === 0) {
-                var empty = $('<div class="emby-empty">Эпизоды не найдены</div>');
-                scroll.append(empty);
+                scroll.append($('<div class="emby-empty">Эпизоды не найдены</div>'));
             } else {
                 current_episodes.forEach(function(episode, index) {
                     var epNum = String(episode.episode_number).padStart(2, '0');
@@ -367,19 +370,19 @@
                     item.data('season', current_season.season_number);
                     item.data('index', index);
 
+                    // Команда скроллу двигаться за элементом
                     item.on('hover:focus', function(e) {
                         scroll.update($(this), true);
                     });
 
-                    // ИСПРАВЛЕНИЕ 2: Обработка клика без разрушения DOM
                     item.on('hover:enter click', function() {
                         var epNumber = parseInt($(this).data('episode'));
                         var seasonNumber = parseInt($(this).data('season'));
                         window.embyLastSeason = { seriesId: emby_series_id, seasonNumber: seasonNumber };
 
-                        // Выводим оверлей загрузки поверх серий (DOM не трогаем!)
+                        // Оверлей загрузки
                         var overlayLoader = $('<div class="emby-loader-overlay"><div class="broadcast__spin"></div></div>');
-                        body.append(overlayLoader);
+                        element.append(overlayLoader);
 
                         var net = new Lampa.Reguest();
                         var seasonQuery = '/Items?ParentId=' + emby_series_id + '&IncludeItemTypes=Season&Fields=Id,IndexNumber';
@@ -392,7 +395,7 @@
                                 if (season) {
                                     var episodeQuery = '/Items?ParentId=' + season.Id + '&IncludeItemTypes=Episode&Fields=Id,Name,IndexNumber,PrimaryImageTag&SortBy=SortName&SortOrder=Ascending';
                                     net.silent(buildApiUrl(episodeQuery), function(episodeData) {
-                                        overlayLoader.remove(); // Убираем загрузчик
+                                        overlayLoader.remove();
                                         if (is_destroyed) return;
                                         
                                         if (episodeData && episodeData.Items) {
@@ -436,27 +439,23 @@
                 });
             }
 
-            explorer.appendFiles(scroll.render());
-            explorer.render().find('.explorer__files-head').remove();
-
             setupNavigation();
-            Lampa.Controller.collectionSet(scroll.render(), explorer.render());
             
             setTimeout(function() {
-                Lampa.Controller.collectionFocus(false, scroll.render());
-                var firstItem = $(scroll.render()).find('.selector').first();
+                Lampa.Controller.collectionFocus(false, element);
+                var firstItem = element.find('.selector').first();
                 if (firstItem.length) {
-                    scroll.update(firstItem[0], true);
+                    setTimeout(function() { scroll.update(firstItem, true); }, 50);
                 }
             }, 100);
         }
 
-        // ИСПРАВЛЕНИЕ 3: Вычищена навигация. Lampa сама умеет делать фокус при Navigator.move
         function setupNavigation() {
             Lampa.Controller.add('content', {
                 toggle: function() {
-                    Lampa.Controller.collectionSet(scroll.render(), explorer.render());
-                    Lampa.Controller.collectionFocus(false, scroll.render());
+                    // Передаем весь element, чтобы Lampa видела и кнопку "Сезон", и серии
+                    Lampa.Controller.collectionSet(element);
+                    Lampa.Controller.collectionFocus(false, element);
                 },
                 up: function() {
                     if (Navigator.canmove('up')) Navigator.move('up');
@@ -480,13 +479,12 @@
         }
 
         this.render = function() {
-            return element;
+            return element[0];
         };
 
         this.destroy = function() {
             is_destroyed = true;
             network.clear();
-            if (explorer) explorer.destroy();
             if (scroll) scroll.destroy();
         };
     }
