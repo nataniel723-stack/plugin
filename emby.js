@@ -548,11 +548,12 @@
             component: 'emby',
             param: {
                 name: 'emby_url_btn', // Измененное имя, чтобы ядро не пыталось парсить значение
-                type: 'button'
+                type: 'button',
+                placeholder: 'Должен начинатся с http:// или https://',
             },
             field: {
                 name: 'Адрес сервера',
-                description: getUrl() || 'Должен начинатся с http:// или https://' // Показываем текущее значение
+                description: getUrl() // Показываем текущее значение
             },
             onChange: function() {
                 Lampa.Input.edit({
