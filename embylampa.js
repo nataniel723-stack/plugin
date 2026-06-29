@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '0.9.1'; // Обновил версию
+    const PLUGIN_VERSION = '4.4.43-settings-fix';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -28,7 +28,7 @@
         </div>
     `);
 
-    // ---- ПРАВКА 2: Регистрируем шаблон настроек для правильной навигации пультом ----
+    // ---- Регистрируем шаблон настроек ----
     Lampa.Template.add('settings_emby', `
         <div>
             <div class="settings-param selector" data-name="emby_url" data-type="input">
@@ -99,7 +99,7 @@
         return tmdb;
     }
 
-    // ---- ПРАВКА 1: Функция фиксации истории и "Продолжить просмотр" ----
+    // ---- Функция фиксации истории и "Продолжить просмотр" ----
     function markHistoryAndWatch(movie, season, episode) {
         if (!movie) return;
 
@@ -118,7 +118,6 @@
                 watched[file_id] = {};
             }
             
-            // Расширяем объект параметрами для Lampa
             Lampa.Arrays.extend(watched[file_id], {
                 balanser: 'emby',
                 balanser_name: 'Emby',
@@ -202,7 +201,7 @@
         Lampa.Player.playlist(playObj.playlist);
     }
 
-    /* --- КОМПОНЕНТ СЕРИАЛОВ С ИСПОЛЬЗОВАНИЕМ LAMPA.EXPLORER --- */
+    /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
     function EmbySeriesComponent(object) {
         var network = new Lampa.Reguest();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
@@ -430,7 +429,7 @@
                                                     currentEp.playlist = playlist;
                                                 }
 
-                                                // Записываем историю и обновляем эпизод для "Продолжить просмотр"
+                                                // Записываем историю
                                                 markHistoryAndWatch(object.movie, seasonNumber, epNumber);
 
                                                 Lampa.Player.play(currentEp);
@@ -502,7 +501,6 @@
         };
     }
 
-    /* --- Остальная часть плагина --- */
     function handleEmbyClick(movie) {
         if (!isConfigured()) return notify('Настройте Emby в параметрах');
 
@@ -555,25 +553,25 @@
         if (playButton.length) playButton.after(button);
         else data.render.find('.buttons, .activity__body').append(button);
     }
-// Настройки
-  function initSettings() {
+
+    // ---- ИСПРАВЛЕННАЯ ИНИЦИАЛИЗАЦИЯ НАСТРОЕК ----
+    function initSettings() {
         Lampa.SettingsApi.addComponent({
             component: 'emby',
             name: 'Emby',
             icon: '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>'
         });
 
-        // Используем событие 'render', которое срабатывает именно в момент отрисовки контента компонента
-        Lampa.Settings.listener.follow('render', function(e) {
+        Lampa.Settings.listener.follow('open', function(e) {
             if (e.name === 'emby') {
-                // Полностью очищаем тело компонента, чтобы Lampa не рисовала там лишнего
-                e.body.empty();
+                // 1. Получаем HTML меню из нашего шаблона (параметр true обязателен для jQuery объекта)
+                var html = Lampa.Template.get('settings_emby', {}, true);
 
-                var html = $(Lampa.Template.get('settings_emby', {}, true));
-
+                // 2. Вставляем сохраненные значения
                 html.find('[data-name="emby_url"] .settings-param__value').text(getUrl() || 'Не задано');
                 html.find('[data-name="emby_api_key"] .settings-param__value').text(getApiKey() ? '••••••••••' : 'Не задано');
 
+                // 3. Назначаем события для полей
                 html.find('[data-name="emby_url"]').on('hover:enter click', function() {
                     Lampa.Input.edit({title: 'Emby URL', value: getUrl(), free: true}, function(val) {
                         Lampa.Storage.set(STORAGE_URL, val);
@@ -588,13 +586,12 @@
                     });
                 });
 
-                e.body.append(html);
-                
-                // Важно: перерисовываем навигацию, чтобы пульт «увидел» наши новые элементы
-                Lampa.Controller.render('settings_component');
+                // 4. Очищаем текущий экран и добавляем наш HTML!
+                e.body.empty().append(html);
             }
         });
     }
+
     function startPlugin() {
         Lampa.Component.add('emby_series', EmbySeriesComponent);
 
