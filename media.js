@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.37-flex-explorer-fix'; // Обновлена версия
+    const PLUGIN_VERSION = '4.4.38-node-fix'; // Обновлена версия
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -207,7 +207,9 @@
                 return;
             }
 
-            scroll.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
+            // ИСПРАВЛЕНО: Добавлена обертка $()
+            scroll.append($('<div class="emby-loader"><div class="broadcast__spin"></div></div>'));
+            
             getSeasonsFromTMDB(tmdb_id, function(result) {
                 if (is_destroyed) return;
                 seasons = result;
@@ -262,7 +264,9 @@
         function loadEpisodes() {
             if (is_destroyed) return;
             scroll.clear();
-            scroll.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
+            
+            // ИСПРАВЛЕНО: Добавлена обертка $()
+            scroll.append($('<div class="emby-loader"><div class="broadcast__spin"></div></div>'));
             
             getEpisodesFromTMDB(tmdb_id, current_season.season_number, function(episodes) {
                 if (is_destroyed) return;
@@ -291,7 +295,7 @@
                     if (airDate) infoParts.push(airDate);
                     var info = infoParts.join(' ● ');
 
-                    // ГЕНЕРАЦИЯ ТАЙМКОДА ПО СТАНДАРТУ LAMPA (как в fx.js)
+                    // ГЕНЕРАЦИЯ ТАЙМКОДА ПО СТАНДАРТУ LAMPA
                     var seriesTitleForHash = object.movie.original_title || object.movie.original_name || object.movie.title || object.movie.name || '';
                     var hash_timeline = Lampa.Utils.hash([current_season.season_number, episode.episode_number, seriesTitleForHash].join(''));
                     var timelineView = Lampa.Timeline.view(hash_timeline);
@@ -369,7 +373,7 @@
                                                     title: ep.Name,
                                                     url: buildStreamUrl(ep.Id),
                                                     poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
-                                                    timeline: Lampa.Timeline.view(key) // ПЕРЕДАЕМ ОБЪЕКТ НАПРЯМУЮ, КАК FX.JS
+                                                    timeline: Lampa.Timeline.view(key) // ПЕРЕДАЕМ ОБЪЕКТ НАПРЯМУЮ
                                                 };
                                             });
 
