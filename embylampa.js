@@ -28,6 +28,22 @@
         </div>
     `);
 
+    // ---- ПРАВКА 2: Регистрируем шаблон настроек для правильной навигации пультом ----
+    Lampa.Template.add('settings_emby', `
+        <div>
+            <div class="settings-param selector" data-name="emby_url" data-type="input">
+                <div class="settings-param__name">Адрес сервера</div>
+                <div class="settings-param__value"></div>
+                <div class="settings-param__descr">Укажите адрес сервера (например: http://192.168.1.145:8096)</div>
+            </div>
+            <div class="settings-param selector" data-name="emby_api_key" data-type="input">
+                <div class="settings-param__name">API Key</div>
+                <div class="settings-param__value"></div>
+                <div class="settings-param__descr">Ключ доступа к API (создается в админ-панели Emby)</div>
+            </div>
+        </div>
+    `);
+
     // ---- Стили ----
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
@@ -548,23 +564,6 @@
             icon: '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>'
         });
 
-// ---- ПРАВКА 2: Регистрируем шаблон настроек для правильной навигации пультом ----
-    Lampa.Template.add('settings_emby', `
-        <div>
-            <div class="settings-param selector" data-name="emby_url" data-type="input">
-                <div class="settings-param__name">Адрес сервера</div>
-                <div class="settings-param__value"></div>
-                <div class="settings-param__descr">Укажите адрес сервера (например: http://192.168.1.145:8096)</div>
-            </div>
-            <div class="settings-param selector" data-name="emby_api_key" data-type="input">
-                <div class="settings-param__name">API Key</div>
-                <div class="settings-param__value"></div>
-                <div class="settings-param__descr">Ключ доступа к API (создается в админ-панели Emby)</div>
-            </div>
-        </div>
-    `);
-
-        
         Lampa.Settings.listener.follow('open', function(e) {
             if (e.name === 'emby') {
                 // Подставляем текущие значения в шаблон
