@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.42-history-fix';
+    const PLUGIN_VERSION = '0.9.3';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -44,8 +44,8 @@
     }
 
     // ---- Базовые функции ----
-    function getUrl() { return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim(); }
-    function getApiKey() { return (Lampa.Storage.get(STORAGE_API_KEY, '78b3967970814692b20b095e5b13f0eb') || '').trim(); }
+    function getUrl() { return (Lampa.Storage.get(STORAGE_URL, '') || '').trim(); }
+    function getApiKey() { return (Lampa.Storage.get(STORAGE_API_KEY, '') || '').trim(); }
     function isConfigured() { return getUrl().length > 5 && getApiKey().length > 5; }
     function notify(msg) { Lampa.Noty.show(msg); }
 
@@ -174,13 +174,12 @@
             timeline: Lampa.Timeline.view(timelineKey),
             movie: movie
         };
-        
-        playObj.playlist = [playObj];
 
+        // ИСПРАВЛЕНИЕ: Убрана циклическая ссылка (playObj.playlist = [playObj];)
         markHistoryAndWatch(movie, null, null);
 
         Lampa.Player.play(playObj);
-        Lampa.Player.playlist(playObj.playlist);
+        Lampa.Player.playlist([playObj]);
     }
 
     /* --- КОМПОНЕНТ СЕРИАЛОВ С ИСПОЛЬЗОВАНИЕМ LAMPA.EXPLORER --- */
@@ -405,10 +404,7 @@
 
                                             var currentEp = playlist[epNumber - 1];
                                             if (currentEp) {
-                                                if (playlist.length > 1) {
-                                                    currentEp.playlist = playlist;
-                                                }
-
+                                                // ИСПРАВЛЕНИЕ: Убрана циклическая ссылка (currentEp.playlist = playlist)
                                                 markHistoryAndWatch(object.movie, seasonNumber, epNumber);
 
                                                 Lampa.Player.play(currentEp);
@@ -534,71 +530,49 @@
         else data.render.find('.buttons, .activity__body').append(button);
     }
 
-    // ---- ПРАВКА НАСТРОЕК ----
+    // ИСПРАВЛЕНИЕ: Перевёл настройки на нативный парсер Lampa
     function initSettings() {
-        // Добавляем раздел Emby в настройки
         Lampa.SettingsApi.addComponent({
             component: 'emby',
             name: 'Emby',
             icon: '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>'
         });
 
-        // Кнопка для вызова клавиатуры ввода адреса
         Lampa.SettingsApi.addParam({
             component: 'emby',
             param: {
-                name: 'emby_url_btn', // Измененное имя, чтобы ядро не пыталось парсить значение
-                type: 'button'
+                name: STORAGE_URL,
+                type: 'input',
+                values: '', // Обязательный параметр для Android
+                default: ''
             },
             field: {
                 name: 'Адрес сервера',
-                description: getUrl() // Показываем текущее значение
+                description: 'Нажмите для ввода'
             },
-            onChange: function() {
-                Lampa.Input.edit({
-                    title: 'Адрес сервера',
-                    value: getUrl(),
-                    free: true,
-                    nosave: true
-                }, function (new_value) {
-                    if (typeof new_value === 'string') {
-                        let clean_value = new_value.trim();
-                        Lampa.Storage.set(STORAGE_URL, clean_value);
-                        // Обновляем текст описания прямо в интерфейсе настроек
-                        $('.settings-param:contains("Адрес сервера") .settings-param__descr').text(clean_value || 'Не указан');
-                    }
-                });
+            onChange: function(value) {
+                Lampa.Storage.set(STORAGE_URL, (value || '').trim());
             }
         });
         
-        // Кнопка для вызова клавиатуры ввода API Key
         Lampa.SettingsApi.addParam({
             component: 'emby',
             param: {
-                name: 'emby_api_key_btn',
-                type: 'button'
+                name: STORAGE_API_KEY,
+                type: 'input',
+                values: '', // Обязательный параметр для Android
+                default: ''
             },
             field: {
                 name: 'API Key',
-                description: getApiKey() || 'Нажмите, чтобы ввести'
+                description: 'Нажмите для ввода'
             },
-            onChange: function() {
-                Lampa.Input.edit({
-                    title: 'API Key',
-                    value: getApiKey(),
-                    free: true,
-                    nosave: true
-                }, function (new_value) {
-                    if (typeof new_value === 'string') {
-                        let clean_value = new_value.trim();
-                        Lampa.Storage.set(STORAGE_API_KEY, clean_value);
-                        $('.settings-param:contains("API Key") .settings-param__descr').text(clean_value || 'Нажмите, чтобы ввести');
-                    }
-                });
+            onChange: function(value) {
+                Lampa.Storage.set(STORAGE_API_KEY, (value || '').trim());
             }
         });
     }
-
+    
     function startPlugin() {
         Lampa.Component.add('emby_series', EmbySeriesComponent);
 
