@@ -2,154 +2,66 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.6-final';
+    const PLUGIN_VERSION = '4.4.42-history-fix'; // Обновил версию
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
 
-    // Стили (без изменений)
+    // ---- Регистрируем стандартный шаблон для серий ----
+    Lampa.Template.add('online_prestige_full', `
+        <div class="online-prestige online-prestige--full selector">
+            <div class="online-prestige__img">
+                <img alt="">
+                <div class="online-prestige__loader"></div>
+            </div>
+            <div class="online-prestige__body">
+                <div class="online-prestige__head">
+                    <div class="online-prestige__title">{title}</div>
+                    <div class="online-prestige__time">{time}</div>
+                </div>
+                <div class="online-prestige__timeline"></div>
+                <div class="online-prestige__footer">
+                    <div class="online-prestige__info">{info}</div>
+                    <div class="online-prestige__quality">{quality}</div>
+                </div>
+            </div>
+        </div>
+    `);
+
+    // ---- ПРАВКА 2: Регистрируем шаблон настроек для правильной навигации пультом ----
+    Lampa.Template.add('settings_emby', `
+        <div>
+            <div class="settings-param selector" data-name="emby_url" data-type="input">
+                <div class="settings-param__name">Адрес сервера</div>
+                <div class="settings-param__value"></div>
+                <div class="settings-param__descr">Укажите адрес сервера (например: http://192.168.1.145:8096)</div>
+            </div>
+            <div class="settings-param selector" data-name="emby_api_key" data-type="input">
+                <div class="settings-param__name">API Key</div>
+                <div class="settings-param__value"></div>
+                <div class="settings-param__descr">Ключ доступа к API (создается в админ-панели Emby)</div>
+            </div>
+        </div>
+    `);
+
+    // ---- Стили ----
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
             <style id="emby-plugin-styles">
-                .emby-container { 
-                    padding: 0; 
-                    height: 100%; 
-                    overflow-y: auto;
-                    overflow-x: hidden;
-                    scroll-behavior: smooth;
-                }
-                .emby-episodes-grid { 
-                    display: flex; 
-                    flex-wrap: wrap; 
-                    padding: 1em 1.5em; 
-                    gap: 1.5em; 
-                    align-content: flex-start;
-                }
-                
-                .emby-episode-card { 
-                    width: calc(25% - 1.125em); 
-                    cursor: pointer; 
-                    transition: transform 0.2s, background 0.2s; 
-                    border-radius: 0.5em; 
-                    padding: 0.5em; 
-                    box-sizing: border-box; 
-                    position: relative;
-                }
-                .emby-episode-card.focus { 
-                    background: rgba(255, 255, 255, 0.1); 
-                    transform: scale(1.05); 
-                }
-                
-                .emby-ep-img-wrap { 
-                    width: 100%; 
-                    aspect-ratio: 16 / 9; 
-                    border-radius: 0.4em; 
-                    overflow: hidden; 
-                    position: relative; 
-                    background: #111; 
-                    margin-bottom: 0.6em; 
-                    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-                }
-                .emby-ep-img { 
-                    width: 100%; 
-                    height: 100%; 
-                    object-fit: cover; 
-                }
-                
-                .emby-ep-num { 
-                    position: absolute; 
-                    top: 0.4em; 
-                    left: 0.4em; 
-                    background: rgba(0,0,0,0.7); 
-                    padding: 0.2em 0.5em; 
-                    border-radius: 0.3em; 
-                    font-weight: bold; 
-                    font-size: 0.9em; 
-                    color: #fff;
-                }
-                
-                .emby-ep-title { 
-                    font-size: 1.1em; 
-                    white-space: nowrap; 
-                    overflow: hidden; 
-                    text-overflow: ellipsis; 
-                    margin-bottom: 0.2em; 
-                    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-                }
-                .emby-ep-info { 
-                    font-size: 0.85em; 
-                    color: #aaa; 
-                }
-
-                .emby-filter { 
-                    display: flex; 
-                    align-items: center; 
-                    justify-content: flex-start; 
-                    padding: 1.5em 2em 0 2em; 
-                    gap: 1em;
-                    flex-wrap: wrap;
-                    position: sticky;
-                    top: 0;
-                    z-index: 10;
-                    background: rgba(0,0,0,0.9);
-                }
-                .emby-filter-btn { 
-                    background: rgba(255,255,255,0.1); 
-                    padding: 0.6em 1.5em; 
-                    border-radius: 5px; 
-                    cursor: pointer; 
-                    font-size: 1.1em; 
-                    font-weight: bold;
-                }
-                .emby-filter-btn.focus { 
-                    background: #fff; 
-                    color: #000; 
-                }
-                
-                .emby-loader { 
-                    display: flex; 
-                    justify-content: center; 
-                    align-items: center; 
-                    height: 50vh; 
-                }
-                .emby-empty { 
-                    text-align: center; 
-                    padding: 3em; 
-                    font-size: 1.2em; 
-                    opacity: 0.7; 
-                    width: 100%; 
-                }
-                
-                /* Свой прогресс-бар */
-                .emby-progress {
-                    position: absolute;
-                    bottom: 0;
-                    left: 0;
-                    height: 3px;
-                    background: #00B0FF;
-                    z-index: 2;
-                    transition: width 0.3s;
-                }
-
-                @media (max-width: 1200px) { 
-                    .emby-episode-card { width: calc(33.333% - 1em); } 
-                }
-                @media (max-width: 768px) { 
-                    .emby-episode-card { width: calc(50% - 0.75em); } 
-                }
-                @media (max-width: 480px) { 
-                    .emby-episode-card { width: 100%; } 
-                }
+                .emby-filter-btn { background: rgba(255,255,255,0.1); padding: 0.6em 1.5em; border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: bold; transition: background 0.3s; }
+                .emby-filter-btn.focus { background: #fff; color: #000; }
+                .emby-loader { display: flex; justify-content: center; align-items: center; height: 10em; flex-grow: 1; }
+                .emby-loader-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; display: flex; justify-content: center; align-items: center; border-radius: 10px; } 
+                .emby-empty { text-align: center; padding: 3em; font-size: 1.2em; opacity: 0.7; width: 100%; }
+                .online-prestige { margin: 0.5em 1em; }
+                .online-prestige.focus::after { top: -0.3em; left: -0.3em; right: -0.3em; bottom: -0.3em; }
             </style>
         `);
     }
 
-    function getUrl() {
-        return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim();
-    }
-    function getApiKey() {
-        return (Lampa.Storage.get(STORAGE_API_KEY, '78b3967970814692b20b095e5b13f0eb') || '').trim();
-    }
+    // ---- Базовые функции ----
+    function getUrl() { return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim(); }
+    function getApiKey() { return (Lampa.Storage.get(STORAGE_API_KEY, '78b3967970814692b20b095e5b13f0eb') || '').trim(); }
     function isConfigured() { return getUrl().length > 5 && getApiKey().length > 5; }
     function notify(msg) { Lampa.Noty.show(msg); }
 
@@ -158,6 +70,7 @@
         const sep = endpoint.includes('?') ? '&' : '?';
         return `${base}/emby${endpoint}${sep}api_key=${getApiKey()}`;
     }
+
     function getDeviceId() {
         let deviceId = Lampa.Storage.get('emby_device_id');
         if (!deviceId) {
@@ -177,9 +90,44 @@
             let match = movie.url.match(/tv\/(\d+)/);
             if (match) tmdb = parseInt(match[1]);
         }
-        if (!tmdb && movie.data) tmdb = movie.data.tmdb_id || movie.data.id;
-        if (typeof tmdb === 'string' && !isNaN(tmdb)) tmdb = parseInt(tmdb);
+        if (!tmdb && movie.data) {
+            tmdb = movie.data.tmdb_id || movie.data.id;
+        }
+        if (typeof tmdb === 'string' && !isNaN(tmdb)) {
+            tmdb = parseInt(tmdb);
+        }
         return tmdb;
+    }
+
+    // ---- ПРАВКА 1: Функция фиксации истории и "Продолжить просмотр" ----
+    function markHistoryAndWatch(movie, season, episode) {
+        if (!movie) return;
+
+        // 1. Добавляем карточку в общую историю (в блок "Вы смотрели")
+        Lampa.Favorite.add('history', movie, 100);
+
+        // 2. Если это сериал, сохраняем последний просмотренный эпизод для блока "Продолжить"
+        if (season && episode) {
+            var titleForHash = movie.number_of_seasons ? (movie.original_name || movie.name) : (movie.original_title || movie.title);
+            if (!titleForHash) titleForHash = movie.title || '';
+            
+            var file_id = Lampa.Utils.hash(titleForHash);
+            var watched = Lampa.Storage.cache('online_watched_last', 5000, {});
+            
+            if (!watched[file_id]) {
+                watched[file_id] = {};
+            }
+            
+            // Расширяем объект параметрами для Lampa
+            Lampa.Arrays.extend(watched[file_id], {
+                balanser: 'emby',
+                balanser_name: 'Emby',
+                season: parseInt(season),
+                episode: parseInt(episode)
+            }, true);
+            
+            Lampa.Storage.set('online_watched_last', watched);
+        }
     }
 
     function findInEmby(movie, callback) {
@@ -187,13 +135,13 @@
         let tmdb = extractTmdbId(movie);
         let network = new Lampa.Reguest();
         if (tmdb) {
-            network.silent(buildApiUrl(`/Items?AnyProviderIdEquals=tmdb.${tmdb}&Recursive=true&IncludeItemTypes=Movie,Series&Fields=Id,Type,Name`), (data) => {
+            network.silent(buildApiUrl(`/Items?AnyProviderIdEquals=tmdb.${tmdb}&Recursive=true&IncludeItemTypes=Movie,Series&Fields=Id,Type,Name,Container`), (data) => {
                 callback(data?.Items?.[0] || null);
             }, () => callback(null));
         } else {
             const title = movie.title || movie.name || movie.original_title || movie.original_name || '';
             if (!title) return callback(null);
-            network.silent(buildApiUrl(`/Items?SearchTerm=${encodeURIComponent(title)}&Limit=3&Recursive=true&IncludeItemTypes=Movie,Series&Fields=Id,Type,Name`), (data) => {
+            network.silent(buildApiUrl(`/Items?SearchTerm=${encodeURIComponent(title)}&Limit=3&Recursive=true&IncludeItemTypes=Movie,Series&Fields=Id,Type,Name,Container`), (data) => {
                 callback(data?.Items?.[0] || null);
             }, () => callback(null));
         }
@@ -225,323 +173,438 @@
         }, () => callback([]));
     }
 
-    function playVideo(item, playlist, currentIndex) {
+    function buildStreamUrl(itemId, container = 'mp4') {
         const base = getUrl().replace(/\/$/, '');
-        const apiKey = getApiKey();
-        const deviceId = getDeviceId();
-        const playSessionId = Date.now().toString();
-        let streamUrl = `${base}/emby/Videos/${item.Id}/stream?Static=true&DeviceId=${deviceId}&PlaySessionId=${playSessionId}&api_key=${apiKey}`;
-        
-        if (playlist && playlist.length > 0) {
-            Lampa.Player.play({
-                title: item.Name,
-                url: streamUrl,
-                poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
-                timeline: playlist[currentIndex].timeline,
-                source: {
-                    playlist: playlist,
-                    current: currentIndex
-                }
-            });
-        } else {
-            Lampa.Player.play({
-                title: item.Name,
-                url: streamUrl,
-                poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
-                timeline: Lampa.Timeline.view(Lampa.Utils.hash(item.Id + ''))
-            });
-        }
+        return `${base}/emby/Videos/${itemId}/stream.${container}?Static=true&DeviceId=${getDeviceId()}&PlaySessionId=${Date.now()}&api_key=${getApiKey()}`;
     }
 
-    /* --- Компонент для сериалов --- */
-    function EmbySeriesComponent() {
-        let network = new Lampa.Reguest();
-        let is_destroyed = false;
-        let element = $('<div class="emby-container"></div>')[0];
-        let seasons = [], current_season = null, current_episodes = [];
-        let emby_series_id = null, tmdb_id = null;
+    function playMovie(item, movie) {
+        const base = getUrl().replace(/\/$/, '');
+        const titleForHash = movie ? (movie.original_title || movie.original_name || movie.title || movie.name) : item.Name;
+        const timelineKey = Lampa.Utils.hash(titleForHash);
+        
+        let container = item.Container ? item.Container.split(',')[0] : 'mp4';
+        
+        let playObj = {
+            title: item.Name,
+            url: buildStreamUrl(item.Id, container),
+            poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
+            timeline: Lampa.Timeline.view(timelineKey),
+            movie: movie
+        };
+        
+        playObj.playlist = [playObj];
 
-        // Ключ таймлайна как в CDN.js: сезон + эпизод + оригинальное название
-        function getTimelineKey(season, episode) {
-            let title = window.currentMovie?.original_title || window.currentMovie?.title || 'series';
-            return Lampa.Utils.hash(season + episode + title);
-        }
+        // Записываем фильм в историю просмотров
+        markHistoryAndWatch(movie, null, null);
+
+        Lampa.Player.play(playObj);
+        Lampa.Player.playlist(playObj.playlist);
+    }
+
+    /* --- КОМПОНЕНТ СЕРИАЛОВ С ИСПОЛЬЗОВАНИЕМ LAMPA.EXPLORER --- */
+    function EmbySeriesComponent(object) {
+        var network = new Lampa.Reguest();
+        var scroll = new Lampa.Scroll({ mask: true, over: true });
+        
+        var explorer = new Lampa.Explorer(object); 
+        
+        var is_destroyed = false;
+        
+        var filterPanel = $('<div class="explorer__files-head" style="padding: 1.5em; display: flex; align-items: center; gap: 1em;"></div>');
+        var seasonBtn = $('<div class="emby-filter-btn selector">Сезон</div>');
+        
+        var seasons = [];
+        var current_season = null;
+        var current_episodes = [];
+        var emby_series_id = null;
+        var tmdb_id = null;
+        var last_focused = false; 
 
         this.create = function() {
-            if (window.embySeriesData) {
-                emby_series_id = window.embySeriesData.emby_id;
-                tmdb_id = window.embySeriesData.tmdb_id;
+            if (object && object.emby_id) emby_series_id = object.emby_id;
+            if (object && object.tmdb_id) tmdb_id = object.tmdb_id;
+            if (!emby_series_id || !tmdb_id) {
+                if (window.embySeriesData) {
+                    emby_series_id = window.embySeriesData.emby_id;
+                    tmdb_id = window.embySeriesData.tmdb_id;
+                }
             }
+            if (!tmdb_id && object && object.movie) {
+                tmdb_id = extractTmdbId(object.movie);
+            }
+
+            seasonBtn.on('hover:enter click', function() {
+                showSeasonSelector();
+            });
+            filterPanel.append(seasonBtn);
+
+            explorer.appendFiles(scroll.render());
+            explorer.appendHead(filterPanel);
+            
+            scroll.body().addClass('torrent-list'); 
+            scroll.minus(filterPanel);
         };
 
         this.start = function() {
-            if (!emby_series_id && window.embySeriesData) {
-                emby_series_id = window.embySeriesData.emby_id;
-                tmdb_id = window.embySeriesData.tmdb_id;
-            }
-            let body = $(element);
-            body.empty();
+            scroll.clear();
             if (!tmdb_id) {
-                body.html('<div class="emby-empty">Не удалось определить TMDB ID сериала</div>');
+                scroll.append($('<div class="emby-empty">Не удалось определить TMDB ID сериала</div>'));
                 setupNavigation();
                 return;
             }
-            body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
-            getSeasonsFromTMDB(tmdb_id, (result) => {
+
+            scroll.append($('<div class="emby-loader"><div class="broadcast__spin"></div></div>'));
+            
+            getSeasonsFromTMDB(tmdb_id, function(result) {
                 if (is_destroyed) return;
                 seasons = result;
                 if (seasons.length === 0) {
-                    body.html('<div class="emby-empty">Сезоны не найдены</div>');
+                    scroll.clear();
+                    scroll.append($('<div class="emby-empty">Сезоны не найдены</div>'));
                     setupNavigation();
                 } else {
-                    current_season = seasons[0];
-                    loadEpisodes(body);
+                    var savedSeason = window.embyLastSeason;
+                    if (savedSeason && savedSeason.seriesId === emby_series_id) {
+                        var found = seasons.find(function(s) { return s.season_number === savedSeason.seasonNumber; });
+                        current_season = found || seasons[0];
+                    } else {
+                        current_season = seasons[0];
+                    }
+                    updateSeasonBtn();
+                    loadEpisodes();
                 }
             });
         };
 
-        function loadEpisodes(body) {
-            if (is_destroyed) return;
-            body.empty();
-            body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
-            getEpisodesFromTMDB(tmdb_id, current_season.season_number, (episodes) => {
-                if (is_destroyed) return;
-                current_episodes = episodes;
-                renderEpisodes(body);
-            });
+        function updateSeasonBtn() {
+            if (seasonBtn) {
+                seasonBtn.text(current_season.name || 'Сезон ' + current_season.season_number);
+            }
         }
 
-        function renderEpisodes(body) {
-            if (is_destroyed) return;
-            body.empty();
-            
-            let filterPanel = $('<div class="emby-filter"></div>');
-            let seasonBtn = $(`<div class="emby-filter-btn selector">${current_season.name || 'Сезон ' + current_season.season_number}</div>`);
-            seasonBtn.on('hover:enter click', () => {
-                let items = seasons.map(s => ({
-                    title: s.name || `Сезон ${s.season_number}`,
+        function showSeasonSelector() {
+            if (!seasons.length) return;
+            var items = seasons.map(function(s) {
+                return {
+                    title: s.name || 'Сезон ' + s.season_number,
                     season: s,
                     selected: s.season_number === current_season.season_number
-                }));
-                Lampa.Select.show({
-                    title: 'Выберите сезон',
-                    items: items,
-                    onSelect: (a) => { current_season = a.season; loadEpisodes(body); },
-                    onBack: () => Lampa.Controller.toggle('content')
-                });
+                };
             });
-            filterPanel.append(seasonBtn);
-            body.append(filterPanel);
-
-            let grid = $('<div class="emby-episodes-grid"></div>');
-            if (current_episodes.length === 0) {
-                grid.append('<div class="emby-empty">Эпизоды не найдены</div>');
-            } else {
-                current_episodes.forEach((episode) => {
-                    let epNum = String(episode.episode_number).padStart(2, '0');
-                    let stillPath = episode.still_path ? 'https://image.tmdb.org/t/p/w400' + episode.still_path : '';
-                    let imageHtml = stillPath ? 
-                        `<img src="${stillPath}" class="emby-ep-img" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);color:#00B0FF;font-size:3em;font-weight:bold\\'>${epNum}</div>'">` :
-                        `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);color:#00B0FF;font-size:3em;font-weight:bold;text-shadow:2px 2px 4px rgba(0,0,0,0.5)">${epNum}</div>`;
-                    let rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
-
-                    // Свой прогресс-бар на основе общего ключа
-                    let timelineKey = getTimelineKey(current_season.season_number, episode.episode_number);
-                    let timeline = Lampa.Timeline.view(timelineKey);
-                    let percent = 0;
-                    if (timeline && timeline.time && timeline.duration) {
-                        percent = Math.min(100, (timeline.time / timeline.duration) * 100);
-                    }
-                    let progressHtml = percent > 0 ? `<div class="emby-progress" style="width:${percent}%"></div>` : '';
-
-                    let item = $(`
-                        <div class="emby-episode-card selector" data-episode="${episode.episode_number}" data-season="${current_season.season_number}">
-                            <div class="emby-ep-img-wrap">
-                                ${imageHtml}
-                                <div class="emby-ep-num">${epNum} серия</div>
-                            </div>
-                            <div class="emby-ep-title">${episode.name || 'Эпизод ' + epNum}</div>
-                            <div class="emby-ep-info">⭐ ${rating}</div>
-                            ${progressHtml}
-                        </div>
-                    `);
-
-                    item.on('hover:enter click', function() {
-                        let epNumber = parseInt($(this).data('episode'));
-                        let seasonNumber = parseInt($(this).data('season'));
-                        body.empty();
-                        body.append('<div class="emby-loader"><div class="broadcast__spin"></div></div>');
-                        
-                        let seasonQuery = `/Items?ParentId=${emby_series_id}&IncludeItemTypes=Season&Fields=Id,IndexNumber`;
-                        let net = new Lampa.Reguest();
-                        net.silent(buildApiUrl(seasonQuery), (seasonData) => {
-                            if (is_destroyed) return;
-                            if (seasonData && seasonData.Items) {
-                                let season = seasonData.Items.find(s => s.IndexNumber === seasonNumber);
-                                if (season) {
-                                    let episodeQuery = `/Items?ParentId=${season.Id}&IncludeItemTypes=Episode&Fields=Id,Name,IndexNumber&SortBy=SortName&SortOrder=Ascending`;
-                                    net.silent(buildApiUrl(episodeQuery), (episodeData) => {
-                                        if (is_destroyed) return;
-                                        if (episodeData && episodeData.Items) {
-                                            let sortedEpisodes = episodeData.Items.sort((a, b) => (a.IndexNumber || 0) - (b.IndexNumber || 0));
-                                            let playlist = sortedEpisodes.map((ep, i) => {
-                                                let tmdbEp = current_episodes[i];
-                                                let s = current_season.season_number;
-                                                let epNum = tmdbEp ? tmdbEp.episode_number : i+1;
-                                                let key = getTimelineKey(s, epNum);
-                                                let psId = Date.now() + i;
-                                                return {
-                                                    title: ep.Name,
-                                                    url: `${getUrl().replace(/\/$/, '')}/emby/Videos/${ep.Id}/stream?Static=true&DeviceId=${getDeviceId()}&PlaySessionId=${psId}&api_key=${getApiKey()}`,
-                                                    poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
-                                                    timeline: Lampa.Timeline.view(key)
-                                                };
-                                            });
-                                            let currentEp = sortedEpisodes[epNumber - 1];
-                                            if (currentEp) playVideo(currentEp, playlist, epNumber - 1);
-                                        }
-                                    }, () => { body.html('<div class="emby-empty">Ошибка загрузки</div>'); setupNavigation(); });
-                                }
-                            }
-                        }, () => { body.html('<div class="emby-empty">Ошибка загрузки</div>'); setupNavigation(); });
-                    });
-                    grid.append(item);
-                });
-            }
-            body.append(grid);
-            element.scrollTop = 0;
-            setupNavigation();
+            Lampa.Select.show({
+                title: Lampa.Lang.translate('torrent_serial_season'),
+                items: items,
+                onSelect: function(a) {
+                    current_season = a.season;
+                    updateSeasonBtn();
+                    window.embyLastSeason = { seriesId: emby_series_id, seasonNumber: current_season.season_number };
+                    loadEpisodes();
+                },
+                onBack: function() {
+                    Lampa.Controller.toggle('content');
+                }
+            });
         }
 
-        function scrollToFocused() {
-            let focused = $(element).find('.selector.focus');
-            if (focused.length) {
-                let containerRect = element.getBoundingClientRect();
-                let elementRect = focused[0].getBoundingClientRect();
-                if (elementRect.bottom > containerRect.bottom - 20) {
-                    element.scrollBy({ top: elementRect.bottom - containerRect.bottom + 100, behavior: 'smooth' });
-                }
-                if (elementRect.top < containerRect.top + 80) {
-                    element.scrollBy({ top: elementRect.top - containerRect.top - 100, behavior: 'smooth' });
-                }
+        function loadEpisodes() {
+            if (is_destroyed) return;
+            scroll.clear();
+            scroll.append($('<div class="emby-loader"><div class="broadcast__spin"></div></div>'));
+            
+            getEpisodesFromTMDB(tmdb_id, current_season.season_number, function(episodes) {
+                if (is_destroyed) return;
+                current_episodes = episodes;
+                renderEpisodes();
+            });
+        }
+
+        function renderEpisodes() {
+            if (is_destroyed) return;
+            scroll.clear();
+
+            if (current_episodes.length === 0) {
+                scroll.append($('<div class="emby-empty">Эпизоды не найдены</div>'));
+            } else {
+                current_episodes.forEach(function(episode, index) {
+                    var epNum = String(episode.episode_number).padStart(2, '0');
+                    var stillPath = episode.still_path ? 'https://image.tmdb.org/t/p/w300' + episode.still_path : '';
+                    
+                    var title = episode.name || 'Эпизод ' + epNum;
+                    var rating = episode.vote_average ? episode.vote_average.toFixed(1) : '0.0';
+                    var airDate = episode.air_date ? Lampa.Utils.parseTime(episode.air_date).full : '';
+                    
+                    var infoParts = [];
+                    if (rating !== '0.0') infoParts.push('⭐ ' + rating);
+                    if (airDate) infoParts.push(airDate);
+                    var info = infoParts.join(' ● ');
+
+                    var orig_title = object.movie.original_name || object.movie.original_title || '';
+                    var hash_timeline = Lampa.Utils.hash([current_season.season_number, episode.episode_number, orig_title].join(''));
+                    
+                    episode.timeline = Lampa.Timeline.view(hash_timeline);
+                    
+                    var html = Lampa.Template.get('online_prestige_full', {
+                        title: title,
+                        time: '',
+                        info: info,
+                        quality: ''
+                    });
+
+                    html.find('.online-prestige__timeline').append(Lampa.Timeline.render(episode.timeline));
+
+                    var img = html.find('img')[0];
+                    if (stillPath) {
+                        img.onload = function() {
+                            html.find('.online-prestige__img').addClass('online-prestige__img--loaded');
+                            html.find('.online-prestige__loader').remove();
+                        };
+                        img.onerror = function() {
+                            img.src = './img/img_broken.svg';
+                        };
+                        img.src = stillPath;
+                    } else {
+                        img.src = './img/img_broken.svg';
+                        html.find('.online-prestige__loader').remove();
+                    }
+
+                    var item = $(html);
+                    item.data('episode', episode.episode_number);
+                    item.data('season', current_season.season_number);
+                    item.data('index', index);
+
+                    item.on('hover:focus', function(e) {
+                        last_focused = e.target;
+                        scroll.update($(this), true);
+                    });
+
+                    item.on('hover:enter click', function() {
+                        var epNumber = parseInt($(this).data('episode'));
+                        var seasonNumber = parseInt($(this).data('season'));
+                        window.embyLastSeason = { seriesId: emby_series_id, seasonNumber: seasonNumber };
+
+                        var overlayLoader = $('<div class="emby-loader-overlay"><div class="broadcast__spin"></div></div>');
+                        explorer.render().append(overlayLoader);
+
+                        var net = new Lampa.Reguest();
+                        var seasonQuery = '/Items?ParentId=' + emby_series_id + '&IncludeItemTypes=Season&Fields=Id,IndexNumber';
+                        
+                        net.silent(buildApiUrl(seasonQuery), function(seasonData) {
+                            if (is_destroyed) { overlayLoader.remove(); return; }
+                            
+                            if (seasonData && seasonData.Items) {
+                                var season = seasonData.Items.find(function(s) { return s.IndexNumber === seasonNumber; });
+                                if (season) {
+                                    var episodeQuery = '/Items?ParentId=' + season.Id + '&IncludeItemTypes=Episode&Fields=Id,Name,IndexNumber,PrimaryImageTag,Container&SortBy=SortName&SortOrder=Ascending';
+                                    net.silent(buildApiUrl(episodeQuery), function(episodeData) {
+                                        overlayLoader.remove();
+                                        if (is_destroyed) return;
+                                        
+                                        if (episodeData && episodeData.Items) {
+                                            var sortedEpisodes = episodeData.Items.sort(function(a, b) { return (a.IndexNumber || 0) - (b.IndexNumber || 0); });
+                                            
+                                            var playlist = sortedEpisodes.map(function(ep, i) {
+                                                var tmdbEp = current_episodes[i];
+                                                var epTimeline = tmdbEp ? tmdbEp.timeline : null;
+                                                
+                                                if(!epTimeline) {
+                                                    var epNumForTimeline = tmdbEp ? tmdbEp.episode_number : (i + 1);
+                                                    var key = Lampa.Utils.hash([seasonNumber, epNumForTimeline, orig_title].join(''));
+                                                    epTimeline = Lampa.Timeline.view(key);
+                                                }
+                                                
+                                                let container = ep.Container ? ep.Container.split(',')[0] : 'mp4';
+                                                
+                                                return {
+                                                    title: ep.Name,
+                                                    url: buildStreamUrl(ep.Id, container),
+                                                    poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
+                                                    timeline: epTimeline,
+                                                    movie: object.movie
+                                                };
+                                            });
+
+                                            var currentEp = playlist[epNumber - 1];
+                                            if (currentEp) {
+                                                if (playlist.length > 1) {
+                                                    currentEp.playlist = playlist;
+                                                }
+
+                                                // Записываем историю и обновляем эпизод для "Продолжить просмотр"
+                                                markHistoryAndWatch(object.movie, seasonNumber, epNumber);
+
+                                                Lampa.Player.play(currentEp);
+                                                Lampa.Player.playlist(playlist);
+                                            }
+                                        }
+                                    }, function() {
+                                        overlayLoader.remove();
+                                        notify('Ошибка загрузки серий из Emby');
+                                    });
+                                } else {
+                                    overlayLoader.remove();
+                                    notify('Сезон не найден в Emby');
+                                }
+                            } else {
+                                overlayLoader.remove();
+                                notify('Пустой ответ серверов Emby');
+                            }
+                        }, function() {
+                            overlayLoader.remove();
+                            notify('Ошибка соединения с сервером Emby');
+                        });
+                    });
+
+                    scroll.append(item);
+                });
             }
+
+            setupNavigation();
+            Lampa.Controller.enable('content');
         }
 
         function setupNavigation() {
             Lampa.Controller.add('content', {
-                toggle: () => {
-                    Lampa.Controller.collectionSet(element);
-                    Lampa.Controller.collectionFocus(false, element);
-                    setTimeout(scrollToFocused, 100);
+                toggle: function() {
+                    Lampa.Controller.collectionSet(scroll.render(), explorer.render());
+                    Lampa.Controller.collectionFocus(last_focused || false, scroll.render());
                 },
-                up: () => {
-                    if (window.Navigator && window.Navigator.canmove && window.Navigator.canmove('up')) {
-                        window.Navigator.move('up'); setTimeout(scrollToFocused, 50);
-                    } else Lampa.Controller.toggle('head');
+                up: function() {
+                    if (Navigator.canmove('up')) Navigator.move('up');
+                    else Lampa.Controller.toggle('head');
                 },
-                down: () => {
-                    if (window.Navigator && window.Navigator.canmove && window.Navigator.canmove('down')) {
-                        window.Navigator.move('down'); setTimeout(scrollToFocused, 50);
-                    }
+                down: function() {
+                    if (Navigator.canmove('down')) Navigator.move('down');
                 },
-                left: () => {
-                    if (window.Navigator && window.Navigator.canmove && window.Navigator.canmove('left')) {
-                        window.Navigator.move('left'); setTimeout(scrollToFocused, 50);
-                    } else Lampa.Controller.toggle('menu');
+                right: function() {
+                    if (Navigator.canmove('right')) Navigator.move('right');
                 },
-                right: () => {
-                    if (window.Navigator && window.Navigator.canmove && window.Navigator.canmove('right')) {
-                        window.Navigator.move('right'); setTimeout(scrollToFocused, 50);
-                    }
+                left: function() {
+                    if (Navigator.canmove('left')) Navigator.move('left');
+                    else Lampa.Controller.toggle('menu');
                 },
-                back: () => Lampa.Activity.backward()
+                back: function() {
+                    Lampa.Activity.backward();
+                }
             });
             Lampa.Controller.toggle('content');
         }
 
-        this.render = function() { return element; };
-        this.destroy = function() { is_destroyed = true; network.clear(); };
+        this.render = function() {
+            return explorer.render(); 
+        };
+
+        this.destroy = function() {
+            is_destroyed = true;
+            network.clear();
+            if (scroll) scroll.destroy();
+            if (explorer) explorer.destroy();
+        };
     }
 
-    /* --- Главная логика запуска --- */
+    /* --- Остальная часть плагина --- */
     function handleEmbyClick(movie) {
         if (!isConfigured()) return notify('Настройте Emby в параметрах');
-        window.currentMovie = movie; // сохраняем для доступа к original_title
 
-        findInEmby(movie, (item) => {
+        findInEmby(movie, function(item) {
             if (!item) return notify('Контент не найден в библиотеке Emby.');
+
             if (item.Type === 'Series') {
-                let tmdbId = extractTmdbId(movie);
-                window.embySeriesData = { emby_id: item.Id, tmdb_id: tmdbId, title: item.Name };
-                Lampa.Activity.push({ url: '', title: item.Name, component: 'emby_series' });
+                var tmdbId = extractTmdbId(movie);
+                window.embySeriesData = {
+                    emby_id: item.Id,
+                    tmdb_id: tmdbId,
+                    title: item.Name
+                };
+                var params = {
+                    emby_id: item.Id,
+                    tmdb_id: tmdbId,
+                    movie: movie,
+                    title: item.Name
+                };
+                Lampa.Activity.push({
+                    url: '',
+                    title: item.Name,
+                    component: 'emby_series',
+                    movie: movie,
+                    object: params
+                });
             } else if (item.Type === 'Movie') {
-                playVideo(item);
-            } else notify('Неизвестный тип контента');
+                playMovie(item, movie);
+            } else {
+                notify('Неизвестный тип контента');
+            }
         });
     }
 
-    /* --- Кнопка в интерфейсе --- */
     function addEmbyButton(data) {
         if (!data || !data.render || !data.movie) return;
         if (data.render.find('.emby-button').length) return;
 
-        const button = $(`
-            <div class="full-start__button selector view--emby emby-button" data-subtitle="${PLUGIN_NAME} v${PLUGIN_VERSION}">
-                <svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>
-                <span>${PLUGIN_NAME}</span>
-            </div>
-        `);
-        button.on('hover:enter click', () => handleEmbyClick(data.movie));
-        const playButton = data.render.find('.button--play, .view--torrent').first();
+        var button = $('<div class="full-start__button selector view--emby emby-button" data-subtitle="' + PLUGIN_NAME + ' v' + PLUGIN_VERSION + '">' +
+            '<svg width="40" height="40" viewBox="0 0 40 40">' +
+            '<rect width="40" height="40" rx="8" fill="#00B0FF"/>' +
+            '<text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text>' +
+            '</svg>' +
+            '<span>' + PLUGIN_NAME + '</span>' +
+            '</div>');
+
+        button.on('hover:enter click', function() { handleEmbyClick(data.movie); });
+
+        var playButton = data.render.find('.button--play, .view--torrent').first();
         if (playButton.length) playButton.after(button);
         else data.render.find('.buttons, .activity__body').append(button);
     }
 
-    /* --- Настройки --- */
-    function renderSettings(body) {
-        body.empty();
-        const wrap = $('<div class="settings-container"></div>');
-        wrap.append('<div class="settings-param-title">Настройки Emby</div>');
-        const urlRow = $(`<div class="settings-param selector"><div class="settings-param__name">Адрес сервера</div><div class="settings-param__value">${getUrl() || 'Не задано'}</div></div>`);
-        urlRow.on('hover:enter click', () => {
-            Lampa.Input.edit({title: 'Emby URL', value: getUrl(), free: true}, val => {
-                Lampa.Storage.set(STORAGE_URL, val);
-                urlRow.find('.settings-param__value').text(val || 'Не задано');
-            });
-        });
-        const keyRow = $(`<div class="settings-param selector"><div class="settings-param__name">API Key</div><div class="settings-param__value">${getApiKey() ? '••••••••••' : 'Не задано'}</div></div>`);
-        keyRow.on('hover:enter click', () => {
-            Lampa.Input.edit({title: 'Emby API Key', value: getApiKey(), free: true}, val => {
-                Lampa.Storage.set(STORAGE_API_KEY, val);
-                keyRow.find('.settings-param__value').text(val ? '••••••••••' : 'Не задано');
-            });
-        });
-        wrap.append(urlRow).append(keyRow);
-        body.append(wrap);
-    }
-
+    // ---- ПРАВКА 2.1: Инициализация настроек с использованием шаблона для правильной работы пульта ----
     function initSettings() {
         Lampa.SettingsApi.addComponent({
             component: 'emby',
             name: 'Emby',
             icon: '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>'
         });
-        Lampa.Settings.listener.follow('open', e => {
-            if (e.name === 'emby') renderSettings(e.body);
+
+        Lampa.Settings.listener.follow('open', function(e) {
+            if (e.name === 'emby') {
+                // Подставляем текущие значения в шаблон
+                e.body.find('[data-name="emby_url"] .settings-param__value').text(getUrl() || 'Не задано');
+                e.body.find('[data-name="emby_api_key"] .settings-param__value').text(getApiKey() ? '••••••••••' : 'Не задано');
+
+                // Вешаем слушателей событий на клики с пульта или мыши
+                e.body.find('[data-name="emby_url"]').on('hover:enter click', function() {
+                    Lampa.Input.edit({title: 'Emby URL', value: getUrl(), free: true}, function(val) {
+                        Lampa.Storage.set(STORAGE_URL, val);
+                        e.body.find('[data-name="emby_url"] .settings-param__value').text(val || 'Не задано');
+                    });
+                });
+
+                e.body.find('[data-name="emby_api_key"]').on('hover:enter click', function() {
+                    Lampa.Input.edit({title: 'Emby API Key', value: getApiKey(), free: true}, function(val) {
+                        Lampa.Storage.set(STORAGE_API_KEY, val);
+                        e.body.find('[data-name="emby_api_key"] .settings-param__value').text(val ? '••••••••••' : 'Не задано');
+                    });
+                });
+            }
         });
     }
 
     function startPlugin() {
         Lampa.Component.add('emby_series', EmbySeriesComponent);
+
         initSettings();
-        Lampa.Listener.follow('full', e => {
+        Lampa.Listener.follow('full', function(e) {
             if (e.type === 'complite') {
-                addEmbyButton({ render: e.object.activity.render(), movie: e.data.movie || e.data.card });
+                addEmbyButton({
+                    render: e.object.activity.render(),
+                    movie: e.data.movie || e.data.card
+                });
             }
         });
-        console.log(`%c${PLUGIN_NAME} v${PLUGIN_VERSION} загружен`, 'color: #00ff88; font-weight: bold');
+        console.log('%c' + PLUGIN_NAME + ' v' + PLUGIN_VERSION + ' загружен', 'color: #00ff88; font-weight: bold');
     }
 
     if (window.appready) startPlugin();
-    else Lampa.Listener.follow('app', e => { if (e.type === 'ready') startPlugin(); });
+    else Lampa.Listener.follow('app', function(e) {
+        if (e.type === 'ready') startPlugin();
+    });
 })();
