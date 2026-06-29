@@ -1,7 +1,8 @@
-(function() {        'use strict';
+(function() {
+    'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.43-tvos-playlist-fixed'; // Обновлена версия
+    const PLUGIN_VERSION = '4.4.44-external-sync-fixed'; // Финальная версия для внешних плееров
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -125,7 +126,6 @@
         }, () => callback([]));
     }
 
-    // Хелпер для создания прямой ссылки на поток
     function buildStreamUrl(itemId) {
         const base = getUrl().replace(/\/$/, '');
         return `${base}/emby/Videos/${itemId}/stream?Static=true&DeviceId=${getDeviceId()}&PlaySessionId=${Date.now()}&api_key=${getApiKey()}`;
@@ -136,17 +136,22 @@
         const titleForHash = movie ? (movie.original_title || movie.original_name || movie.title || movie.name) : item.Name;
         const timelineKey = Lampa.Utils.hash(titleForHash);
         
+        if (movie) {
+            Lampa.History.add('watch', movie);
+        }
+
         Lampa.Player.play({
             title: item.Name,
             url: buildStreamUrl(item.Id),
             poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
             timeline: Lampa.Timeline.view(timelineKey),
             hash: timelineKey,
-            movie: movie
+            movie: movie,
+            element: movie
         });
     }
 
-    /* --- КОМПОНЕНТ СЕРИАЛОВ С ИСПОЛЬЗОВАНИЕМ LAMPA.EXPLORER --- */
+    /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
     function EmbySeriesComponent(object) {
         var network = new Lampa.Reguest();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
@@ -281,7 +286,7 @@
                     if (airDate) infoParts.push(airDate);
                     var info = infoParts.join(' ● ');
 
-                    var orig_title = object.movie.original_name || object.movie.original_title || '';
+                    var orig_title = object.movie.original_name || object.movie.original_title || object.movie.name || object.movie.title || '';
                     var hash_timeline = Lampa.Utils.hash([current_season.season_number, episode.episode_number, orig_title].join(''));
                     
                     episode.timeline = Lampa.Timeline.view(hash_timeline);
@@ -349,21 +354,25 @@
                                             var playlist = sortedEpisodes.map(function(ep, i) {
                                                 var tmdbEp = current_episodes[i];
                                                 var epTimeline = tmdbEp ? tmdbEp.timeline : null;
-                                                var epNumForTimeline = tmdbEp ? tmdbEp.episode_number : (i + 1);
+                                                var epNumForTimeline = tmdbEp ? tmdbEp.episode_number : (ep.IndexNumber || i + 1);
                                                 
                                                 var trackHash = Lampa.Utils.hash([seasonNumber, epNumForTimeline, orig_title].join(''));
                                                 if(!epTimeline) {
                                                     epTimeline = Lampa.Timeline.view(trackHash);
                                                 }
                                                 
+                                                // ИСПРАВЛЕНИЕ ЗАГОЛОВКА: Внешние плееры получают Название Сериала - Название Серии
+                                                var epTitle = ep.Name || ('Серия ' + epNumForTimeline);
+                                                var fullTitle = orig_title ? (orig_title + ' - ' + epTitle) : epTitle;
+
                                                 return {
-                                                    id: ep.Id, // Уникальный ID для корректной работы трекера серий
-                                                    title: ep.Name,
+                                                    title: fullTitle, // Четкий заголовок, чтобы плеер не подставлял URL
                                                     url: buildStreamUrl(ep.Id),
                                                     poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
                                                     timeline: epTimeline,
-                                                    hash: trackHash, 
+                                                    hash: trackHash,
                                                     movie: object.movie,
+                                                    element: object.movie,
                                                     season: seasonNumber,
                                                     episode: epNumForTimeline
                                                 };
@@ -371,7 +380,17 @@
 
                                             var currentEp = playlist.find(function(p) { return p.episode === epNumber; }) || playlist[0];
                                             if (currentEp) {
-                                                // ПОРЯДОК КРИТИЧЕН: Сначала открываем плеер, затем передаем плейлист
+                                                // 1. Добавляем в историю (Недавно просмотренные)
+                                                if (object.movie) {
+                                                    Lampa.History.add('watch', object.movie);
+                                                }
+                                                
+                                                // 2. ИСПРАВЛЕНИЕ ПЛЕЙЛИСТА: Секретный трюк из CDN.js для внешних плееров
+                                                if (playlist.length > 1) {
+                                                    currentEp.playlist = playlist;
+                                                }
+
+                                                // 3. Открываем плеер
                                                 Lampa.Player.play(currentEp);
                                                 Lampa.Player.playlist(playlist);
                                             }
