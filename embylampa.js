@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.43-settings-fix';
+    const PLUGIN_VERSION = '4.4.44-component-fix';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -28,9 +28,9 @@
         </div>
     `);
 
-    // ---- Регистрируем шаблон настроек ----
+    // ---- Шаблон настроек (оформлен под стандартный стиль Лампы) ----
     Lampa.Template.add('settings_emby', `
-        <div>
+        <div class="settings-list" style="padding: 1.5em 0;">
             <div class="settings-param selector" data-name="emby_url" data-type="input">
                 <div class="settings-param__name">Адрес сервера</div>
                 <div class="settings-param__value"></div>
@@ -99,14 +99,10 @@
         return tmdb;
     }
 
-    // ---- Функция фиксации истории и "Продолжить просмотр" ----
     function markHistoryAndWatch(movie, season, episode) {
         if (!movie) return;
-
-        // 1. Добавляем карточку в общую историю (в блок "Вы смотрели")
         Lampa.Favorite.add('history', movie, 100);
 
-        // 2. Если это сериал, сохраняем последний просмотренный эпизод для блока "Продолжить"
         if (season && episode) {
             var titleForHash = movie.number_of_seasons ? (movie.original_name || movie.name) : (movie.original_title || movie.title);
             if (!titleForHash) titleForHash = movie.title || '';
@@ -114,9 +110,7 @@
             var file_id = Lampa.Utils.hash(titleForHash);
             var watched = Lampa.Storage.cache('online_watched_last', 5000, {});
             
-            if (!watched[file_id]) {
-                watched[file_id] = {};
-            }
+            if (!watched[file_id]) watched[file_id] = {};
             
             Lampa.Arrays.extend(watched[file_id], {
                 balanser: 'emby',
@@ -193,21 +187,90 @@
         };
         
         playObj.playlist = [playObj];
-
-        // Записываем фильм в историю просмотров
         markHistoryAndWatch(movie, null, null);
 
         Lampa.Player.play(playObj);
         Lampa.Player.playlist(playObj.playlist);
     }
 
+    /* --- КОМПОНЕНТ НАСТРОЕК (НОВЫЙ БЕЗОПАСНЫЙ МЕТОД) --- */
+    function EmbySettingsComponent(object) {
+        var scroll = new Lampa.Scroll({ mask: true, over: true });
+        var last_focused = false;
+        var html;
+
+        this.create = function() {
+            // Получаем чистый HTML шаблона настроек
+            html = Lampa.Template.get('settings_emby', {}, true);
+
+            // Заполняем текущие значения параметров
+            html.find('[data-name="emby_url"] .settings-param__value').text(getUrl() || 'Не задано');
+            html.find('[data-name="emby_api_key"] .settings-param__value').text(getApiKey() ? '••••••••••' : 'Не задано');
+
+            // Вешаем обработчики кликов на параметры
+            html.find('[data-name="emby_url"]').on('hover:enter click', function() {
+                Lampa.Input.edit({title: 'Emby URL', value: getUrl(), free: true}, function(val) {
+                    Lampa.Storage.set(STORAGE_URL, val);
+                    html.find('[data-name="emby_url"] .settings-param__value').text(val || 'Не задано');
+                });
+            });
+
+            html.find('[data-name="emby_api_key"]').on('hover:enter click', function() {
+                Lampa.Input.edit({title: 'Emby API Key', value: getApiKey(), free: true}, function(val) {
+                    Lampa.Storage.set(STORAGE_API_KEY, val);
+                    html.find('[data-name="emby_api_key"] .settings-param__value').text(val ? '••••••••••' : 'Не задано');
+                });
+            });
+
+            // Следим за фокусом пульта
+            html.find('.selector').on('hover:focus', function(e) {
+                last_focused = e.target;
+                scroll.update($(this), true);
+            });
+
+            scroll.append(html);
+        };
+
+        this.start = function() {
+            Lampa.Controller.add('settings_emby_ctrl', {
+                toggle: function() {
+                    Lampa.Controller.collectionSet(scroll.render());
+                    Lampa.Controller.collectionFocus(last_focused || scroll.render().find('.selector').eq(0)[0]);
+                },
+                up: function() {
+                    if (Navigator.canmove('up')) Navigator.move('up');
+                },
+                down: function() {
+                    if (Navigator.canmove('down')) Navigator.move('down');
+                },
+                right: function() {
+                    if (Navigator.canmove('right')) Navigator.move('right');
+                },
+                left: function() {
+                    if (Navigator.canmove('left')) Navigator.move('left');
+                },
+                back: function() {
+                    Lampa.Activity.backward(); // Безопасный возврат назад в меню настроек
+                }
+            });
+            Lampa.Controller.toggle('settings_emby_ctrl');
+        };
+
+        this.render = function() {
+            return scroll.render();
+        };
+
+        this.destroy = function() {
+            scroll.destroy();
+            html = null;
+        };
+    }
+
     /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
     function EmbySeriesComponent(object) {
         var network = new Lampa.Reguest();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
-        
         var explorer = new Lampa.Explorer(object); 
-        
         var is_destroyed = false;
         
         var filterPanel = $('<div class="explorer__files-head" style="padding: 1.5em; display: flex; align-items: center; gap: 1em;"></div>');
@@ -233,9 +296,7 @@
                 tmdb_id = extractTmdbId(object.movie);
             }
 
-            seasonBtn.on('hover:enter click', function() {
-                showSeasonSelector();
-            });
+            seasonBtn.on('hover:enter click', function() { showSeasonSelector(); });
             filterPanel.append(seasonBtn);
 
             explorer.appendFiles(scroll.render());
@@ -277,9 +338,7 @@
         };
 
         function updateSeasonBtn() {
-            if (seasonBtn) {
-                seasonBtn.text(current_season.name || 'Сезон ' + current_season.season_number);
-            }
+            if (seasonBtn) seasonBtn.text(current_season.name || 'Сезон ' + current_season.season_number);
         }
 
         function showSeasonSelector() {
@@ -300,9 +359,7 @@
                     window.embyLastSeason = { seriesId: emby_series_id, seasonNumber: current_season.season_number };
                     loadEpisodes();
                 },
-                onBack: function() {
-                    Lampa.Controller.toggle('content');
-                }
+                onBack: function() { Lampa.Controller.toggle('content'); }
             });
         }
 
@@ -358,9 +415,7 @@
                             html.find('.online-prestige__img').addClass('online-prestige__img--loaded');
                             html.find('.online-prestige__loader').remove();
                         };
-                        img.onerror = function() {
-                            img.src = './img/img_broken.svg';
-                        };
+                        img.onerror = function() { img.src = './img/img_broken.svg'; };
                         img.src = stillPath;
                     } else {
                         img.src = './img/img_broken.svg';
@@ -425,13 +480,8 @@
 
                                             var currentEp = playlist[epNumber - 1];
                                             if (currentEp) {
-                                                if (playlist.length > 1) {
-                                                    currentEp.playlist = playlist;
-                                                }
-
-                                                // Записываем историю
+                                                if (playlist.length > 1) currentEp.playlist = playlist;
                                                 markHistoryAndWatch(object.movie, seasonNumber, epNumber);
-
                                                 Lampa.Player.play(currentEp);
                                                 Lampa.Player.playlist(playlist);
                                             }
@@ -472,27 +522,18 @@
                     if (Navigator.canmove('up')) Navigator.move('up');
                     else Lampa.Controller.toggle('head');
                 },
-                down: function() {
-                    if (Navigator.canmove('down')) Navigator.move('down');
-                },
-                right: function() {
-                    if (Navigator.canmove('right')) Navigator.move('right');
-                },
+                down: function() { if (Navigator.canmove('down')) Navigator.move('down'); },
+                right: function() { if (Navigator.canmove('right')) Navigator.move('right'); },
                 left: function() {
                     if (Navigator.canmove('left')) Navigator.move('left');
                     else Lampa.Controller.toggle('menu');
                 },
-                back: function() {
-                    Lampa.Activity.backward();
-                }
+                back: function() { Lampa.Activity.backward(); }
             });
             Lampa.Controller.toggle('content');
         }
 
-        this.render = function() {
-            return explorer.render(); 
-        };
-
+        this.render = function() { return explorer.render(); };
         this.destroy = function() {
             is_destroyed = true;
             network.clear();
@@ -509,17 +550,8 @@
 
             if (item.Type === 'Series') {
                 var tmdbId = extractTmdbId(movie);
-                window.embySeriesData = {
-                    emby_id: item.Id,
-                    tmdb_id: tmdbId,
-                    title: item.Name
-                };
-                var params = {
-                    emby_id: item.Id,
-                    tmdb_id: tmdbId,
-                    movie: movie,
-                    title: item.Name
-                };
+                window.embySeriesData = { emby_id: item.Id, tmdb_id: tmdbId, title: item.Name };
+                var params = { emby_id: item.Id, tmdb_id: tmdbId, movie: movie, title: item.Name };
                 Lampa.Activity.push({
                     url: '',
                     title: item.Name,
@@ -554,48 +586,23 @@
         else data.render.find('.buttons, .activity__body').append(button);
     }
 
-    // ---- ИСПРАВЛЕННАЯ ИНИЦИАЛИЗАЦИЯ НАСТРОЕК ----
+    // ---- ЧИСТАЯ ИНИЦИАЛИЗАЦИЯ НАСТРОЕК ----
     function initSettings() {
+        // Добавляем пункт в левое меню настроек, ссылаясь на наш новый компонент настроек
         Lampa.SettingsApi.addComponent({
-            component: 'emby',
+            component: 'emby_settings',
             name: 'Emby',
             icon: '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>'
-        });
-
-        Lampa.Settings.listener.follow('open', function(e) {
-            if (e.name === 'emby') {
-                // 1. Получаем HTML меню из нашего шаблона (параметр true обязателен для jQuery объекта)
-                var html = Lampa.Template.get('settings_emby', {}, true);
-
-                // 2. Вставляем сохраненные значения
-                html.find('[data-name="emby_url"] .settings-param__value').text(getUrl() || 'Не задано');
-                html.find('[data-name="emby_api_key"] .settings-param__value').text(getApiKey() ? '••••••••••' : 'Не задано');
-
-                // 3. Назначаем события для полей
-                html.find('[data-name="emby_url"]').on('hover:enter click', function() {
-                    Lampa.Input.edit({title: 'Emby URL', value: getUrl(), free: true}, function(val) {
-                        Lampa.Storage.set(STORAGE_URL, val);
-                        html.find('[data-name="emby_url"] .settings-param__value').text(val || 'Не задано');
-                    });
-                });
-
-                html.find('[data-name="emby_api_key"]').on('hover:enter click', function() {
-                    Lampa.Input.edit({title: 'Emby API Key', value: getApiKey(), free: true}, function(val) {
-                        Lampa.Storage.set(STORAGE_API_KEY, val);
-                        html.find('[data-name="emby_api_key"] .settings-param__value').text(val ? '••••••••••' : 'Не задано');
-                    });
-                });
-
-                // 4. Очищаем текущий экран и добавляем наш HTML!
-                e.body.empty().append(html);
-            }
         });
     }
 
     function startPlugin() {
+        // Регистрируем компоненты в ядре Лампы
         Lampa.Component.add('emby_series', EmbySeriesComponent);
+        Lampa.Component.add('emby_settings', EmbySettingsComponent); // Изолированный экран настроек
 
         initSettings();
+
         Lampa.Listener.follow('full', function(e) {
             if (e.type === 'complite') {
                 addEmbyButton({
