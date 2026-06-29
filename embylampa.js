@@ -534,7 +534,7 @@
         else data.render.find('.buttons, .activity__body').append(button);
     }
 
-    // ---- ПРАВКА НАСТРОЕК ПО ПАТТЕРНУ REDIRECT.JS ----
+    // ---- ПРАВКА НАСТРОЕК  ----
     function initSettings() {
         // Добавляем раздел Emby в настройки
         Lampa.SettingsApi.addComponent({
@@ -543,37 +543,62 @@
             icon: '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>'
         });
 
-        // Декларативно регистрируем параметр "Адрес сервера"
+        // Кнопка для вызова клавиатуры ввода адреса
         Lampa.SettingsApi.addParam({
             component: 'emby',
             param: {
-                name: 'emby_url',
-                type: 'input', 
-                placeholder: 'Например: http://192.168.1.145:8096',
-                default: 'http://192.168.1.145:8096'
+                name: 'emby_url_btn', // Измененное имя, чтобы ядро не пыталось парсить значение
+                type: 'button'
             },
             field: {
                 name: 'Адрес сервера',
-                description: 'Укажите адрес сервера (например: http://192.168.1.145:8096)'
+                description: getUrl() // Показываем текущее значение
+            },
+            onChange: function() {
+                Lampa.Input.edit({
+                    title: 'Адрес сервера',
+                    value: getUrl(),
+                    free: true,
+                    nosave: true
+                }, function (new_value) {
+                    if (typeof new_value === 'string') {
+                        let clean_value = new_value.trim();
+                        Lampa.Storage.set(STORAGE_URL, clean_value);
+                        // Обновляем текст описания прямо в интерфейсе настроек
+                        $('.settings-param:contains("Адрес сервера") .settings-param__descr').text(clean_value || 'Не указан');
+                    }
+                });
             }
         });
         
-        // Декларативно регистрируем параметр "API Key"
+        // Кнопка для вызова клавиатуры ввода API Key
         Lampa.SettingsApi.addParam({
             component: 'emby',
             param: {
-                name: 'emby_api_key',
-                type: 'input', 
-                placeholder: 'Ключ доступа к API',
-                default: '78b3967970814692b20b095e5b13f0eb'
+                name: 'emby_api_key_btn',
+                type: 'button'
             },
             field: {
                 name: 'API Key',
-                description: 'Ключ доступа к API (создается в админ-панели Emby)'
+                description: getApiKey() || 'Нажмите, чтобы ввести'
+            },
+            onChange: function() {
+                Lampa.Input.edit({
+                    title: 'API Key',
+                    value: getApiKey(),
+                    free: true,
+                    nosave: true
+                }, function (new_value) {
+                    if (typeof new_value === 'string') {
+                        let clean_value = new_value.trim();
+                        Lampa.Storage.set(STORAGE_API_KEY, clean_value);
+                        $('.settings-param:contains("API Key") .settings-param__descr').text(clean_value || 'Нажмите, чтобы ввести');
+                    }
+                });
             }
         });
     }
-
+    
     function startPlugin() {
         Lampa.Component.add('emby_series', EmbySeriesComponent);
 
