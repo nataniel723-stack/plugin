@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '1.0'; // Обновил версию для правок
+    const PLUGIN_VERSION = '0.9'; // Обновил версию
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -28,7 +28,7 @@
         </div>
     `);
 
-    // ---- Шаблон настроек ----
+    // ---- ПРАВКА 2: Регистрируем шаблон настроек для правильной навигации пультом ----
     Lampa.Template.add('settings_emby', `
         <div>
             <div class="settings-param selector" data-name="emby_url" data-type="input">
@@ -99,7 +99,7 @@
         return tmdb;
     }
 
-    // ---- ПРАВКА: Функция фиксации истории и "Продолжить просмотр" ----
+    // ---- ПРАВКА 1: Функция фиксации истории и "Продолжить просмотр" ----
     function markHistoryAndWatch(movie, season, episode) {
         if (!movie) return;
 
@@ -108,16 +108,17 @@
 
         // 2. Если это сериал, сохраняем последний просмотренный эпизод для блока "Продолжить"
         if (season && episode) {
-            // ИСПОЛЬЗУЕМ movie.id КАК КЛЮЧ ДЛЯ СОВМЕСТИМОСТИ С ДРУГИМИ ПЛАГИНАМИ
-            var file_id = movie.id || extractTmdbId(movie);
-            if (!file_id) return;
+            var titleForHash = movie.number_of_seasons ? (movie.original_name || movie.name) : (movie.original_title || movie.title);
+            if (!titleForHash) titleForHash = movie.title || '';
             
+            var file_id = Lampa.Utils.hash(titleForHash);
             var watched = Lampa.Storage.cache('online_watched_last', 5000, {});
             
             if (!watched[file_id]) {
                 watched[file_id] = {};
             }
             
+            // Расширяем объект параметрами для Lampa
             Lampa.Arrays.extend(watched[file_id], {
                 balanser: 'emby',
                 balanser_name: 'Emby',
@@ -179,10 +180,8 @@
 
     function playMovie(item, movie) {
         const base = getUrl().replace(/\/$/, '');
-        
-        // ПРАВКА ТАЙМЛАЙНА ФИЛЬМОВ:
-        // Используем movie.id (ID из TMDB), чтобы таймлайн совпадал с балансерами и Core Lampa
-        const timelineKey = (movie && movie.id) ? movie.id : Lampa.Utils.hash(item.Name);
+        const titleForHash = movie ? (movie.original_title || movie.original_name || movie.title || movie.name) : item.Name;
+        const timelineKey = Lampa.Utils.hash(titleForHash);
         
         let container = item.Container ? item.Container.split(',')[0] : 'mp4';
         
@@ -191,11 +190,12 @@
             url: buildStreamUrl(item.Id, container),
             poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
             timeline: Lampa.Timeline.view(timelineKey),
-            movie: movie // Важно: отдаем объект movie во внешний плеер (Apple TV/tvOS)
+            movie: movie
         };
         
         playObj.playlist = [playObj];
 
+        // Записываем фильм в историю просмотров
         markHistoryAndWatch(movie, null, null);
 
         Lampa.Player.play(playObj);
@@ -326,8 +326,6 @@
             if (current_episodes.length === 0) {
                 scroll.append($('<div class="emby-empty">Эпизоды не найдены</div>'));
             } else {
-                var movie_id = object.movie ? object.movie.id : tmdb_id;
-
                 current_episodes.forEach(function(episode, index) {
                     var epNum = String(episode.episode_number).padStart(2, '0');
                     var stillPath = episode.still_path ? 'https://image.tmdb.org/t/p/w300' + episode.still_path : '';
@@ -341,9 +339,9 @@
                     if (airDate) infoParts.push(airDate);
                     var info = infoParts.join(' ● ');
 
-                    // ПРАВКА ТАЙМЛАЙНА ЭПИЗОДОВ
-                    // Формат массива для сериалов: [ID сериала, сезон, эпизод]
-                    var hash_timeline = Lampa.Utils.hash([movie_id, current_season.season_number, episode.episode_number].join(''));
+                    var orig_title = object.movie.original_name || object.movie.original_title || '';
+                    var hash_timeline = Lampa.Utils.hash([current_season.season_number, episode.episode_number, orig_title].join(''));
+                    
                     episode.timeline = Lampa.Timeline.view(hash_timeline);
                     
                     var html = Lampa.Template.get('online_prestige_full', {
@@ -411,7 +409,7 @@
                                                 
                                                 if(!epTimeline) {
                                                     var epNumForTimeline = tmdbEp ? tmdbEp.episode_number : (i + 1);
-                                                    var key = Lampa.Utils.hash([movie_id, seasonNumber, epNumForTimeline].join(''));
+                                                    var key = Lampa.Utils.hash([seasonNumber, epNumForTimeline, orig_title].join(''));
                                                     epTimeline = Lampa.Timeline.view(key);
                                                 }
                                                 
@@ -432,6 +430,7 @@
                                                     currentEp.playlist = playlist;
                                                 }
 
+                                                // Записываем историю и обновляем эпизод для "Продолжить просмотр"
                                                 markHistoryAndWatch(object.movie, seasonNumber, epNumber);
 
                                                 Lampa.Player.play(currentEp);
@@ -557,7 +556,7 @@
         else data.render.find('.buttons, .activity__body').append(button);
     }
 
-    // ---- ПРАВКА 2.1: Инициализация настроек ----
+    // ---- ПРАВКА 2.1: Инициализация настроек с использованием шаблона для правильной работы пульта ----
     function initSettings() {
         Lampa.SettingsApi.addComponent({
             component: 'emby',
@@ -567,24 +566,23 @@
 
         Lampa.Settings.listener.follow('open', function(e) {
             if (e.name === 'emby') {
-                // ГЛАВНАЯ ПРАВКА: Инжектируем шаблон в DOM, прежде чем обращаться к элементам!
-                e.body.empty();
-                e.body.append(Lampa.Template.get('settings_emby', {}, true));
-
-                // Подставляем текущие значения в шаблон
+                // Используем Lampa.Settings.render для правильной интеграции в DOM
+                e.body.append(Lampa.Template.get('settings_emby', {}));
+                
+                // Наполняем значениями
                 e.body.find('[data-name="emby_url"] .settings-param__value').text(getUrl() || 'Не задано');
                 e.body.find('[data-name="emby_api_key"] .settings-param__value').text(getApiKey() ? '••••••••••' : 'Не задано');
 
-                // Вешаем слушателей событий на клики с пульта или мыши
+                // Назначаем события
                 e.body.find('[data-name="emby_url"]').on('hover:enter click', function() {
-                    Lampa.Input.edit({title: 'Emby URL', value: getUrl(), free: true, nosave: true}, function(val) {
+                    Lampa.Input.edit({title: 'Emby URL', value: getUrl(), free: true}, function(val) {
                         Lampa.Storage.set(STORAGE_URL, val);
                         e.body.find('[data-name="emby_url"] .settings-param__value').text(val || 'Не задано');
                     });
                 });
 
                 e.body.find('[data-name="emby_api_key"]').on('hover:enter click', function() {
-                    Lampa.Input.edit({title: 'Emby API Key', value: getApiKey(), free: true, nosave: true}, function(val) {
+                    Lampa.Input.edit({title: 'Emby API Key', value: getApiKey(), free: true}, function(val) {
                         Lampa.Storage.set(STORAGE_API_KEY, val);
                         e.body.find('[data-name="emby_api_key"] .settings-param__value').text(val ? '••••••••••' : 'Не задано');
                     });
