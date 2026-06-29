@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '0.9.4';
+    const PLUGIN_VERSION = '0.9.5';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -86,10 +86,8 @@
     function markHistoryAndWatch(movie, season, episode) {
         if (!movie) return;
 
-        // 1. Добавляем карточку в общую историю
         Lampa.Favorite.add('history', movie, 100);
 
-        // 2. Если это сериал, сохраняем последний просмотренный эпизод
         if (season && episode) {
             var titleForHash = movie.number_of_seasons ? (movie.original_name || movie.name) : (movie.original_title || movie.title);
             if (!titleForHash) titleForHash = movie.title || '';
@@ -167,7 +165,6 @@
         
         let container = item.Container ? item.Container.split(',')[0] : 'mp4';
         
-        // Создаем "чистый" объект без циклических ссылок
         let playObj = {
             title: item.Name,
             url: buildStreamUrl(item.Id, container),
@@ -175,19 +172,13 @@
             timeline: Lampa.Timeline.view(timelineKey),
             movie: movie
         };
+        
+        playObj.playlist = [playObj];
 
         markHistoryAndWatch(movie, null, null);
 
-        // Передаем массив, но НЕ вкладываем playObj внутрь себя
         Lampa.Player.play(playObj);
-        Lampa.Player.playlist([playObj]); 
-    }
-
-        // ИСПРАВЛЕНИЕ: Убрана циклическая ссылка (playObj.playlist = [playObj];)
-        markHistoryAndWatch(movie, null, null);
-
-        Lampa.Player.play(playObj);
-        Lampa.Player.playlist([playObj]);
+        Lampa.Player.playlist(playObj.playlist);
     }
 
     /* --- КОМПОНЕНТ СЕРИАЛОВ С ИСПОЛЬЗОВАНИЕМ LAMPA.EXPLORER --- */
@@ -392,9 +383,9 @@
                                             var playlist = sortedEpisodes.map(function(ep, i) {
                                                 var tmdbEp = current_episodes[i];
                                                 var epTimeline = tmdbEp ? tmdbEp.timeline : null;
+                                                var epNumForTimeline = tmdbEp ? tmdbEp.episode_number : (i + 1);
                                                 
                                                 if(!epTimeline) {
-                                                    var epNumForTimeline = tmdbEp ? tmdbEp.episode_number : (i + 1);
                                                     var key = Lampa.Utils.hash([seasonNumber, epNumForTimeline, orig_title].join(''));
                                                     epTimeline = Lampa.Timeline.view(key);
                                                 }
@@ -406,13 +397,19 @@
                                                     url: buildStreamUrl(ep.Id, container),
                                                     poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
                                                     timeline: epTimeline,
-                                                    movie: object.movie
+                                                    movie: object.movie,
+                                                    // ДОБАВЛЕНО: Явное указание сезона и серии для нативных плееров (Apple TV/Android TV)
+                                                    season: seasonNumber,
+                                                    episode: epNumForTimeline
                                                 };
                                             });
 
                                             var currentEp = playlist[epNumber - 1];
                                             if (currentEp) {
-                                                // ИСПРАВЛЕНИЕ: Убрана циклическая ссылка (currentEp.playlist = playlist)
+                                                if (playlist.length > 1) {
+                                                    currentEp.playlist = playlist;
+                                                }
+
                                                 markHistoryAndWatch(object.movie, seasonNumber, epNumber);
 
                                                 Lampa.Player.play(currentEp);
@@ -538,7 +535,7 @@
         else data.render.find('.buttons, .activity__body').append(button);
     }
 
-    // ИСПРАВЛЕНИЕ: Перевёл настройки на нативный парсер Lampa
+    // ---- ИСПРАВЛЕННЫЕ НАСТРОЙКИ (Не крашат Android, используют нативный ввод) ----
     function initSettings() {
         Lampa.SettingsApi.addComponent({
             component: 'emby',
@@ -551,7 +548,7 @@
             param: {
                 name: STORAGE_URL,
                 type: 'input',
-                values: '', // Обязательный параметр для Android
+                values: '', // Обязательный параметр для Android TV
                 default: ''
             },
             field: {
@@ -568,7 +565,7 @@
             param: {
                 name: STORAGE_API_KEY,
                 type: 'input',
-                values: '', // Обязательный параметр для Android
+                values: '', // Обязательный параметр для Android TV
                 default: ''
             },
             field: {
