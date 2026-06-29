@@ -566,37 +566,40 @@
 
         Lampa.Settings.listener.follow('open', function(e) {
             if (e.name === 'emby') {
-                // Создаем контейнер для настроек
-                var html = Lampa.Template.get('settings_emby', {});
-                
-                // Наполняем данными
-                html.find('[data-name="emby_url"] .settings-param__value').text(getUrl() || 'Не задано');
-                html.find('[data-name="emby_api_key"] .settings-param__value').text(getApiKey() ? '••••••••••' : 'Не задано');
+                e.body.empty(); // Очищаем всё, что там было "битого"
 
-                // Добавляем логику
-                html.find('[data-name="emby_url"]').on('hover:enter click', function() {
-                    Lampa.Input.edit({title: 'Emby URL', value: getUrl(), free: true}, function(val) {
-                        Lampa.Storage.set(STORAGE_URL, val);
-                        html.find('[data-name="emby_url"] .settings-param__value').text(val || 'Не задано');
-                    });
+                var html = $(`
+                    <div class="settings-param selector" data-name="emby_url">
+                        <div class="settings-param__name">Адрес сервера</div>
+                        <div class="settings-param__value">${getUrl() || 'Не задано'}</div>
+                    </div>
+                    <div class="settings-param selector" data-name="emby_api_key">
+                        <div class="settings-param__name">API Key</div>
+                        <div class="settings-param__value">${getApiKey() ? '••••••••••' : 'Не задано'}</div>
+                    </div>
+                `);
+
+                html.on('hover:enter click', function(event) {
+                    var name = $(this).attr('data-name');
+                    if (name === 'emby_url') {
+                        Lampa.Input.edit({title: 'Emby URL', value: getUrl(), free: true}, function(val) {
+                            Lampa.Storage.set(STORAGE_URL, val);
+                            $(event.target).closest('.settings-param').find('.settings-param__value').text(val || 'Не задано');
+                        });
+                    } else if (name === 'emby_api_key') {
+                        Lampa.Input.edit({title: 'Emby API Key', value: getApiKey(), free: true}, function(val) {
+                            Lampa.Storage.set(STORAGE_API_KEY, val);
+                            $(event.target).closest('.settings-param').find('.settings-param__value').text(val ? '••••••••••' : 'Не задано');
+                        });
+                    }
                 });
 
-                html.find('[data-name="emby_api_key"]').on('hover:enter click', function() {
-                    Lampa.Input.edit({title: 'Emby API Key', value: getApiKey(), free: true}, function(val) {
-                        Lampa.Storage.set(STORAGE_API_KEY, val);
-                        html.find('[data-name="emby_api_key"] .settings-param__value').text(val ? '••••••••••' : 'Не задано');
-                    });
-                });
-
-                // ВАЖНО: используем метод render компонента настроек Lampa
                 e.body.append(html);
-                
-                // Перерисовываем навигацию, чтобы пультом можно было выбрать новые элементы
                 Lampa.Controller.toggle('settings');
             }
         });
     }
-
+    
     function startPlugin() {
         Lampa.Component.add('emby_series', EmbySeriesComponent);
 
