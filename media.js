@@ -1,7 +1,7 @@
 (function() {        'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.42-tvos-sync-fixed'; // Обновлена версия
+    const PLUGIN_VERSION = '4.4.43-tvos-playlist-fixed'; // Обновлена версия
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -136,20 +136,13 @@
         const titleForHash = movie ? (movie.original_title || movie.original_name || movie.title || movie.name) : item.Name;
         const timelineKey = Lampa.Utils.hash(titleForHash);
         
-        // Синхронизация с "Недавно просмотренные"
-        if (movie) {
-            Lampa.History.add('watch', movie);
-        }
-
         Lampa.Player.play({
             title: item.Name,
             url: buildStreamUrl(item.Id),
             poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
             timeline: Lampa.Timeline.view(timelineKey),
-            hash: timelineKey, // КРИТИЧЕСКИ ВАЖНО ДЛЯ ВНЕШНИХ ПЛЕЕРОВ (VLC/TVOS)
-            // ВАЖНО ДЛЯ TVOS / ВНЕШНИХ ПЛЕЕРОВ:
-            movie: movie,
-            element: movie
+            hash: timelineKey,
+            movie: movie
         });
     }
 
@@ -352,7 +345,7 @@
                                         if (episodeData && episodeData.Items) {
                                             var sortedEpisodes = episodeData.Items.sort(function(a, b) { return (a.IndexNumber || 0) - (b.IndexNumber || 0); });
                                             
-                                            // Сборка полного плейлиста сезона
+                                            // Сборка плейлиста
                                             var playlist = sortedEpisodes.map(function(ep, i) {
                                                 var tmdbEp = current_episodes[i];
                                                 var epTimeline = tmdbEp ? tmdbEp.timeline : null;
@@ -364,30 +357,23 @@
                                                 }
                                                 
                                                 return {
+                                                    id: ep.Id, // Уникальный ID для корректной работы трекера серий
                                                     title: ep.Name,
                                                     url: buildStreamUrl(ep.Id),
                                                     poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
                                                     timeline: epTimeline,
-                                                    hash: trackHash, // КРИТИЧЕСКИ ВАЖНО ДЛЯ ВНЕШНИХ ПЛЕЕРОВ И АВТОПЕРЕХОДА СЕРИЙ
-                                                    // ВАЖНО ДЛЯ TVOS / ВНЕШНИХ ПЛЕЕРОВ И ИСТОРИИ:
+                                                    hash: trackHash, 
                                                     movie: object.movie,
-                                                    element: object.movie,
                                                     season: seasonNumber,
                                                     episode: epNumForTimeline
                                                 };
                                             });
 
-                                            // Ищем выбранную серию внутри сформированного плейлиста
                                             var currentEp = playlist.find(function(p) { return p.episode === epNumber; }) || playlist[0];
                                             if (currentEp) {
-                                                // Принудительно пушим сериал в "Недавно просмотренные" Lampa
-                                                if (object.movie) {
-                                                    Lampa.History.add('watch', object.movie);
-                                                }
-                                                
-                                                // ПОРЯДОК СТРОК КРИТИЧЕН: Сначала скармливаем плейлист, затем стартуем трек!
-                                                Lampa.Player.playlist(playlist);
+                                                // ПОРЯДОК КРИТИЧЕН: Сначала открываем плеер, затем передаем плейлист
                                                 Lampa.Player.play(currentEp);
+                                                Lampa.Player.playlist(playlist);
                                             }
                                         }
                                     }, function() {
