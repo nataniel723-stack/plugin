@@ -563,16 +563,17 @@
             icon: '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>'
         });
 
-        Lampa.Settings.listener.follow('open', function(e) {
+        // Используем событие 'render', которое срабатывает именно в момент отрисовки контента компонента
+        Lampa.Settings.listener.follow('render', function(e) {
             if (e.name === 'emby') {
-                // Создаем обертку
+                // Полностью очищаем тело компонента, чтобы Lampa не рисовала там лишнего
+                e.body.empty();
+
                 var html = $(Lampa.Template.get('settings_emby', {}, true));
 
-                // Устанавливаем значения
                 html.find('[data-name="emby_url"] .settings-param__value').text(getUrl() || 'Не задано');
                 html.find('[data-name="emby_api_key"] .settings-param__value').text(getApiKey() ? '••••••••••' : 'Не задано');
 
-                // Обработка кликов
                 html.find('[data-name="emby_url"]').on('hover:enter click', function() {
                     Lampa.Input.edit({title: 'Emby URL', value: getUrl(), free: true}, function(val) {
                         Lampa.Storage.set(STORAGE_URL, val);
@@ -587,8 +588,10 @@
                     });
                 });
 
-                // Добавляем в тело настроек
                 e.body.append(html);
+                
+                // Важно: перерисовываем навигацию, чтобы пульт «увидел» наши новые элементы
+                Lampa.Controller.render('settings_component');
             }
         });
     }
