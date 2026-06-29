@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.42-history-fix'; // Обновил версию
+    const PLUGIN_VERSION = '0.9'; // Обновил версию
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -24,22 +24,6 @@
                     <div class="online-prestige__info">{info}</div>
                     <div class="online-prestige__quality">{quality}</div>
                 </div>
-            </div>
-        </div>
-    `);
-
-    // ---- ПРАВКА 2: Регистрируем шаблон настроек для правильной навигации пультом ----
-    Lampa.Template.add('settings_emby', `
-        <div>
-            <div class="settings-param selector" data-name="emby_url" data-type="input">
-                <div class="settings-param__name">Адрес сервера</div>
-                <div class="settings-param__value"></div>
-                <div class="settings-param__descr">Укажите адрес сервера (например: http://192.168.1.145:8096)</div>
-            </div>
-            <div class="settings-param selector" data-name="emby_api_key" data-type="input">
-                <div class="settings-param__name">API Key</div>
-                <div class="settings-param__value"></div>
-                <div class="settings-param__descr">Ключ доступа к API (создается в админ-панели Emby)</div>
             </div>
         </div>
     `);
