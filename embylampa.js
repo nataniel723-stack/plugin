@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '4.4.44-component-fix';
+    const PLUGIN_VERSION = '4.4.45-settings-native';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -28,22 +28,6 @@
         </div>
     `);
 
-    // ---- Шаблон настроек (оформлен под стандартный стиль Лампы) ----
-    Lampa.Template.add('settings_emby', `
-        <div class="settings-list" style="padding: 1.5em 0;">
-            <div class="settings-param selector" data-name="emby_url" data-type="input">
-                <div class="settings-param__name">Адрес сервера</div>
-                <div class="settings-param__value"></div>
-                <div class="settings-param__descr">Укажите адрес сервера (например: http://192.168.1.145:8096)</div>
-            </div>
-            <div class="settings-param selector" data-name="emby_api_key" data-type="input">
-                <div class="settings-param__name">API Key</div>
-                <div class="settings-param__value"></div>
-                <div class="settings-param__descr">Ключ доступа к API (создается в админ-панели Emby)</div>
-            </div>
-        </div>
-    `);
-
     // ---- Стили ----
     if (!$('style#emby-plugin-styles').length) {
         $('head').append(`
@@ -60,8 +44,8 @@
     }
 
     // ---- Базовые функции ----
-    function getUrl() { return (Lampa.Storage.get(STORAGE_URL, 'http://192.168.1.145:8096') || '').trim(); }
-    function getApiKey() { return (Lampa.Storage.get(STORAGE_API_KEY, '78b3967970814692b20b095e5b13f0eb') || '').trim(); }
+    function getUrl() { return (Lampa.Storage.get(STORAGE_URL) || 'http://192.168.1.145:8096').trim(); }
+    function getApiKey() { return (Lampa.Storage.get(STORAGE_API_KEY) || '78b3967970814692b20b095e5b13f0eb').trim(); }
     function isConfigured() { return getUrl().length > 5 && getApiKey().length > 5; }
     function notify(msg) { Lampa.Noty.show(msg); }
 
@@ -191,79 +175,6 @@
 
         Lampa.Player.play(playObj);
         Lampa.Player.playlist(playObj.playlist);
-    }
-
-    /* --- КОМПОНЕНТ НАСТРОЕК (НОВЫЙ БЕЗОПАСНЫЙ МЕТОД) --- */
-    function EmbySettingsComponent(object) {
-        var scroll = new Lampa.Scroll({ mask: true, over: true });
-        var last_focused = false;
-        var html;
-
-        this.create = function() {
-            // Получаем чистый HTML шаблона настроек
-            html = Lampa.Template.get('settings_emby', {}, true);
-
-            // Заполняем текущие значения параметров
-            html.find('[data-name="emby_url"] .settings-param__value').text(getUrl() || 'Не задано');
-            html.find('[data-name="emby_api_key"] .settings-param__value').text(getApiKey() ? '••••••••••' : 'Не задано');
-
-            // Вешаем обработчики кликов на параметры
-            html.find('[data-name="emby_url"]').on('hover:enter click', function() {
-                Lampa.Input.edit({title: 'Emby URL', value: getUrl(), free: true}, function(val) {
-                    Lampa.Storage.set(STORAGE_URL, val);
-                    html.find('[data-name="emby_url"] .settings-param__value').text(val || 'Не задано');
-                });
-            });
-
-            html.find('[data-name="emby_api_key"]').on('hover:enter click', function() {
-                Lampa.Input.edit({title: 'Emby API Key', value: getApiKey(), free: true}, function(val) {
-                    Lampa.Storage.set(STORAGE_API_KEY, val);
-                    html.find('[data-name="emby_api_key"] .settings-param__value').text(val ? '••••••••••' : 'Не задано');
-                });
-            });
-
-            // Следим за фокусом пульта
-            html.find('.selector').on('hover:focus', function(e) {
-                last_focused = e.target;
-                scroll.update($(this), true);
-            });
-
-            scroll.append(html);
-        };
-
-        this.start = function() {
-            Lampa.Controller.add('settings_emby_ctrl', {
-                toggle: function() {
-                    Lampa.Controller.collectionSet(scroll.render());
-                    Lampa.Controller.collectionFocus(last_focused || scroll.render().find('.selector').eq(0)[0]);
-                },
-                up: function() {
-                    if (Navigator.canmove('up')) Navigator.move('up');
-                },
-                down: function() {
-                    if (Navigator.canmove('down')) Navigator.move('down');
-                },
-                right: function() {
-                    if (Navigator.canmove('right')) Navigator.move('right');
-                },
-                left: function() {
-                    if (Navigator.canmove('left')) Navigator.move('left');
-                },
-                back: function() {
-                    Lampa.Activity.backward(); // Безопасный возврат назад в меню настроек
-                }
-            });
-            Lampa.Controller.toggle('settings_emby_ctrl');
-        };
-
-        this.render = function() {
-            return scroll.render();
-        };
-
-        this.destroy = function() {
-            scroll.destroy();
-            html = null;
-        };
     }
 
     /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
@@ -543,7 +454,7 @@
     }
 
     function handleEmbyClick(movie) {
-        if (!isConfigured()) return notify('Настройте Emby в параметрах');
+        if (!isConfigured()) return notify('Настройте Emby в разделе "Настройки > Остальное"');
 
         findInEmby(movie, function(item) {
             if (!item) return notify('Контент не найден в библиотеке Emby.');
@@ -586,21 +497,43 @@
         else data.render.find('.buttons, .activity__body').append(button);
     }
 
-    // ---- ЧИСТАЯ ИНИЦИАЛИЗАЦИЯ НАСТРОЕК ----
+    // ---- ЧИСТАЯ НАТИВНАЯ ИНИЦИАЛИЗАЦИЯ НАСТРОЕК ----
     function initSettings() {
-        // Добавляем пункт в левое меню настроек, ссылаясь на наш новый компонент настроек
-        Lampa.SettingsApi.addComponent({
-            component: 'emby_settings',
-            name: 'Emby',
-            icon: '<svg width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#00B0FF"/><text x="20" y="27" text-anchor="middle" fill="#fff" font-size="24" font-weight="bold">E</text></svg>'
+        if (window.embySettingsAdded) return;
+        window.embySettingsAdded = true;
+
+        // Вместо создания собственного глючного раздела, мы безопасно 
+        // добавляем поля в стандартный раздел "Остальное" (rest). 
+        
+        Lampa.SettingsApi.addParam({
+            component: 'rest',
+            param: {
+                name: STORAGE_URL,
+                type: 'input',
+                default: 'http://192.168.1.145:8096'
+            },
+            field: {
+                name: 'Emby: Адрес сервера',
+                description: 'Укажите адрес сервера (например: http://192.168.1.145:8096)'
+            }
+        });
+
+        Lampa.SettingsApi.addParam({
+            component: 'rest',
+            param: {
+                name: STORAGE_API_KEY,
+                type: 'input',
+                default: '78b3967970814692b20b095e5b13f0eb'
+            },
+            field: {
+                name: 'Emby: API Key',
+                description: 'Ключ доступа к API (берется из админ-панели Emby)'
+            }
         });
     }
 
     function startPlugin() {
-        // Регистрируем компоненты в ядре Лампы
         Lampa.Component.add('emby_series', EmbySeriesComponent);
-        Lampa.Component.add('emby_settings', EmbySettingsComponent); // Изолированный экран настроек
-
         initSettings();
 
         Lampa.Listener.follow('full', function(e) {
