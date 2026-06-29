@@ -557,6 +557,7 @@
     }
 
     // ---- ПРАВКА 2.1: Инициализация настроек с использованием шаблона для правильной работы пульта ----
+    // ---- ПРАВКА 2.1: Инициализация настроек с использованием шаблона для правильной работы пульта ----
     function initSettings() {
         Lampa.SettingsApi.addComponent({
             component: 'emby',
@@ -566,7 +567,10 @@
 
         Lampa.Settings.listener.follow('open', function(e) {
             if (e.name === 'emby') {
-                // Подставляем текущие значения в шаблон
+                // ВАЖНО: Сначала рендерим и вставляем наш шаблон в пустой контейнер настроек
+                e.body.html(Lampa.Template.get('settings_emby', {}, true));
+
+                // Подставляем текущие значения в уже существующие DOM-элементы шаблона
                 e.body.find('[data-name="emby_url"] .settings-param__value').text(getUrl() || 'Не задано');
                 e.body.find('[data-name="emby_api_key"] .settings-param__value').text(getApiKey() ? '••••••••••' : 'Не задано');
 
