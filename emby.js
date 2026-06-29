@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '0.9.2';
+    const PLUGIN_VERSION = '0.9.1';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -552,7 +552,7 @@
             },
             field: {
                 name: 'Адрес сервера',
-                description: getUrl() // Показываем текущее значение
+                description: getUrl() || 'Должен начинатся с http:// или https://' // Показываем текущее значение
             },
             onChange: function() {
                 Lampa.Input.edit({
