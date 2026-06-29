@@ -548,8 +548,7 @@
             component: 'emby',
             param: {
                 name: 'emby_url_btn', // Измененное имя, чтобы ядро не пыталось парсить значение
-                type: 'button',
-                placeholder: 'Должен начинатся с http:// или https://',
+                type: 'button'
             },
             field: {
                 name: 'Адрес сервера',
