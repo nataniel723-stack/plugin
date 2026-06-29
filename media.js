@@ -167,6 +167,7 @@
         
         let container = item.Container ? item.Container.split(',')[0] : 'mp4';
         
+        // Создаем "чистый" объект без циклических ссылок
         let playObj = {
             title: item.Name,
             url: buildStreamUrl(item.Id, container),
@@ -174,6 +175,13 @@
             timeline: Lampa.Timeline.view(timelineKey),
             movie: movie
         };
+
+        markHistoryAndWatch(movie, null, null);
+
+        // Передаем массив, но НЕ вкладываем playObj внутрь себя
+        Lampa.Player.play(playObj);
+        Lampa.Player.playlist([playObj]); 
+    }
 
         // ИСПРАВЛЕНИЕ: Убрана циклическая ссылка (playObj.playlist = [playObj];)
         markHistoryAndWatch(movie, null, null);
