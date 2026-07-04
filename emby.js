@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '0.9.4';
+    const PLUGIN_VERSION = '0.9.6';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -49,6 +49,10 @@
     function isConfigured() { return getUrl().length > 5 && getApiKey().length > 5; }
     function notify(msg) { Lampa.Noty.show(msg); }
 
+    // Проверка на устройства Apple
+    const isApple = (typeof Lampa !== 'undefined' && Lampa.Platform.is('apple')) || 
+                    /Mac|iPhone|iPod|iPad|AppleTV/i.test(navigator.userAgent);
+
     function buildApiUrl(endpoint) {
         const base = getUrl().replace(/\/$/, '');
         const sep = endpoint.includes('?') ? '&' : '?';
@@ -86,10 +90,8 @@
     function markHistoryAndWatch(movie, season, episode) {
         if (!movie) return;
 
-        // 1. Добавляем карточку в общую историю
         Lampa.Favorite.add('history', movie, 100);
 
-        // 2. Если это сериал, сохраняем последний просмотренный эпизод
         if (season && episode) {
             var titleForHash = movie.number_of_seasons ? (movie.original_name || movie.name) : (movie.original_title || movie.title);
             if (!titleForHash) titleForHash = movie.title || '';
@@ -115,23 +117,23 @@
     function findInEmby(movie, callback) {
         if (!movie) return callback(null);
         let tmdb = extractTmdbId(movie);
-        let network = new Lampa.Reguest();
+        let network = new (Lampa.Request || Lampa.Reguest)();
         if (tmdb) {
             network.silent(buildApiUrl(`/Items?AnyProviderIdEquals=tmdb.${tmdb}&Recursive=true&IncludeItemTypes=Movie,Series&Fields=Id,Type,Name,Container`), (data) => {
-                callback(data?.Items?.[0] || null);
+                callback((data && data.Items && data.Items[0]) || null);
             }, () => callback(null));
         } else {
             const title = movie.title || movie.name || movie.original_title || movie.original_name || '';
             if (!title) return callback(null);
             network.silent(buildApiUrl(`/Items?SearchTerm=${encodeURIComponent(title)}&Limit=3&Recursive=true&IncludeItemTypes=Movie,Series&Fields=Id,Type,Name,Container`), (data) => {
-                callback(data?.Items?.[0] || null);
+                callback((data && data.Items && data.Items[0]) || null);
             }, () => callback(null));
         }
     }
 
     function getSeasonsFromTMDB(tmdb_id, callback) {
         if (!tmdb_id) { callback([]); return; }
-        let network = new Lampa.Reguest();
+        let network = new (Lampa.Request || Lampa.Reguest)();
         let url = Lampa.TMDB.api('tv/' + tmdb_id + '?api_key=' + Lampa.TMDB.key() + '&language=' + Lampa.Storage.get('language', 'ru'));
         network.silent(url, (data) => {
             if (data && data.seasons) {
@@ -144,7 +146,7 @@
 
     function getEpisodesFromTMDB(tmdb_id, season_number, callback) {
         if (!tmdb_id) { callback([]); return; }
-        let network = new Lampa.Reguest();
+        let network = new (Lampa.Request || Lampa.Reguest)();
         let url = Lampa.TMDB.api('tv/' + tmdb_id + '/season/' + season_number + '?api_key=' + Lampa.TMDB.key() + '&language=' + Lampa.Storage.get('language', 'ru'));
         network.silent(url, (data) => {
             if (data && data.episodes) {
@@ -174,17 +176,26 @@
             timeline: Lampa.Timeline.view(timelineKey),
             movie: movie
         };
+        
+        // Костыль только для Apple TV
+        if (isApple) {
+            playObj.playlist = [playObj];
+        }
 
-        // ИСПРАВЛЕНИЕ: Убрана циклическая ссылка (playObj.playlist = [playObj];)
         markHistoryAndWatch(movie, null, null);
 
         Lampa.Player.play(playObj);
-        Lampa.Player.playlist([playObj]);
+        
+        if (isApple) {
+            Lampa.Player.playlist(playObj.playlist);
+        } else {
+            Lampa.Player.playlist([playObj]);
+        }
     }
 
-    /* --- КОМПОНЕНТ СЕРИАЛОВ С ИСПОЛЬЗОВАНИЕМ LAMPA.EXPLORER --- */
+    /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
     function EmbySeriesComponent(object) {
-        var network = new Lampa.Reguest();
+        var network = new (Lampa.Request || Lampa.Reguest)();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
         var explorer = new Lampa.Explorer(object); 
         var is_destroyed = false;
@@ -364,7 +375,7 @@
                         var overlayLoader = $('<div class="emby-loader-overlay"><div class="broadcast__spin"></div></div>');
                         explorer.render().append(overlayLoader);
 
-                        var net = new Lampa.Reguest();
+                        var net = new (Lampa.Request || Lampa.Reguest)();
                         var seasonQuery = '/Items?ParentId=' + emby_series_id + '&IncludeItemTypes=Season&Fields=Id,IndexNumber';
                         
                         net.silent(buildApiUrl(seasonQuery), function(seasonData) {
@@ -384,9 +395,9 @@
                                             var playlist = sortedEpisodes.map(function(ep, i) {
                                                 var tmdbEp = current_episodes[i];
                                                 var epTimeline = tmdbEp ? tmdbEp.timeline : null;
+                                                var epNumForTimeline = tmdbEp ? tmdbEp.episode_number : (i + 1);
                                                 
                                                 if(!epTimeline) {
-                                                    var epNumForTimeline = tmdbEp ? tmdbEp.episode_number : (i + 1);
                                                     var key = Lampa.Utils.hash([seasonNumber, epNumForTimeline, orig_title].join(''));
                                                     epTimeline = Lampa.Timeline.view(key);
                                                 }
@@ -398,13 +409,19 @@
                                                     url: buildStreamUrl(ep.Id, container),
                                                     poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
                                                     timeline: epTimeline,
-                                                    movie: object.movie
+                                                    movie: object.movie,
+                                                    season: seasonNumber,
+                                                    episode: epNumForTimeline
                                                 };
                                             });
 
                                             var currentEp = playlist[epNumber - 1];
                                             if (currentEp) {
-                                                // ИСПРАВЛЕНИЕ: Убрана циклическая ссылка (currentEp.playlist = playlist)
+                                                // Костыль исключительно для Apple TV
+                                                if (isApple && playlist.length > 1) {
+                                                    currentEp.playlist = playlist;
+                                                }
+
                                                 markHistoryAndWatch(object.movie, seasonNumber, epNumber);
 
                                                 Lampa.Player.play(currentEp);
@@ -530,7 +547,6 @@
         else data.render.find('.buttons, .activity__body').append(button);
     }
 
-    // ИСПРАВЛЕНИЕ: Перевёл настройки на нативный парсер Lampa
     function initSettings() {
         Lampa.SettingsApi.addComponent({
             component: 'emby',
@@ -543,7 +559,7 @@
             param: {
                 name: STORAGE_URL,
                 type: 'input',
-                values: '', // Обязательный параметр для Android
+                values: '',
                 default: ''
             },
             field: {
@@ -560,7 +576,7 @@
             param: {
                 name: STORAGE_API_KEY,
                 type: 'input',
-                values: '', // Обязательный параметр для Android
+                values: '',
                 default: ''
             },
             field: {
