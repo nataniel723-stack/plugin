@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '0.9.5';
+    const PLUGIN_VERSION = '0.9.6';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -48,6 +48,10 @@
     function getApiKey() { return (Lampa.Storage.get(STORAGE_API_KEY, '') || '').trim(); }
     function isConfigured() { return getUrl().length > 5 && getApiKey().length > 5; }
     function notify(msg) { Lampa.Noty.show(msg); }
+
+    // Проверка на устройства Apple
+    const isApple = (typeof Lampa !== 'undefined' && Lampa.Platform.is('apple')) || 
+                    /Mac|iPhone|iPod|iPad|AppleTV/i.test(navigator.userAgent);
 
     function buildApiUrl(endpoint) {
         const base = getUrl().replace(/\/$/, '');
@@ -113,23 +117,23 @@
     function findInEmby(movie, callback) {
         if (!movie) return callback(null);
         let tmdb = extractTmdbId(movie);
-        let network = new Lampa.Reguest();
+        let network = new (Lampa.Request || Lampa.Reguest)();
         if (tmdb) {
             network.silent(buildApiUrl(`/Items?AnyProviderIdEquals=tmdb.${tmdb}&Recursive=true&IncludeItemTypes=Movie,Series&Fields=Id,Type,Name,Container`), (data) => {
-                callback(data?.Items?.[0] || null);
+                callback((data && data.Items && data.Items[0]) || null);
             }, () => callback(null));
         } else {
             const title = movie.title || movie.name || movie.original_title || movie.original_name || '';
             if (!title) return callback(null);
             network.silent(buildApiUrl(`/Items?SearchTerm=${encodeURIComponent(title)}&Limit=3&Recursive=true&IncludeItemTypes=Movie,Series&Fields=Id,Type,Name,Container`), (data) => {
-                callback(data?.Items?.[0] || null);
+                callback((data && data.Items && data.Items[0]) || null);
             }, () => callback(null));
         }
     }
 
     function getSeasonsFromTMDB(tmdb_id, callback) {
         if (!tmdb_id) { callback([]); return; }
-        let network = new Lampa.Reguest();
+        let network = new (Lampa.Request || Lampa.Reguest)();
         let url = Lampa.TMDB.api('tv/' + tmdb_id + '?api_key=' + Lampa.TMDB.key() + '&language=' + Lampa.Storage.get('language', 'ru'));
         network.silent(url, (data) => {
             if (data && data.seasons) {
@@ -142,7 +146,7 @@
 
     function getEpisodesFromTMDB(tmdb_id, season_number, callback) {
         if (!tmdb_id) { callback([]); return; }
-        let network = new Lampa.Reguest();
+        let network = new (Lampa.Request || Lampa.Reguest)();
         let url = Lampa.TMDB.api('tv/' + tmdb_id + '/season/' + season_number + '?api_key=' + Lampa.TMDB.key() + '&language=' + Lampa.Storage.get('language', 'ru'));
         network.silent(url, (data) => {
             if (data && data.episodes) {
@@ -173,17 +177,25 @@
             movie: movie
         };
         
-        playObj.playlist = [playObj];
+        // Костыль только для Apple TV
+        if (isApple) {
+            playObj.playlist = [playObj];
+        }
 
         markHistoryAndWatch(movie, null, null);
 
         Lampa.Player.play(playObj);
-        Lampa.Player.playlist(playObj.playlist);
+        
+        if (isApple) {
+            Lampa.Player.playlist(playObj.playlist);
+        } else {
+            Lampa.Player.playlist([playObj]);
+        }
     }
 
-    /* --- КОМПОНЕНТ СЕРИАЛОВ С ИСПОЛЬЗОВАНИЕМ LAMPA.EXPLORER --- */
+    /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
     function EmbySeriesComponent(object) {
-        var network = new Lampa.Reguest();
+        var network = new (Lampa.Request || Lampa.Reguest)();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
         var explorer = new Lampa.Explorer(object); 
         var is_destroyed = false;
@@ -363,7 +375,7 @@
                         var overlayLoader = $('<div class="emby-loader-overlay"><div class="broadcast__spin"></div></div>');
                         explorer.render().append(overlayLoader);
 
-                        var net = new Lampa.Reguest();
+                        var net = new (Lampa.Request || Lampa.Reguest)();
                         var seasonQuery = '/Items?ParentId=' + emby_series_id + '&IncludeItemTypes=Season&Fields=Id,IndexNumber';
                         
                         net.silent(buildApiUrl(seasonQuery), function(seasonData) {
@@ -398,7 +410,6 @@
                                                     poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
                                                     timeline: epTimeline,
                                                     movie: object.movie,
-                                                    // ДОБАВЛЕНО: Явное указание сезона и серии для нативных плееров (Apple TV/Android TV)
                                                     season: seasonNumber,
                                                     episode: epNumForTimeline
                                                 };
@@ -406,7 +417,8 @@
 
                                             var currentEp = playlist[epNumber - 1];
                                             if (currentEp) {
-                                                if (playlist.length > 1) {
+                                                // Костыль исключительно для Apple TV
+                                                if (isApple && playlist.length > 1) {
                                                     currentEp.playlist = playlist;
                                                 }
 
@@ -535,7 +547,6 @@
         else data.render.find('.buttons, .activity__body').append(button);
     }
 
-    // ---- ИСПРАВЛЕННЫЕ НАСТРОЙКИ (Не крашат Android, используют нативный ввод) ----
     function initSettings() {
         Lampa.SettingsApi.addComponent({
             component: 'emby',
@@ -548,7 +559,7 @@
             param: {
                 name: STORAGE_URL,
                 type: 'input',
-                values: '', // Обязательный параметр для Android TV
+                values: '',
                 default: ''
             },
             field: {
@@ -565,7 +576,7 @@
             param: {
                 name: STORAGE_API_KEY,
                 type: 'input',
-                values: '', // Обязательный параметр для Android TV
+                values: '',
                 default: ''
             },
             field: {
