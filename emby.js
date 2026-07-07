@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '1.0';
+    const PLUGIN_VERSION = '1.0.1';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -164,6 +164,8 @@
 
     function playMovie(item, movie) {
         const base = getUrl().replace(/\/$/, '');
+        
+        // Генерация хеша для таймлайнов (не меняем)
         const titleForHash = movie ? (movie.original_title || movie.original_name || movie.title || movie.name) : item.Name;
         const timelineKey = Lampa.Utils.hash(titleForHash);
         
@@ -177,22 +179,22 @@
             movie: movie
         };
         
-        // Костыль только для Apple TV
+        // Создаем массив плейлиста для всех
+        let playlist = [playObj];
+        
+        // Для Apple вкладываем плейлист в объект (требование структуры tvOS)
         if (isApple) {
-            playObj.playlist = [playObj];
+            playObj.playlist = playlist;
         }
 
         markHistoryAndWatch(movie, null, null);
-        
-        if (isApple) {
-            Lampa.Player.playlist(playObj.playlist);
-        } else {
-            Lampa.Player.playlist([playObj]);
-        }
 
+        // Ключевой момент: передаем плейлист в ядро ДО запуска
+        Lampa.Player.playlist(playlist);
+
+        // Запускаем воспроизведение
         Lampa.Player.play(playObj);
     }
-
     /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
     function EmbySeriesComponent(object) {
         var network = new (Lampa.Request || Lampa.Reguest)();
