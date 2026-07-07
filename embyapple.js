@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '0.9.5';
+    const PLUGIN_VERSION = '0.9.7';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -117,23 +117,23 @@
     function findInEmby(movie, callback) {
         if (!movie) return callback(null);
         let tmdb = extractTmdbId(movie);
-        let network = new Lampa.Reguest();
+        let network = new (Lampa.Request || Lampa.Reguest)();
         if (tmdb) {
             network.silent(buildApiUrl(`/Items?AnyProviderIdEquals=tmdb.${tmdb}&Recursive=true&IncludeItemTypes=Movie,Series&Fields=Id,Type,Name,Container`), (data) => {
-                callback(data?.Items?.[0] || null);
+                callback((data && data.Items && data.Items[0]) || null);
             }, () => callback(null));
         } else {
             const title = movie.title || movie.name || movie.original_title || movie.original_name || '';
             if (!title) return callback(null);
             network.silent(buildApiUrl(`/Items?SearchTerm=${encodeURIComponent(title)}&Limit=3&Recursive=true&IncludeItemTypes=Movie,Series&Fields=Id,Type,Name,Container`), (data) => {
-                callback(data?.Items?.[0] || null);
+                callback((data && data.Items && data.Items[0]) || null);
             }, () => callback(null));
         }
     }
 
     function getSeasonsFromTMDB(tmdb_id, callback) {
         if (!tmdb_id) { callback([]); return; }
-        let network = new Lampa.Reguest();
+        let network = new (Lampa.Request || Lampa.Reguest)();
         let url = Lampa.TMDB.api('tv/' + tmdb_id + '?api_key=' + Lampa.TMDB.key() + '&language=' + Lampa.Storage.get('language', 'ru'));
         network.silent(url, (data) => {
             if (data && data.seasons) {
@@ -146,7 +146,7 @@
 
     function getEpisodesFromTMDB(tmdb_id, season_number, callback) {
         if (!tmdb_id) { callback([]); return; }
-        let network = new Lampa.Reguest();
+        let network = new (Lampa.Request || Lampa.Reguest)();
         let url = Lampa.TMDB.api('tv/' + tmdb_id + '/season/' + season_number + '?api_key=' + Lampa.TMDB.key() + '&language=' + Lampa.Storage.get('language', 'ru'));
         network.silent(url, (data) => {
             if (data && data.episodes) {
@@ -164,13 +164,19 @@
 
     function playMovie(item, movie) {
         const base = getUrl().replace(/\/$/, '');
+        
+        // Извлекаем чистые данные из карточки Lampa, чтобы в плеере не было пустых строк или имен файлов
+        const playerTitle = movie ? (movie.title || movie.name || item.Name) : item.Name;
+        const playerSubtitle = movie ? (movie.original_title || movie.original_name || '') : '';
+        
         const titleForHash = movie ? (movie.original_title || movie.original_name || movie.title || movie.name) : item.Name;
         const timelineKey = Lampa.Utils.hash(titleForHash);
         
         let container = item.Container ? item.Container.split(',')[0] : 'mp4';
         
         let playObj = {
-            title: item.Name,
+            title: playerTitle,
+            subtitle: playerSubtitle,
             url: buildStreamUrl(item.Id, container),
             poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
             timeline: Lampa.Timeline.view(timelineKey),
@@ -195,7 +201,7 @@
 
     /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
     function EmbySeriesComponent(object) {
-        var network = new Lampa.Reguest();
+        var network = new (Lampa.Request || Lampa.Reguest)();
         var scroll = new Lampa.Scroll({ mask: true, over: true });
         var explorer = new Lampa.Explorer(object); 
         var is_destroyed = false;
@@ -375,7 +381,7 @@
                         var overlayLoader = $('<div class="emby-loader-overlay"><div class="broadcast__spin"></div></div>');
                         explorer.render().append(overlayLoader);
 
-                        var net = new Lampa.Reguest();
+                        var net = new (Lampa.Request || Lampa.Reguest)();
                         var seasonQuery = '/Items?ParentId=' + emby_series_id + '&IncludeItemTypes=Season&Fields=Id,IndexNumber';
                         
                         net.silent(buildApiUrl(seasonQuery), function(seasonData) {
