@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '1.0';
+    const PLUGIN_VERSION = '1.0.1';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -164,39 +164,40 @@
 
     function playMovie(item, movie) {
         const base = getUrl().replace(/\/$/, '');
-        
-        // Генерация хеша
         const titleForHash = movie ? (movie.original_title || movie.original_name || movie.title || movie.name) : item.Name;
         const timelineKey = Lampa.Utils.hash(titleForHash);
         
         let container = item.Container ? item.Container.split(',')[0] : 'mp4';
         
-        // Формируем красивое название
-        const movieTitle = movie ? (movie.title || movie.name || item.Name) : item.Name;
-        
+        // Создаем объект серии
         let playObj = {
-            title: movieTitle,
+            title: movie ? (movie.title || movie.name || item.Name) : item.Name,
             url: buildStreamUrl(item.Id, container),
             poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
             timeline: Lampa.Timeline.view(timelineKey),
             movie: movie
         };
-        
-        // Создаем массив плейлиста
+
+        // ВАЖНО: Делаем из фильма "сериал из одной серии"
         let playlist = [playObj];
         
-        // Костыль для tvOS
-        if (isApple) {
-            playObj.playlist = playlist;
-        }
-
+        // Передаем весь контекст сразу
         markHistoryAndWatch(movie, null, null);
 
-        // Сначала регистрируем плейлист в ядре
+        // Сначала "заряжаем" плеер плейлистом, как в сериалах
         Lampa.Player.playlist(playlist);
 
-        // И только потом запускаем
+        // Запускаем воспроизведение, передавая индекс (первый элемент)
+        // Это заставит Lampa воспринимать это как серийный контент с заголовком
         Lampa.Player.play(playObj);
+        
+        // Для Apple TV добавляем принудительный апдейт плейлиста через 300мс
+        // (иногда нужно, чтобы системный интерфейс "проснулся" и увидел title)
+        if (isApple) {
+            setTimeout(() => {
+                Lampa.Player.playlist(playlist);
+            }, 300);
+        }
     }
     
     /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
