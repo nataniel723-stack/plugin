@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '0.9.8';
+    const PLUGIN_VERSION = '1.0';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -162,7 +162,6 @@
         return `${base}/emby/Videos/${itemId}/stream.${container}?Static=true&DeviceId=${getDeviceId()}&PlaySessionId=${Date.now()}&api_key=${getApiKey()}`;
     }
 
-    /* --- ИСПРАВЛЕННОЕ ВОСПРОИЗВЕДЕНИЕ ФИЛЬМОВ --- */
     function playMovie(item, movie) {
         const base = getUrl().replace(/\/$/, '');
         const titleForHash = movie ? (movie.original_title || movie.original_name || movie.title || movie.name) : item.Name;
@@ -178,15 +177,20 @@
             movie: movie
         };
         
-        // Плейлист внутри объекта обязателен для всех платформ (помогает внешним плеерам определить заголовок)
-        playObj.playlist = [playObj];
+        // Костыль только для Apple TV
+        if (isApple) {
+            playObj.playlist = [playObj];
+        }
 
         markHistoryAndWatch(movie, null, null);
 
-        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сначала объявляем плейлист в Lampa, только потом вызываем .play()
-        // Это позволяет внешним плеерам (Vimu, MX и т.д.) перехватить название до старта Intent
-        Lampa.Player.playlist([playObj]);
         Lampa.Player.play(playObj);
+        
+        if (isApple) {
+            Lampa.Player.playlist(playObj.playlist);
+        } else {
+            Lampa.Player.playlist([playObj]);
+        }
     }
 
     /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
@@ -413,15 +417,15 @@
 
                                             var currentEp = playlist[epNumber - 1];
                                             if (currentEp) {
+                                                // Костыль исключительно для Apple TV
                                                 if (isApple && playlist.length > 1) {
                                                     currentEp.playlist = playlist;
                                                 }
 
                                                 markHistoryAndWatch(object.movie, seasonNumber, epNumber);
 
-                                                // Здесь также выставляем плейлист СНАЧАЛА для гарантированной работы внешних плееров
-                                                Lampa.Player.playlist(playlist);
                                                 Lampa.Player.play(currentEp);
+                                                Lampa.Player.playlist(playlist);
                                             }
                                         }
                                     }, function() {
