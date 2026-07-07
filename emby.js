@@ -170,7 +170,7 @@
         let container = item.Container ? item.Container.split(',')[0] : 'mp4';
         
         let playObj = {
-            title: item.Name,
+            title: movie ? (movie.title || movie.name || item.Name) : item.Name,
             url: buildStreamUrl(item.Id, container),
             poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
             timeline: Lampa.Timeline.view(timelineKey),
