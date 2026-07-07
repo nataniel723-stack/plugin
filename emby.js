@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '1.0.3';
+    const PLUGIN_VERSION = '1.0.4';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -179,14 +179,14 @@
         
         // Костыль только для Apple TV
         if (isApple) {
-            playObj.playlist = [playObj];
+            playObj.playlist = playlist;
         }
 
         markHistoryAndWatch(movie, null, null);
 
         Lampa.Player.play(playObj);
         
-            Lampa.Player.playlist([playObj]);
+            Lampa.Player.playlist(playlist);
         
     }
 
