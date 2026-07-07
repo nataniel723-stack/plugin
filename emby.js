@@ -169,7 +169,6 @@
         
         let container = item.Container ? item.Container.split(',')[0] : 'mp4';
         
-        // Создаем объект серии
         let playObj = {
             title: movie ? (movie.title || movie.name || item.Name) : item.Name,
             url: buildStreamUrl(item.Id, container),
@@ -177,27 +176,22 @@
             timeline: Lampa.Timeline.view(timelineKey),
             movie: movie
         };
-
-        // ВАЖНО: Делаем из фильма "сериал из одной серии"
+        
+        // Создаем массив плейлиста
         let playlist = [playObj];
         
-        // Передаем весь контекст сразу
+        // Костыль для tvOS
+        if (isApple) {
+            playObj.playlist = playlist;
+        }
+
         markHistoryAndWatch(movie, null, null);
 
-        // Сначала "заряжаем" плеер плейлистом, как в сериалах
+        // Сначала "заряжаем" плеер плейлистом
         Lampa.Player.playlist(playlist);
 
-        // Запускаем воспроизведение, передавая индекс (первый элемент)
-        // Это заставит Lampa воспринимать это как серийный контент с заголовком
+        // Запускаем
         Lampa.Player.play(playObj);
-        
-        // Для Apple TV добавляем принудительный апдейт плейлиста через 300мс
-        // (иногда нужно, чтобы системный интерфейс "проснулся" и увидел title)
-        if (isApple) {
-            setTimeout(() => {
-                Lampa.Player.playlist(playlist);
-            }, 300);
-        }
     }
     
     /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
