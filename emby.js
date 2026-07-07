@@ -169,29 +169,43 @@
         
         let container = item.Container ? item.Container.split(',')[0] : 'mp4';
         
+        // Создаем "богатый" объект, который плеер точно поймет
         let playObj = {
             title: movie ? (movie.title || movie.name || item.Name) : item.Name,
+            name: movie ? (movie.title || movie.name || item.Name) : item.Name,
             url: buildStreamUrl(item.Id, container),
             poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
             timeline: Lampa.Timeline.view(timelineKey),
-            movie: movie
+            movie: movie, // Это критически важно!
+            // Добавляем данные, которые плеер ждет от сериалов
+            season: 1,
+            episode: 1,
+            // Имитируем структуру, которую ожидает Apple TV
+            playlist: [] 
         };
         
-        // Создаем массив плейлиста
-        let playlist = [playObj];
+        playObj.playlist = [playObj];
         
-        // Костыль для tvOS
+// Костыль для tvOS
         if (isApple) {
             playObj.playlist = playlist;
         }
-
+        
         markHistoryAndWatch(movie, null, null);
 
-        // Сначала "заряжаем" плеер плейлистом
-        Lampa.Player.playlist(playlist);
+        // 1. Очищаем плейлист перед запуском
+        Lampa.Player.playlist([playObj]);
 
-        // Запускаем
+        // 2. ЗАПУСК - самый важный момент
         Lampa.Player.play(playObj);
+        
+        // 3. Если это Apple, принудительно обновляем UI через 500мс
+        if (isApple) {
+            setTimeout(() => {
+                // Некоторые версии плеера требуют обновления именно через этот метод
+                Lampa.Player.playlist([playObj]);
+            }, 500);
+        }
     }
     
     /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
