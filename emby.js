@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '1.0.4';
+    const PLUGIN_VERSION = '1.0.1';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -171,6 +171,7 @@
         
         let playObj = {
             title: movie ? (movie.title || movie.name) : item.Name,
+            subtitle: movie ? (movie.original_title || movie.original_name || '') : '',
             url: buildStreamUrl(item.Id, container),
             poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
             timeline: Lampa.Timeline.view(timelineKey),
@@ -179,15 +180,18 @@
         
         // Костыль только для Apple TV
         if (isApple) {
-            playObj.playlist = playlist;
+            playObj.playlist = [playObj];
         }
 
         markHistoryAndWatch(movie, null, null);
 
         Lampa.Player.play(playObj);
         
-            Lampa.Player.playlist(playlist);
-        
+        if (isApple) {
+            Lampa.Player.playlist(playObj.playlist);
+        } else {
+            Lampa.Player.playlist([playObj]);
+        }
     }
 
     /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
