@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '1.0.2';
+    const PLUGIN_VERSION = '1.0.3';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -184,13 +184,10 @@
 
         markHistoryAndWatch(movie, null, null);
 
-        Lampa.Player.play(playObj, movie);
+        Lampa.Player.play(playObj);
         
-        if (isApple) {
-            Lampa.Player.playlist(playObj.playlist);
-        } else {
             Lampa.Player.playlist([playObj]);
-        }
+        
     }
 
     /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
