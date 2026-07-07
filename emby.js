@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '1.0.1';
+    const PLUGIN_VERSION = '1.0';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -164,36 +164,41 @@
 
     function playMovie(item, movie) {
         const base = getUrl().replace(/\/$/, '');
+        
+        // Генерация хеша
         const titleForHash = movie ? (movie.original_title || movie.original_name || movie.title || movie.name) : item.Name;
         const timelineKey = Lampa.Utils.hash(titleForHash);
         
         let container = item.Container ? item.Container.split(',')[0] : 'mp4';
         
+        // Формируем красивое название
+        const movieTitle = movie ? (movie.title || movie.name || item.Name) : item.Name;
+        
         let playObj = {
-            title: movie ? (movie.title || movie.name) : item.Name,
-            subtitle: movie ? (movie.original_title || movie.original_name || '') : '',
+            title: movieTitle,
             url: buildStreamUrl(item.Id, container),
             poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
             timeline: Lampa.Timeline.view(timelineKey),
             movie: movie
         };
         
-        // Костыль только для Apple TV
+        // Создаем массив плейлиста
+        let playlist = [playObj];
+        
+        // Костыль для tvOS
         if (isApple) {
-            playObj.playlist = [playObj];
+            playObj.playlist = playlist;
         }
 
         markHistoryAndWatch(movie, null, null);
 
-        Lampa.Player.play(playObj);
-        
-        if (isApple) {
-            Lampa.Player.playlist(playObj.playlist);
-        } else {
-            Lampa.Player.playlist([playObj]);
-        }
-    }
+        // Сначала регистрируем плейлист в ядре
+        Lampa.Player.playlist(playlist);
 
+        // И только потом запускаем
+        Lampa.Player.play(playObj);
+    }
+    
     /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
     function EmbySeriesComponent(object) {
         var network = new (Lampa.Request || Lampa.Reguest)();
