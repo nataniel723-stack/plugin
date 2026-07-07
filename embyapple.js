@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '0.9.7';
+    const PLUGIN_VERSION = '0.9.8';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -162,41 +162,31 @@
         return `${base}/emby/Videos/${itemId}/stream.${container}?Static=true&DeviceId=${getDeviceId()}&PlaySessionId=${Date.now()}&api_key=${getApiKey()}`;
     }
 
+    /* --- ИСПРАВЛЕННОЕ ВОСПРОИЗВЕДЕНИЕ ФИЛЬМОВ --- */
     function playMovie(item, movie) {
         const base = getUrl().replace(/\/$/, '');
-        
-        // Извлекаем чистые данные из карточки Lampa, чтобы в плеере не было пустых строк или имен файлов
-        const playerTitle = movie ? (movie.title || movie.name || item.Name) : item.Name;
-        const playerSubtitle = movie ? (movie.original_title || movie.original_name || '') : '';
-        
         const titleForHash = movie ? (movie.original_title || movie.original_name || movie.title || movie.name) : item.Name;
         const timelineKey = Lampa.Utils.hash(titleForHash);
         
         let container = item.Container ? item.Container.split(',')[0] : 'mp4';
         
         let playObj = {
-            title: playerTitle,
-            subtitle: playerSubtitle,
+            title: item.Name,
             url: buildStreamUrl(item.Id, container),
             poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
             timeline: Lampa.Timeline.view(timelineKey),
             movie: movie
         };
         
-        // Костыль только для Apple TV
-        if (isApple) {
-            playObj.playlist = [playObj];
-        }
+        // Плейлист внутри объекта обязателен для всех платформ (помогает внешним плеерам определить заголовок)
+        playObj.playlist = [playObj];
 
         markHistoryAndWatch(movie, null, null);
 
+        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сначала объявляем плейлист в Lampa, только потом вызываем .play()
+        // Это позволяет внешним плеерам (Vimu, MX и т.д.) перехватить название до старта Intent
+        Lampa.Player.playlist([playObj]);
         Lampa.Player.play(playObj);
-        
-        if (isApple) {
-            Lampa.Player.playlist(playObj.playlist);
-        } else {
-            Lampa.Player.playlist([playObj]);
-        }
     }
 
     /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
@@ -423,15 +413,15 @@
 
                                             var currentEp = playlist[epNumber - 1];
                                             if (currentEp) {
-                                                // Костыль исключительно для Apple TV
                                                 if (isApple && playlist.length > 1) {
                                                     currentEp.playlist = playlist;
                                                 }
 
                                                 markHistoryAndWatch(object.movie, seasonNumber, epNumber);
 
-                                                Lampa.Player.play(currentEp);
+                                                // Здесь также выставляем плейлист СНАЧАЛА для гарантированной работы внешних плееров
                                                 Lampa.Player.playlist(playlist);
+                                                Lampa.Player.play(currentEp);
                                             }
                                         }
                                     }, function() {
