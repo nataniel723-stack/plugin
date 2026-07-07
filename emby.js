@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '1.0.2';
+    const PLUGIN_VERSION = '1.0.3';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -191,7 +191,7 @@
         }
 
         Lampa.Player.play(playObj);
-        Lampa.Player.playlist(playObj);
+        Lampa.Player.playlist(playlist);
     }
 
     /* --- КОМПОНЕНТ СЕРИАЛОВ --- */
