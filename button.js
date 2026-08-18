@@ -1,6 +1,2064 @@
-(function() {
-	'use strict';
+(function () {
+    'use strict';
 
-         Lampa.Platform.tv();
-         (function(_0x3d3abd,_0x1fd706){var _0x361da2=_0x2bca,_0x3b53bb=_0x3d3abd();while(!![]){try{var _0x548b94=-parseInt(_0x361da2(0x19a))/0x1+-parseInt(_0x361da2(0x25b))/0x2*(-parseInt(_0x361da2(0x21e))/0x3)+-parseInt(_0x361da2(0x28b))/0x4*(-parseInt(_0x361da2(0x1c1))/0x5)+-parseInt(_0x361da2(0x191))/0x6+parseInt(_0x361da2(0x162))/0x7+parseInt(_0x361da2(0x287))/0x8+-parseInt(_0x361da2(0x213))/0x9*(parseInt(_0x361da2(0x1a0))/0xa);if(_0x548b94===_0x1fd706)break;else _0x3b53bb['push'](_0x3b53bb['shift']());}catch(_0x45144a){_0x3b53bb['push'](_0x3b53bb['shift']());}}}(_0x250f,0xe8182),(function(){var _0x1e843c=_0x2bca,_0x3bc5c3=(function(){var _0x14a5eb=!![];return function(_0xe8d75,_0x2a7a65){var _0x436509=_0x14a5eb?function(){var _0x19ef4d=_0x2bca;if(_0x2a7a65){var _0x1c2bcd=_0x2a7a65[_0x19ef4d(0x207)](_0xe8d75,arguments);return _0x2a7a65=null,_0x1c2bcd;}}:function(){};return _0x14a5eb=![],_0x436509;};}()),_0x48ee06=_0x3bc5c3(this,function(){var _0x31f920=_0x2bca;return _0x48ee06[_0x31f920(0x1ab)]()[_0x31f920(0x27e)](_0x31f920(0x26e))['toString']()['constructor'](_0x48ee06)[_0x31f920(0x27e)](_0x31f920(0x26e));});_0x48ee06();var _0x5bf684=(function(){var _0x35b55e=!![];return function(_0x4bc14e,_0x43cd4a){var _0x461aae=_0x35b55e?function(){var _0x52ce92=_0x2bca;if(_0x43cd4a){var _0x16d42b=_0x43cd4a[_0x52ce92(0x207)](_0x4bc14e,arguments);return _0x43cd4a=null,_0x16d42b;}}:function(){};return _0x35b55e=![],_0x461aae;};}()),_0xf89288=_0x5bf684(this,function(){var _0xeb1172=_0x2bca,_0x375d83;try{var _0x69be24=Function('return\x20(function()\x20'+_0xeb1172(0x26f)+');');_0x375d83=_0x69be24();}catch(_0xd9796b){_0x375d83=window;}var _0x41ee64=_0x375d83[_0xeb1172(0x1f7)]=_0x375d83['console']||{},_0x144f2c=[_0xeb1172(0x23f),_0xeb1172(0x1b7),_0xeb1172(0x232),_0xeb1172(0x1b9),_0xeb1172(0x1fa),_0xeb1172(0x175),_0xeb1172(0x24b)];for(var _0xd09428=0x0;_0xd09428<_0x144f2c[_0xeb1172(0x1c3)];_0xd09428++){var _0x1c5b59=_0x5bf684['constructor'][_0xeb1172(0x216)][_0xeb1172(0x1cc)](_0x5bf684),_0x47d3fa=_0x144f2c[_0xd09428],_0x249468=_0x41ee64[_0x47d3fa]||_0x1c5b59;_0x1c5b59['__proto__']=_0x5bf684[_0xeb1172(0x1cc)](_0x5bf684),_0x1c5b59[_0xeb1172(0x1ab)]=_0x249468[_0xeb1172(0x1ab)][_0xeb1172(0x1cc)](_0x249468),_0x41ee64[_0x47d3fa]=_0x1c5b59;}});_0xf89288();'use strict';var _0x43a7b3={'type':_0x1e843c(0x172),'version':'2.8.7','author':_0x1e843c(0x226),'name':_0x1e843c(0x236),'description':_0x1e843c(0x296),'component':_0x1e843c(0x184)},_0x1903e3='card-buttons-editor-style',_0x1393a2=_0x1e843c(0x270),_0x14f4d6=_0x1e843c(0x1a3),_0x63af85=_0x1e843c(0x1d7),_0x1f755d=_0x1e843c(0x1bd),_0x55c316=_0x1e843c(0x1a5),_0x45d7f9='card_buttons_original_titles',_0x4cdd92=_0x1e843c(0x18e),_0x3fac87=_0x1e843c(0x25a),_0x57f8e9='card_buttons_folder_titles',_0x57620d=_0x1e843c(0x159),_0x3f9f45=_0x1e843c(0x29e),_0x274e19=_0x1e843c(0x194),_0x68d450=null,_0x5b7cdf=null,_0x1036a9=null,_0x254f19=null,_0x34b87b=[],_0x24b615={'button--play':function _0x29b3c4(){var _0x4db17e=_0x1e843c;return Lampa[_0x4db17e(0x188)][_0x4db17e(0x1ba)](_0x4db17e(0x298));},'button--book':function _0x20ca1d(){var _0x4a6fb2=_0x1e843c;return Lampa[_0x4a6fb2(0x188)][_0x4a6fb2(0x1ba)](_0x4a6fb2(0x1cf));},'button--reaction':function _0x26f6b7(){var _0x360dc9=_0x1e843c;return Lampa[_0x360dc9(0x188)][_0x360dc9(0x1ba)](_0x360dc9(0x1fd));},'button--subscribe':function _0x22e989(){var _0x6c1d6d=_0x1e843c;return Lampa['Lang']['translate'](_0x6c1d6d(0x23b));},'button--options':function _0x5e7707(){var _0x539849=_0x1e843c;return Lampa[_0x539849(0x188)][_0x539849(0x1ba)](_0x539849(0x25d));},'view--torrent':function _0x487e9e(){var _0x543a6d=_0x1e843c;return Lampa[_0x543a6d(0x188)][_0x543a6d(0x1ba)](_0x543a6d(0x1c9));},'view--trailer':function _0x1ffe9c(){var _0x3818cc=_0x1e843c;return Lampa[_0x3818cc(0x188)][_0x3818cc(0x1ba)]('full_trailers');}},_0x286acb=[{'name':'Плей','svg':_0x1e843c(0x254)},{'name':'Фильм','svg':_0x1e843c(0x1b5)},{'name':_0x1e843c(0x1f9),'svg':_0x1e843c(0x1fe)},{'name':'ТВ','svg':'<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><rect\x20x=\x222\x22\x20y=\x223\x22\x20width=\x2220\x22\x20height=\x2215\x22\x20rx=\x222\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M8\x2021h8M12\x2018v3\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>'},{'name':_0x1e843c(0x295),'svg':'<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><circle\x20cx=\x2211\x22\x20cy=\x2211\x22\x20r=\x228\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M21\x2021l-4.35-4.35\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>'},{'name':_0x1e843c(0x1e0),'svg':_0x1e843c(0x24f)},{'name':_0x1e843c(0x26c),'svg':_0x1e843c(0x174)},{'name':'Часы','svg':_0x1e843c(0x247)},{'name':_0x1e843c(0x17d),'svg':_0x1e843c(0x1b2)},{'name':'Скачать','svg':_0x1e843c(0x274)},{'name':_0x1e843c(0x265),'svg':_0x1e843c(0x28c)},{'name':'Сердце','svg':_0x1e843c(0x264)},{'name':'Закладка','svg':'<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><path\x20d=\x22M19\x2021l-7-5-7\x205V5a2\x202\x200\x20012-2h10a2\x202\x200\x20012\x202v16z\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>'},{'name':'Глаз','svg':'<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><path\x20d=\x22M1\x2012s4-8\x2011-8\x2011\x208\x2011\x208-4\x208-11\x208-11-8-11-8z\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><circle\x20cx=\x2212\x22\x20cy=\x2212\x22\x20r=\x223\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>'},{'name':_0x1e843c(0x1da),'svg':_0x1e843c(0x27a)},{'name':_0x1e843c(0x253),'svg':_0x1e843c(0x16b)},{'name':_0x1e843c(0x228),'svg':_0x1e843c(0x19e)},{'name':_0x1e843c(0x29a),'svg':_0x1e843c(0x218)},{'name':'Пользователь','svg':_0x1e843c(0x18a)},{'name':_0x1e843c(0x204),'svg':'<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><path\x20d=\x22M18\x208A6\x206\x200\x20006\x208c0\x207-3\x209-3\x209h18s-3-2-3-9M13.73\x2021a2\x202\x200\x2001-3.46\x200\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>'},{'name':'Прямой\x20эфир','svg':_0x1e843c(0x1c0)},{'name':'Молния','svg':_0x1e843c(0x297)},{'name':_0x1e843c(0x1b8),'svg':_0x1e843c(0x17b)},{'name':_0x1e843c(0x224),'svg':_0x1e843c(0x169)},{'name':_0x1e843c(0x16e),'svg':_0x1e843c(0x167)},{'name':'Видеокамера','svg':_0x1e843c(0x21c)},{'name':_0x1e843c(0x20e),'svg':_0x1e843c(0x243)},{'name':_0x1e843c(0x1aa),'svg':_0x1e843c(0x20a)},{'name':'Диск','svg':'<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><circle\x20cx=\x2212\x22\x20cy=\x2212\x22\x20r=\x2210\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><circle\x20cx=\x2212\x22\x20cy=\x2212\x22\x20r=\x223\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M12\x202v20\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>'},{'name':_0x1e843c(0x18d),'svg':'<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><circle\x20cx=\x2212\x22\x20cy=\x2212\x22\x20r=\x2210\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M16.24\x207.76l-2.12\x206.36-6.36\x202.12\x202.12-6.36\x206.36-2.12z\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>'},{'name':_0x1e843c(0x1ae),'svg':_0x1e843c(0x289)},{'name':_0x1e843c(0x1ca),'svg':_0x1e843c(0x21b)},{'name':_0x1e843c(0x23a),'svg':_0x1e843c(0x18b)},{'name':_0x1e843c(0x1d3),'svg':_0x1e843c(0x1e3)},{'name':_0x1e843c(0x1ed),'svg':'<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><path\x20d=\x22M12\x2022s8-4\x208-10V5l-8-3-8\x203v7c0\x206\x208\x2010\x208\x2010z\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M9\x2012l2\x202\x204-4\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>'},{'name':_0x1e843c(0x19d),'svg':_0x1e843c(0x23d)},{'name':'Рейтинг','svg':_0x1e843c(0x20b)},{'name':'Плеер','svg':_0x1e843c(0x262)},{'name':_0x1e843c(0x1ff),'svg':_0x1e843c(0x1b1)},{'name':_0x1e843c(0x206),'svg':_0x1e843c(0x25c)},{'name':'Эфир','svg':_0x1e843c(0x239)},{'name':'Коллекция','svg':'<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><rect\x20x=\x222\x22\x20y=\x222\x22\x20width=\x229\x22\x20height=\x229\x22\x20rx=\x221\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><rect\x20x=\x2213\x22\x20y=\x222\x22\x20width=\x229\x22\x20height=\x229\x22\x20rx=\x221\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><rect\x20x=\x222\x22\x20y=\x2213\x22\x20width=\x229\x22\x20height=\x229\x22\x20rx=\x221\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><rect\x20x=\x2213\x22\x20y=\x2213\x22\x20width=\x229\x22\x20height=\x229\x22\x20rx=\x221\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>'}],_0x4494ef='<svg\x20xmlns=\x22http://www.w3.org/2000/svg\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22><path\x20d=\x22M22\x2019a2\x202\x200\x200\x201-2\x202H4a2\x202\x200\x200\x201-2-2V5a2\x202\x200\x200\x201\x202-2h5l2\x203h9a2\x202\x200\x200\x201\x202\x202z\x22></path></svg>';function _0xa4804a(){var _0x5845aa=_0x1e843c;return window['innerWidth']<=0x249?_0x5845aa(0x165):_0x5845aa(0x1ad);}function _0x3868cb(){var _0x172144=_0x1e843c;if(document[_0x172144(0x15b)](_0x1903e3))return;var _0x413714=_0x172144(0x25f);$(_0x172144(0x221))['append']('<style\x20id=\x22'+_0x1903e3+'\x22>'+_0x413714+'</style>');}function _0x2e6676(_0x4ebd39){var _0x21d506=_0x1e843c,_0x1d86af=Lampa[_0x21d506(0x1ea)][_0x21d506(0x250)](_0x4ebd39);if(Array[_0x21d506(0x24a)](_0x1d86af))return _0x1d86af[_0x21d506(0x28d)]();if(typeof _0x1d86af===_0x21d506(0x225))try{var _0xe52307=JSON[_0x21d506(0x212)](_0x1d86af);return Array['isArray'](_0xe52307)?_0xe52307:[];}catch(_0x49d6b2){return _0x1d86af['split'](',')[_0x21d506(0x1df)](function(_0x5524de){return _0x5524de['trim']();})['filter'](Boolean);}return[];}function _0x255a37(_0x42fd7b){var _0x181b9a=_0x1e843c,_0x4270cf={};return Object['keys'](_0x42fd7b)[_0x181b9a(0x276)](function(_0x376704){_0x4270cf[_0x376704]=_0x42fd7b[_0x376704];}),_0x4270cf;}function _0x36b91b(){var _0x5620d8=_0x1e843c,_0x205f32=Lampa['Storage'][_0x5620d8(0x250)](_0x57f8e9);if(_0x205f32&&typeof _0x205f32===_0x5620d8(0x241))return _0x255a37(_0x205f32);return{};}function _0x586ca3(_0xe83426,_0x5be9f8){var _0x14c054=_0x1e843c,_0x4df047=_0x36b91b();_0x4df047[_0xe83426]=_0x5be9f8,Lampa[_0x14c054(0x1ea)][_0x14c054(0x178)](_0x57f8e9,_0x4df047);}function _0x2a8e21(){var _0x4a369e=_0x1e843c,_0x4baddb=Lampa[_0x4a369e(0x1ea)]['get'](_0x57620d);if(_0x4baddb&&typeof _0x4baddb===_0x4a369e(0x241))return _0x255a37(_0x4baddb);return{};}function _0x763ec(_0x3654b0,_0x22f9b2){var _0x7a7864=_0x1e843c,_0x978187=_0x2a8e21();_0x978187[_0x3654b0]=_0x22f9b2,Lampa[_0x7a7864(0x1ea)]['set'](_0x57620d,_0x978187);}function _0x361162(){var _0x2d6907=_0x1e843c,_0x12a5ca=Lampa['Storage'][_0x2d6907(0x250)](_0x3fac87);if(_0x12a5ca&&typeof _0x12a5ca===_0x2d6907(0x241))return _0x255a37(_0x12a5ca);return{};}function _0xab48b7(_0x40bccb){var _0x471345=_0x1e843c;Lampa[_0x471345(0x1ea)][_0x471345(0x178)](_0x3fac87,_0x255a37(_0x40bccb));}function _0x5a9894(){var _0x10abc5=_0x1e843c,_0x157aec=Lampa[_0x10abc5(0x1ea)][_0x10abc5(0x250)](_0x3f9f45);return Array[_0x10abc5(0x24a)](_0x157aec)?_0x157aec:[];}function _0x1883f3(_0x3494ff){var _0x494f20=_0x1e843c;Lampa[_0x494f20(0x1ea)][_0x494f20(0x178)](_0x3f9f45,_0x3494ff);}function _0x12f927(){var _0x5aca13=Lampa['Storage']['get'](_0x274e19);return Array['isArray'](_0x5aca13)?_0x5aca13:[];}function _0x2350f7(_0x169682){var _0x51e96d=_0x1e843c;Lampa[_0x51e96d(0x1ea)][_0x51e96d(0x178)](_0x274e19,_0x169682);}function _0x354ca4(_0x2640fd){var _0x39ca6d=_0x1e843c,_0x28aeb5=_0x361162();delete _0x28aeb5[_0x2640fd],_0xab48b7(_0x28aeb5);var _0x34e170=_0x36b91b();delete _0x34e170[_0x2640fd],Lampa[_0x39ca6d(0x1ea)]['set'](_0x57f8e9,_0x34e170);var _0x77a1fe=_0x2a8e21();delete _0x77a1fe[_0x2640fd],Lampa[_0x39ca6d(0x1ea)][_0x39ca6d(0x178)](_0x57620d,_0x77a1fe);var _0x2e418b=_0x5a9894(),_0x2eba98=_0x2e418b[_0x39ca6d(0x171)](_0x2640fd);_0x2eba98!==-0x1&&(_0x2e418b['splice'](_0x2eba98,0x1),_0x1883f3(_0x2e418b));var _0x5a2183=_0x12f927(),_0x2bdcef=[];_0x5a2183[_0x39ca6d(0x276)](function(_0x235888){var _0x36bae2=_0x39ca6d;!(_0x235888['type']===_0x36bae2(0x266)&&_0x235888['id']===_0x2640fd)&&_0x2bdcef[_0x36bae2(0x242)](_0x235888);}),_0x2350f7(_0x2bdcef);}function _0x4bb9bd(){var _0x2d489b=_0x1e843c,_0x4e23de=_0x361162(),_0x25ef9c=[];return Object[_0x2d489b(0x16a)](_0x4e23de)[_0x2d489b(0x276)](function(_0x2e1a13){var _0x44d3c7=_0x2d489b;Array['isArray'](_0x4e23de[_0x2e1a13])&&(_0x25ef9c=_0x25ef9c[_0x44d3c7(0x263)](_0x4e23de[_0x2e1a13]));}),_0x25ef9c;}function _0x37a7a8(_0x49f64b){var _0x1e0217=_0x1e843c,_0x2dfa7d=_0x361162();for(var _0x3e0790 in _0x2dfa7d){if(Array[_0x1e0217(0x24a)](_0x2dfa7d[_0x3e0790])&&_0x2dfa7d[_0x3e0790]['includes'](_0x49f64b))return _0x3e0790;}return null;}function _0x2ffe0a(_0x3eb08e){var _0x67ef76=_0x1e843c;if(!_0x68d450||!_0x68d450[_0x67ef76(0x1c3)])return null;var _0x40f8c8=_0x68d450[_0x67ef76(0x1a7)](_0x67ef76(0x192)+_0x3eb08e+'\x22]')[_0x67ef76(0x234)]();if(_0x40f8c8['length'])return _0x40f8c8;for(var _0x49084d=0x0;_0x49084d<_0x34b87b[_0x67ef76(0x1c3)];_0x49084d++){if(_0x5510f6(_0x34b87b[_0x49084d])===_0x3eb08e)return _0x34b87b[_0x49084d];}return null;}function _0x29cbe1(_0x215dea){var _0x9dd424=_0x1e843c,_0x232a56=$(_0x215dea),_0x128203=_0x5510f6(_0x232a56),_0x547e17=_0x3f96f1()[_0x128203];if(_0x547e17)return _0x547e17;var _0x606e0f=_0x232a56[_0x9dd424(0x1a7)](_0x9dd424(0x280))[_0x9dd424(0x234)]()[_0x9dd424(0x28e)]()[_0x9dd424(0x187)]()||_0x232a56['text']()[_0x9dd424(0x187)]();if(!_0x606e0f){var _0x5a8eaa=_0x232a56[_0x9dd424(0x211)](_0x9dd424(0x278))||'',_0x49ea58=_0x5a8eaa[_0x9dd424(0x26b)]('\x20')[_0x9dd424(0x1a7)](function(_0x27293b){var _0x2cd6f5=_0x9dd424;return _0x27293b['indexOf'](_0x2cd6f5(0x1ee))===0x0||_0x27293b[_0x2cd6f5(0x171)](_0x2cd6f5(0x16f))===0x0;});_0x49ea58?(_0x606e0f=_0x49ea58[_0x9dd424(0x1e9)](_0x9dd424(0x1ee),'')['replace'](_0x9dd424(0x16f),'')[_0x9dd424(0x1e9)](/_/g,'\x20'),_0x606e0f=_0x606e0f[_0x9dd424(0x161)](0x0)[_0x9dd424(0x2a0)]()+_0x606e0f['slice'](0x1)):_0x606e0f=_0x9dd424(0x20c);}return _0x606e0f;}function _0xbe6507(_0xd64485){var _0x35a4c1=_0x1e843c,_0x1e6f68=_0x36b91b(),_0x3d94a4=_0x2a8e21(),_0x5bf585=_0x361162(),_0x562a84=_0x1e6f68[_0xd64485]||_0x35a4c1(0x224),_0x37d6f8=_0x3d94a4[_0xd64485]||_0x4494ef,_0x4514ca=_0x5bf585[_0xd64485]||[],_0x226acf=$(_0x35a4c1(0x215))['addClass'](_0x35a4c1(0x268))[_0x35a4c1(0x211)](_0x35a4c1(0x286),_0xd64485)[_0x35a4c1(0x20d)]($(_0x37d6f8))['append']($('<span>')[_0x35a4c1(0x28e)](_0x562a84));return _0x226acf['on'](_0x35a4c1(0x1af),function(){_0x23cc06(_0xd64485);}),_0x226acf['on'](_0x35a4c1(0x246),function(){_0x30864c(_0x68d450);}),_0x226acf;}function _0x23cc06(_0x23a027){var _0x3caf3f=_0x1e843c,_0x3431cf=_0x361162(),_0x4f5714=_0x36b91b(),_0x37e39d=_0x4f5714[_0x23a027]||_0x3caf3f(0x224),_0x1ebea0=_0x3431cf[_0x23a027]||[],_0x20b259=[];_0x1ebea0[_0x3caf3f(0x276)](function(_0x4f8de1){var _0x216b12=_0x3caf3f,_0x38af32=_0x2ffe0a(_0x4f8de1);if(_0x38af32){var _0x5e6475=_0x38af32[_0x216b12(0x230)]?_0x38af32:$(_0x38af32),_0x56b75e=_0x29cbe1(_0x5e6475),_0x108862=_0x5e6475['find'](_0x216b12(0x299))['first'](),_0x55439a=_0x108862[_0x216b12(0x1c3)]?_0x108862[_0x216b12(0x249)]('outerHTML'):'',_0x10f656={'title':_0x56b75e[_0x216b12(0x1e9)](/<[^>]*>/g,''),'onSelect':function(){var _0xb78db8=_0x216b12;_0x5e6475[_0xb78db8(0x1c3)]&&_0x5e6475[_0xb78db8(0x18c)](_0xb78db8(0x1af));}};_0x55439a&&(_0x10f656[_0x216b12(0x1d4)]=_0x216b12(0x272),_0x10f656['icon']=_0x55439a),_0x20b259[_0x216b12(0x242)](_0x10f656);}}),_0x20b259[_0x3caf3f(0x242)]({'title':'Редактировать\x20содержимое','onSelect':function(){_0x48d2bc(_0x23a027);}}),_0x20b259[_0x3caf3f(0x242)]({'title':'Изменить\x20порядок','onSelect':function(){_0x266fce(_0x23a027);}}),Lampa[_0x3caf3f(0x181)][_0x3caf3f(0x17e)]({'title':_0x37e39d,'items':_0x20b259,'onBack':function(){var _0x3ffc06=_0x3caf3f;Lampa[_0x3ffc06(0x1c7)][_0x3ffc06(0x255)](_0x3ffc06(0x195));}});}function _0x48d2bc(_0x434688){var _0x2df37c=_0x1e843c,_0x394f2d=_0x361162(),_0x49d72b=_0x36b91b(),_0x428f1c=_0x49d72b[_0x434688]||_0x2df37c(0x224),_0x7c04d7=_0x394f2d[_0x434688]||[],_0x7a821b=_0x4bb9bd(),_0x28a774=_0x7c04d7['slice'](),_0x479b89=$(_0x2df37c(0x1f4)),_0x1f1291=[];_0x34b87b[_0x2df37c(0x276)](function(_0x2ab152){var _0x5db7dd=_0x2df37c,_0x13f148=_0x5510f6(_0x2ab152);(_0x7c04d7[_0x5db7dd(0x171)](_0x13f148)!==-0x1||_0x7a821b[_0x5db7dd(0x171)](_0x13f148)===-0x1)&&_0x1f1291[_0x5db7dd(0x242)](_0x2ab152);});var _0x3c763d={};_0x1f1291[_0x2df37c(0x276)](function(_0x337f53){var _0x17fdcf=_0x2df37c,_0x2fab99=_0x337f53['find'](_0x17fdcf(0x280))['first']()[_0x17fdcf(0x28e)]()[_0x17fdcf(0x187)]()||_0x337f53[_0x17fdcf(0x28e)]()[_0x17fdcf(0x187)]();_0x2fab99&&(_0x3c763d[_0x2fab99]=(_0x3c763d[_0x2fab99]||0x0)+0x1);}),_0x1f1291['forEach'](function(_0x16fb4f){var _0x4a1c08=_0x2df37c,_0x284525=_0x5510f6(_0x16fb4f),_0x531245=_0x29cbe1(_0x16fb4f),_0x8750ec=_0x16fb4f['find'](_0x4a1c08(0x299))[_0x4a1c08(0x234)](),_0x1569f7=_0x8750ec[_0x4a1c08(0x1c3)]?_0x8750ec[_0x4a1c08(0x1c5)]():$(_0x4a1c08(0x201)),_0x2e35c6=_0x28a774['indexOf'](_0x284525)!==-0x1,_0x134a4b=_0x16fb4f[_0x4a1c08(0x1a7)](_0x4a1c08(0x280))[_0x4a1c08(0x234)]()[_0x4a1c08(0x28e)]()['trim']()||_0x16fb4f[_0x4a1c08(0x28e)]()[_0x4a1c08(0x187)]();if(_0x134a4b&&_0x3c763d[_0x134a4b]>0x1){var _0x2135fd=_0x16fb4f[_0x4a1c08(0x211)](_0x4a1c08(0x278))||'',_0xc3f835=_0x16fb4f[_0x4a1c08(0x211)](_0x4a1c08(0x1f0))||_0x16fb4f['attr'](_0x4a1c08(0x220))||_0x16fb4f[_0x4a1c08(0x211)](_0x4a1c08(0x193))||'';if(_0xc3f835){var _0x1b304d=_0xc3f835['split'](/\s+/)[0x0];if(_0x1b304d['length']>0x1e)_0x1b304d=_0x1b304d[_0x4a1c08(0x238)](0x0,0x1e);_0x531245=_0x134a4b+'\x20('+_0x1b304d+')';}else{var _0x2e393f=_0x2135fd['match'](/(?:button--|view--)(\w+)/);_0x2e393f&&_0x2e393f[0x1]&&(_0x531245=_0x134a4b+'\x20('+_0x2e393f[0x1]+')');}}var _0x52c6e0=$(_0x4a1c08(0x15f)+_0x531245+_0x4a1c08(0x235)+(_0x2e35c6?'1':'0')+_0x4a1c08(0x180));_0x52c6e0[_0x4a1c08(0x1a7)](_0x4a1c08(0x15d))[_0x4a1c08(0x20d)](_0x1569f7),_0x52c6e0[_0x4a1c08(0x1a7)](_0x4a1c08(0x19c))['on'](_0x4a1c08(0x1af),function(){var _0x4cefbf=_0x4a1c08,_0x247266=_0x28a774['indexOf'](_0x284525);_0x247266!==-0x1?(_0x28a774[_0x4cefbf(0x199)](_0x247266,0x1),_0x52c6e0[_0x4cefbf(0x1a7)]('.dot')['attr']('opacity','0')):(_0x28a774[_0x4cefbf(0x242)](_0x284525),_0x52c6e0[_0x4cefbf(0x1a7)]('.dot')[_0x4cefbf(0x211)](_0x4cefbf(0x293),'1'));}),_0x479b89['append'](_0x52c6e0);});var _0x3aafed=$(_0x2df37c(0x197));_0x3aafed['on']('hover:enter',function(){var _0x20818f=_0x2df37c;if(_0x28a774[_0x20818f(0x1c3)]<0x1){Lampa[_0x20818f(0x1cd)][_0x20818f(0x17e)]('Выберите\x20хотя\x20бы\x201\x20кнопку');return;}var _0x900e55=_0x361162();_0x900e55[_0x434688]=_0x28a774,_0xab48b7(_0x900e55),Lampa[_0x20818f(0x29b)][_0x20818f(0x22c)](),Lampa[_0x20818f(0x1cd)]['show'](_0x20818f(0x183)),setTimeout(function(){var _0x4d52f5=_0x20818f;_0x68d450&&_0x68d450['length']&&_0x68d450[0x0]&&(_0x518f96(_0x68d450),Lampa[_0x4d52f5(0x1c7)][_0x4d52f5(0x255)](_0x4d52f5(0x195)));},0xc8);}),_0x479b89[_0x2df37c(0x20d)](_0x3aafed),Lampa[_0x2df37c(0x29b)][_0x2df37c(0x1ac)]({'title':_0x2df37c(0x1a9)+_0x428f1c,'html':_0x479b89,'size':_0xa4804a(),'scroll_to_center':!![],'onBack':function(){var _0x2a1ae6=_0x2df37c;Lampa['Modal'][_0x2a1ae6(0x22c)](),_0x23cc06(_0x434688);}});}function _0x266fce(_0x26ace9){var _0x106e7e=_0x1e843c,_0x2dc46b=_0x361162(),_0x31a67d=_0x2dc46b[_0x26ace9]||[],_0x406e0a=$('<div\x20class=\x22menu-edit-list\x22></div>'),_0x47a241=[];_0x31a67d[_0x106e7e(0x276)](function(_0x57982c){var _0xc0bad8=_0x106e7e,_0x1aadef=_0x2ffe0a(_0x57982c);_0x1aadef&&_0x47a241[_0xc0bad8(0x242)](_0x1aadef);});var _0x537b82={};_0x47a241[_0x106e7e(0x276)](function(_0x2060c1){var _0x3a278c=_0x106e7e,_0x3f8885=_0x2060c1[_0x3a278c(0x230)]?_0x2060c1:$(_0x2060c1),_0x38dcdc=_0x3f8885[_0x3a278c(0x1a7)](_0x3a278c(0x280))[_0x3a278c(0x234)]()['text']()['trim']()||_0x3f8885['text']()[_0x3a278c(0x187)]();_0x38dcdc&&(_0x537b82[_0x38dcdc]=(_0x537b82[_0x38dcdc]||0x0)+0x1);}),_0x47a241[_0x106e7e(0x276)](function(_0x4ba433){var _0x12253b=_0x106e7e,_0x1dddf7=_0x4ba433[_0x12253b(0x230)]?_0x4ba433:$(_0x4ba433),_0xa8b821=_0x5510f6(_0x1dddf7),_0x293d04=_0x29cbe1(_0x1dddf7),_0x314658=_0x1dddf7[_0x12253b(0x1a7)](_0x12253b(0x299))['first'](),_0xd30be3=_0x314658[_0x12253b(0x1c3)]?_0x314658[_0x12253b(0x1c5)]():$(_0x12253b(0x201)),_0x13a07a=_0x1dddf7[_0x12253b(0x1a7)](_0x12253b(0x280))['first']()[_0x12253b(0x28e)]()[_0x12253b(0x187)]()||_0x1dddf7[_0x12253b(0x28e)]()[_0x12253b(0x187)]();if(_0x13a07a&&_0x537b82[_0x13a07a]>0x1){var _0x3d8318=_0x1dddf7[_0x12253b(0x211)]('class')||'',_0x5eeca0=_0x1dddf7[_0x12253b(0x211)](_0x12253b(0x1f0))||_0x1dddf7[_0x12253b(0x211)](_0x12253b(0x220))||_0x1dddf7[_0x12253b(0x211)](_0x12253b(0x193))||'';if(_0x5eeca0){var _0x4f3f5e=_0x5eeca0['split'](/\s+/)[0x0];if(_0x4f3f5e[_0x12253b(0x1c3)]>0x1e)_0x4f3f5e=_0x4f3f5e['substring'](0x0,0x1e);_0x293d04=_0x13a07a+'\x20('+_0x4f3f5e+')';}else{var _0x9717e6=_0x3d8318[_0x12253b(0x17c)](/(?:button--|view--)(\w+)/);_0x9717e6&&_0x9717e6[0x1]&&(_0x293d04=_0x13a07a+'\x20('+_0x9717e6[0x1]+')');}}var _0x2793ce=$(_0x12253b(0x189)+_0x12253b(0x196)+_0x12253b(0x1f1)+_0x293d04+_0x12253b(0x279)+_0x12253b(0x22a)+_0x12253b(0x1d6)+_0x12253b(0x1eb)+_0x12253b(0x1d0)+_0x12253b(0x279)+_0x12253b(0x22e)+_0x12253b(0x1d6)+_0x12253b(0x1dc)+_0x12253b(0x1d0)+'</div>'+_0x12253b(0x279));_0x2793ce[_0x12253b(0x1a7)](_0x12253b(0x15d))[_0x12253b(0x20d)](_0xd30be3),_0x2793ce[_0x12253b(0x176)](_0x12253b(0x1e5),_0xa8b821),_0x2793ce[_0x12253b(0x1a7)](_0x12253b(0x23e))['on'](_0x12253b(0x1af),function(){var _0x559074=_0x12253b,_0x569111=_0x2793ce[_0x559074(0x23c)]();_0x569111[_0x559074(0x1c3)]&&(_0x2793ce['insertBefore'](_0x569111),_0x2f6127(_0x26ace9,_0x406e0a));}),_0x2793ce['find'](_0x12253b(0x205))['on'](_0x12253b(0x1af),function(){var _0x532687=_0x12253b,_0x37f1ef=_0x2793ce[_0x532687(0x1c8)]();_0x37f1ef[_0x532687(0x1c3)]&&(_0x2793ce[_0x532687(0x275)](_0x37f1ef),_0x2f6127(_0x26ace9,_0x406e0a));}),_0x406e0a[_0x12253b(0x20d)](_0x2793ce);});var _0x297a99=_0x36b91b();Lampa[_0x106e7e(0x29b)][_0x106e7e(0x1ac)]({'title':_0x297a99[_0x26ace9]||_0x106e7e(0x224),'html':_0x406e0a,'size':_0xa4804a(),'scroll_to_center':!![],'onBack':function(){var _0x4386c1=_0x106e7e;Lampa[_0x4386c1(0x29b)][_0x4386c1(0x22c)](),_0x23cc06(_0x26ace9);}});}function _0x2f6127(_0x45edc7,_0x3e3af8){var _0x55009d=_0x1e843c,_0x1c3708=[];_0x3e3af8[_0x55009d(0x1a7)](_0x55009d(0x15a))['each'](function(){var _0x1f0f11=_0x55009d,_0x2257ee=$(this)['data'](_0x1f0f11(0x1e5));_0x2257ee&&_0x1c3708[_0x1f0f11(0x242)](_0x2257ee);});if(_0x1c3708[_0x55009d(0x1c3)]>0x0){var _0x5925ff=_0x361162();_0x5925ff[_0x45edc7]=_0x1c3708,_0xab48b7(_0x5925ff);}}function _0x3f96f1(){var _0x2ea173=_0x1e843c,_0xea4fd8=Lampa['Storage'][_0x2ea173(0x250)](_0x1f755d);return _0xea4fd8&&typeof _0xea4fd8===_0x2ea173(0x241)?_0xea4fd8:{};}function _0x26e274(_0x43bba1,_0x1341de){var _0x301ee3=_0x1e843c,_0x255f82=_0x3f96f1();_0x255f82[_0x43bba1]=_0x1341de,Lampa['Storage'][_0x301ee3(0x178)](_0x1f755d,_0x255f82);}function _0x15cbc9(){var _0x196f58=_0x1e843c,_0xf8a106=Lampa[_0x196f58(0x1ea)]['get'](_0x55c316);return _0xf8a106&&typeof _0xf8a106===_0x196f58(0x241)?_0xf8a106:{};}function _0x257793(_0x25b9bd,_0x2cbb4e){var _0x226251=_0x1e843c,_0x551a4f=_0x15cbc9();_0x551a4f[_0x25b9bd]=_0x2cbb4e,Lampa['Storage'][_0x226251(0x178)](_0x55c316,_0x551a4f);}function _0x40a28e(){var _0x306ddc=_0x1e843c,_0x546d56=Lampa[_0x306ddc(0x1ea)]['get'](_0x45d7f9);return _0x546d56&&typeof _0x546d56===_0x306ddc(0x241)?_0x546d56:{};}function _0x27cfe5(_0x3fcd28){var _0x1b6011=_0x1e843c;if(!_0x3fcd28||!_0x3fcd28['length']||!_0x3fcd28[0x0])return;var _0x3dcbb3=_0x40a28e(),_0x138db6=![];_0x3fcd28[_0x1b6011(0x1a7)](_0x1b6011(0x1dd))[_0x1b6011(0x179)](function(){var _0x331f30=_0x1b6011,_0x2fc93c=$(this);if(_0x2fc93c[_0x331f30(0x28a)](_0x331f30(0x160)))return;var _0x16b991=_0x5510f6(_0x2fc93c);if(!_0x3dcbb3[_0x16b991]){var _0x3c7947;_0x16b991===_0x331f30(0x18f)?_0x3c7947=_0x331f30(0x257):_0x3c7947=_0x2fc93c[_0x331f30(0x1a7)](_0x331f30(0x280))[_0x331f30(0x234)]()[_0x331f30(0x28e)]()[_0x331f30(0x187)](),_0x3c7947&&(_0x3dcbb3[_0x16b991]=_0x3c7947,_0x138db6=!![]);}}),_0x138db6&&Lampa[_0x1b6011(0x1ea)][_0x1b6011(0x178)](_0x45d7f9,_0x3dcbb3);}function _0x416db3(_0x56eb7a){var _0x51c38b=_0x1e843c;if(!_0x56eb7a||!_0x56eb7a[_0x51c38b(0x1c3)]||!_0x56eb7a[0x0])return;var _0x3da0ef=Lampa[_0x51c38b(0x1ea)]['get'](_0x4cdd92,{}),_0x1f6da6=![];_0x56eb7a[_0x51c38b(0x1a7)](_0x51c38b(0x1dd))[_0x51c38b(0x179)](function(){var _0x2a3605=_0x51c38b,_0x5c7bcc=$(this),_0x1d8a2b=_0x5510f6(_0x5c7bcc);if(!_0x3da0ef[_0x1d8a2b]){var _0x46648a=_0x5c7bcc[_0x2a3605(0x1a7)](_0x2a3605(0x299))[_0x2a3605(0x234)]();_0x46648a[_0x2a3605(0x1c3)]&&(_0x3da0ef[_0x1d8a2b]=_0x46648a[_0x2a3605(0x249)](_0x2a3605(0x291)),_0x1f6da6=!![]);}}),_0x1f6da6&&Lampa[_0x51c38b(0x1ea)][_0x51c38b(0x178)](_0x4cdd92,_0x3da0ef);}function _0x25c13f(_0x3f1b73){var _0x43877f=_0x1e843c;if(_0x3f1b73&&_0x3f1b73['body'])return _0x3f1b73[_0x43877f(0x22f)];if(_0x3f1b73&&_0x3f1b73[_0x43877f(0x21f)]&&_0x3f1b73[_0x43877f(0x21f)][_0x43877f(0x29f)])return _0x3f1b73[_0x43877f(0x21f)][_0x43877f(0x29f)];if(_0x3f1b73&&_0x3f1b73['object']&&_0x3f1b73[_0x43877f(0x241)][_0x43877f(0x283)]&&typeof _0x3f1b73[_0x43877f(0x241)][_0x43877f(0x283)][_0x43877f(0x173)]===_0x43877f(0x248))return _0x3f1b73['object'][_0x43877f(0x283)][_0x43877f(0x173)]();return null;}function _0x5510f6(_0x49d404){var _0x2301b1=_0x1e843c,_0x16f4e5=_0x49d404[_0x2301b1(0x211)](_0x2301b1(0x261));if(_0x16f4e5)return _0x16f4e5;if(_0x49d404[_0x2301b1(0x28a)](_0x2301b1(0x166)))return _0x16f4e5='shots-view-button',_0x49d404[_0x2301b1(0x211)]('data-button-id',_0x16f4e5),_0x16f4e5;var _0x24aa21=(_0x49d404[_0x2301b1(0x211)](_0x2301b1(0x278))||'')[_0x2301b1(0x26b)](/\s+/),_0x9aa67d=null;for(var _0x233380=0x0;_0x233380<_0x24aa21[_0x2301b1(0x1c3)];_0x233380++){var _0x3dee5b=_0x24aa21[_0x233380];if(_0x3dee5b[_0x2301b1(0x171)](_0x2301b1(0x16f))===0x0&&_0x3dee5b!==_0x2301b1(0x231)){_0x9aa67d=_0x3dee5b;break;}}if(!_0x9aa67d)for(var _0x22e16d=0x0;_0x22e16d<_0x24aa21[_0x2301b1(0x1c3)];_0x22e16d++){var _0x1e289a=_0x24aa21[_0x22e16d];if(_0x1e289a[_0x2301b1(0x171)]('view--')===0x0){_0x9aa67d=_0x1e289a;break;}}if(_0x9aa67d){if(_0x9aa67d===_0x2301b1(0x18f))return _0x49d404[_0x2301b1(0x211)](_0x2301b1(0x261),'button--rating'),'button--rating';var _0x154392=_0x49d404['attr'](_0x2301b1(0x1f0))||'',_0x4560a3=_0x49d404[_0x2301b1(0x211)](_0x2301b1(0x220))||'',_0x43b05a=_0x154392||_0x4560a3||'';if(_0x43b05a)return _0x16f4e5=_0x9aa67d+'_'+Lampa[_0x2301b1(0x229)][_0x2301b1(0x1a6)](_0x43b05a),_0x49d404[_0x2301b1(0x211)](_0x2301b1(0x261),_0x16f4e5),_0x16f4e5;var _0x24c842=_0x49d404[_0x2301b1(0x1c5)]();_0x24c842[_0x2301b1(0x1a7)](_0x2301b1(0x24c))[_0x2301b1(0x244)]('focus'),_0x24c842[_0x2301b1(0x1a7)]('svg')[_0x2301b1(0x1fc)](),_0x24c842['find'](_0x2301b1(0x280))[_0x2301b1(0x1fc)]();var _0x14988e=Lampa[_0x2301b1(0x229)]['hash'](_0x24c842[_0x2301b1(0x29f)]());return _0x16f4e5=_0x9aa67d+'_'+_0x14988e,_0x49d404[_0x2301b1(0x211)](_0x2301b1(0x261),_0x16f4e5),_0x16f4e5;}var _0x2ea069=_0x49d404[_0x2301b1(0x176)]('id')||_0x49d404['data']('name')||_0x49d404[_0x2301b1(0x211)]('data-name');if(_0x2ea069)return _0x16f4e5=_0x2301b1(0x1b3)+_0x2ea069,_0x49d404['attr'](_0x2301b1(0x261),_0x16f4e5),_0x16f4e5;var _0x7f096e=_0x49d404[_0x2301b1(0x28e)]()[_0x2301b1(0x187)]();if(_0x7f096e)return _0x16f4e5=_0x2301b1(0x1c6)+_0x7f096e,_0x49d404['attr'](_0x2301b1(0x261),_0x16f4e5),_0x16f4e5;return _0x16f4e5=_0x2301b1(0x1a1)+Lampa[_0x2301b1(0x229)][_0x2301b1(0x1a6)](_0x49d404[_0x2301b1(0x1c5)]()[_0x2301b1(0x244)](_0x2301b1(0x27d))[_0x2301b1(0x249)](_0x2301b1(0x291))),_0x49d404[_0x2301b1(0x211)]('data-button-id',_0x16f4e5),_0x16f4e5;}function _0x7adc64(_0x1af7a1){var _0x2ef747=_0x1e843c;if(_0x24b615[_0x1af7a1])return _0x24b615[_0x1af7a1]();var _0x5231bc=_0x1af7a1['split']('_')[0x0];if(_0x24b615[_0x5231bc])return _0x24b615[_0x5231bc]();if(_0x1af7a1[_0x2ef747(0x171)]('_')!==-0x1){var _0x59c35d=_0x1af7a1[_0x2ef747(0x26b)]('_');if(_0x59c35d[_0x2ef747(0x1c3)]>=0x2){var _0x3ebeba=_0x59c35d[0x0]+'_'+_0x59c35d[0x1];if(_0x24b615[_0x3ebeba])return _0x24b615[_0x3ebeba]();}}return null;}function _0x4d023d(_0x4d00fa,_0x481ad7){var _0x15c305=_0x1e843c,_0x2e5553=_0x3f96f1();if(_0x2e5553[_0x4d00fa])return _0x2e5553[_0x4d00fa];var _0x5a1327=_0x481ad7[_0x15c305(0x1a7)](_0x15c305(0x280))[_0x15c305(0x234)]()[_0x15c305(0x28e)]()[_0x15c305(0x187)]()||_0x481ad7['text']()[_0x15c305(0x187)]();if(_0x5a1327)return _0x5a1327;var _0x28a0d9=_0x7adc64(_0x4d00fa);if(_0x28a0d9)return _0x28a0d9;return _0x4d00fa;}function _0x5241dd(_0x4c6e26){var _0x31c0de=_0x1e843c;if(!_0x4c6e26||!_0x4c6e26[_0x31c0de(0x1c3)])return null;var _0x14ee38=_0x4c6e26['find']('.full-start__button.focus');if(_0x14ee38&&_0x14ee38[_0x31c0de(0x1c3)])return _0x5510f6(_0x14ee38);return null;}function _0x24b705(_0x557938,_0x10e03e){var _0x27266f=_0x1e843c;if(!_0x557938||!_0x557938[_0x27266f(0x1c3)]||!_0x557938[0x0]||!_0x10e03e)return![];var _0x4ef140=_0x557938[_0x27266f(0x1a7)](_0x27266f(0x1dd))[_0x27266f(0x1f5)](function(){return _0x5510f6($(this))===_0x10e03e;})[_0x27266f(0x234)]();if(_0x4ef140&&_0x4ef140['length']&&!_0x4ef140[_0x27266f(0x28a)](_0x27266f(0x210))&&!_0x4ef140['hasClass']('hide'))try{return Lampa[_0x27266f(0x1c7)][_0x27266f(0x233)](_0x4ef140[0x0],_0x557938[0x0]),!![];}catch(_0x1c7486){}return![];}function _0x11f56e(_0x3f58f5,_0x571828,_0x4611d5){var _0x478db9=_0x1e843c;if(!_0x4611d5||!_0x4611d5[_0x478db9(0x1c3)]||!_0x4611d5[0x0])return;var _0x25c0f1=_0x4611d5[_0x478db9(0x1a7)](_0x478db9(0x1dd))[_0x478db9(0x1f5)](function(){return _0x5510f6($(this))===_0x3f58f5;})['first']();if(_0x25c0f1&&_0x25c0f1['length']){var _0x2f6928=_0x25c0f1[_0x478db9(0x1a7)](_0x478db9(0x280))[_0x478db9(0x234)]();_0x2f6928['length']?_0x2f6928[_0x478db9(0x28e)](_0x571828):_0x25c0f1[_0x478db9(0x24e)]()[_0x478db9(0x1f5)](function(){var _0x41b27f=_0x478db9;return this[_0x41b27f(0x1e1)]===0x3;})[_0x478db9(0x234)]()[_0x478db9(0x28f)](_0x571828),_0x25c0f1['attr'](_0x478db9(0x267),_0x571828);}}function _0xa83fca(_0x117fbd,_0x824ac2,_0x3e7f32){var _0x1e7920=_0x1e843c;if(!_0x3e7f32||!_0x3e7f32[_0x1e7920(0x1c3)]||!_0x3e7f32[0x0])return;var _0x4fc994=_0x3e7f32[_0x1e7920(0x1a7)](_0x1e7920(0x1dd))['filter'](function(){return _0x5510f6($(this))===_0x117fbd;})[_0x1e7920(0x234)]();if(_0x4fc994&&_0x4fc994[_0x1e7920(0x1c3)]){var _0x576061=_0x4fc994['find'](_0x1e7920(0x299))[_0x1e7920(0x234)]();if(_0x576061[_0x1e7920(0x1c3)]&&_0x824ac2){var _0x2de9a0=$(_0x824ac2);_0x576061[_0x1e7920(0x28f)](_0x2de9a0);}}}function _0x20899e(_0x530a75){var _0x5dfa6c=_0x1e843c;if(!_0x530a75||!_0x530a75[_0x5dfa6c(0x1c3)]||!_0x530a75[0x0])return;var _0x37d157=_0x15cbc9(),_0x145315=Lampa[_0x5dfa6c(0x1ea)][_0x5dfa6c(0x250)](_0x4cdd92,{}),_0x5d7744={};Object[_0x5dfa6c(0x16a)](_0x145315)['forEach'](function(_0xe09425){var _0x2c102d=_0x5dfa6c,_0xcfad0a=_0xe09425[_0x2c102d(0x26b)]('_')[0x0];if(!_0x5d7744[_0xcfad0a])_0x5d7744[_0xcfad0a]=[];_0x5d7744[_0xcfad0a][_0x2c102d(0x242)](_0x145315[_0xe09425]);});var _0x469222={};_0x530a75['find'](_0x5dfa6c(0x1dd))[_0x5dfa6c(0x179)](function(){var _0x53d0f6=_0x5dfa6c,_0x1bf881=$(this);if(_0x1bf881['hasClass'](_0x53d0f6(0x160)))return;var _0x5a3dd3=_0x5510f6(_0x1bf881);if(_0x37d157[_0x5a3dd3]){var _0x212697=_0x1bf881['find'](_0x53d0f6(0x299))[_0x53d0f6(0x234)]();if(_0x212697[_0x53d0f6(0x1c3)]){var _0x1429e9=$(_0x37d157[_0x5a3dd3]);_0x212697[_0x53d0f6(0x28f)](_0x1429e9);}return;}if(_0x145315[_0x5a3dd3]){var _0x212697=_0x1bf881['find']('svg')[_0x53d0f6(0x234)]();if(_0x212697[_0x53d0f6(0x1c3)]&&_0x212697[_0x53d0f6(0x249)](_0x53d0f6(0x291))!==_0x145315[_0x5a3dd3]){var _0x1429e9=$(_0x145315[_0x5a3dd3]);_0x212697[_0x53d0f6(0x28f)](_0x1429e9);}return;}var _0x1758b9=_0x5a3dd3[_0x53d0f6(0x26b)]('_')[0x0];if(_0x5d7744[_0x1758b9]){if(!_0x469222[_0x1758b9])_0x469222[_0x1758b9]=0x0;var _0x4aae0e=_0x469222[_0x1758b9];if(_0x4aae0e<_0x5d7744[_0x1758b9][_0x53d0f6(0x1c3)]){var _0x45321b=_0x5d7744[_0x1758b9][_0x4aae0e];_0x469222[_0x1758b9]++;var _0x212697=_0x1bf881['find'](_0x53d0f6(0x299))[_0x53d0f6(0x234)]();if(_0x212697['length']&&_0x212697[_0x53d0f6(0x249)](_0x53d0f6(0x291))!==_0x45321b){var _0x1429e9=$(_0x45321b);_0x212697[_0x53d0f6(0x28f)](_0x1429e9);}}}});}function _0x2210a3(_0x1f2091,_0x35d528){var _0x3d5a14=_0x1e843c;if(!_0x1f2091||!_0x1f2091[_0x3d5a14(0x1c3)]||!_0x1f2091[0x0])return{'items':[],'map':{},'targetContainer':$(),'extraContainer':$()};var _0x379d3a=_0x1f2091[_0x3d5a14(0x1a7)](_0x3d5a14(0x25e)),_0x2b42d4=_0x1f2091['find']('.buttons--container'),_0x5e44ec=[],_0x35e758={};function _0x2f9d0a(_0x40639d){var _0x45b0d3=_0x3d5a14;_0x40639d[_0x45b0d3(0x179)](function(){var _0x3786a2=_0x45b0d3,_0x3d14b4=$(this);if(_0x3d14b4[_0x3786a2(0x28a)]('button--play')||_0x3d14b4[_0x3786a2(0x28a)](_0x3786a2(0x231)))return;if(_0x3d14b4['hasClass'](_0x3786a2(0x256)))return;if(_0x3d14b4[_0x3786a2(0x28a)](_0x3786a2(0x160)))return;var _0x3bda4e=_0x5510f6(_0x3d14b4);if(!_0x3bda4e)return;_0x3d14b4[_0x3786a2(0x28a)]('button--options')&&!_0x3d14b4['find'](_0x3786a2(0x280))[_0x3786a2(0x1c3)]&&_0x3d14b4['append']('<span>Ещё</span>');if(_0x35e758[_0x3bda4e]){var _0x3193ea=0x1,_0x458568=_0x3bda4e+'_'+_0x3193ea;while(_0x35e758[_0x458568]){_0x3193ea++,_0x458568=_0x3bda4e+'_'+_0x3193ea;}_0x3bda4e=_0x458568;}_0x35e758[_0x3bda4e]=_0x35d528?_0x3d14b4[_0x3786a2(0x198)]():_0x3d14b4,_0x5e44ec[_0x3786a2(0x242)](_0x3bda4e);});}if(_0x379d3a[_0x3d5a14(0x1c3)])_0x2f9d0a(_0x379d3a[_0x3d5a14(0x1a7)](_0x3d5a14(0x1dd)));if(_0x2b42d4['length'])_0x2f9d0a(_0x2b42d4[_0x3d5a14(0x1a7)](_0x3d5a14(0x1dd)));return{'items':_0x5e44ec,'map':_0x35e758,'targetContainer':_0x379d3a,'extraContainer':_0x2b42d4};}function _0x51d206(_0x930d32,_0x13e618){var _0x37b7a0=_0x1e843c,_0x358a33=[],_0x1b340a=new Set(_0x13e618);_0x930d32[_0x37b7a0(0x276)](function(_0x130525){var _0x1126d5=_0x37b7a0;if(_0x1b340a[_0x1126d5(0x185)](_0x130525))_0x358a33['push'](_0x130525);});var _0x288882=[];_0x13e618[_0x37b7a0(0x276)](function(_0x9b4a00){var _0x3de81a=_0x37b7a0;if(!_0x358a33[_0x3de81a(0x170)](_0x9b4a00))_0x288882['push'](_0x9b4a00);});if(!_0x930d32||_0x930d32[_0x37b7a0(0x1c3)]===0x0){var _0x402850=[_0x37b7a0(0x15e),_0x37b7a0(0x271),'shots-view-button','button--book','button--reaction','button--options',_0x37b7a0(0x18f)];_0x288882[_0x37b7a0(0x273)](function(_0x5d2992,_0x9e830d){var _0x300259=_0x37b7a0,_0x5463c2=_0x5d2992[_0x300259(0x26b)]('_')[0x0],_0x5247bf=_0x9e830d['split']('_')[0x0],_0x3f4e13=_0x402850[_0x300259(0x171)](_0x5463c2),_0x2b42c1=_0x402850['indexOf'](_0x5247bf);if(_0x5d2992===_0x300259(0x166))_0x3f4e13=_0x402850[_0x300259(0x171)](_0x300259(0x166));if(_0x9e830d===_0x300259(0x166))_0x2b42c1=_0x402850[_0x300259(0x171)](_0x300259(0x166));if(_0x3f4e13!==-0x1&&_0x2b42c1!==-0x1)return _0x3f4e13-_0x2b42c1;if(_0x3f4e13!==-0x1)return 0x1;if(_0x2b42c1!==-0x1)return-0x1;if(_0x5463c2<_0x5247bf)return-0x1;if(_0x5463c2>_0x5247bf)return 0x1;return 0x0;});}return _0x288882[_0x37b7a0(0x276)](function(_0x221d0f){_0x358a33['push'](_0x221d0f);}),_0x358a33;}function _0x40e8da(_0x218238){var _0x1517ac=_0x1e843c,_0x5e0dcd=new Set(_0x2e6676(_0x14f4d6));Object[_0x1517ac(0x16a)](_0x218238)[_0x1517ac(0x276)](function(_0x3efa39){var _0x19d18e=_0x1517ac;if(_0x218238[_0x3efa39])_0x218238[_0x3efa39][_0x19d18e(0x258)]('button-hide',_0x5e0dcd[_0x19d18e(0x185)](_0x3efa39));});}function _0xa34d09(_0x3bbd37){var _0x388d4b=_0x1e843c;if(!_0x3bbd37||!_0x3bbd37['length']||!_0x3bbd37[0x0])return;var _0x17cbdb=_0x3f96f1(),_0x679966=_0x40a28e();_0x3bbd37['find'](_0x388d4b(0x1dd))['each'](function(){var _0x4fc5f8=_0x388d4b,_0x2ff369=$(this);if(_0x2ff369['hasClass'](_0x4fc5f8(0x160)))return;var _0x2442bc=_0x5510f6(_0x2ff369);if(_0x17cbdb[_0x2442bc]){var _0x592d3b=_0x2ff369[_0x4fc5f8(0x1a7)](_0x4fc5f8(0x280))[_0x4fc5f8(0x234)]();_0x592d3b[_0x4fc5f8(0x1c3)]?_0x592d3b[_0x4fc5f8(0x28e)](_0x17cbdb[_0x2442bc]):_0x2ff369[_0x4fc5f8(0x24e)]()[_0x4fc5f8(0x1f5)](function(){return this['nodeType']===0x3;})[_0x4fc5f8(0x234)]()[_0x4fc5f8(0x28f)](_0x17cbdb[_0x2442bc]);}else{if(_0x679966[_0x2442bc]){var _0x592d3b=_0x2ff369['find'](_0x4fc5f8(0x280))[_0x4fc5f8(0x234)]();_0x592d3b['length']&&_0x592d3b[_0x4fc5f8(0x28e)]()['trim']()!==_0x679966[_0x2442bc]&&_0x592d3b[_0x4fc5f8(0x28e)](_0x679966[_0x2442bc]);}}});}function _0x1fb766(_0x3da1a5){var _0x34353f=_0x1e843c;if(!_0x3da1a5||!_0x3da1a5[_0x34353f(0x1c3)]||!_0x3da1a5[0x0])return;var _0x359b70=Lampa[_0x34353f(0x1ea)]['get'](_0x63af85);if(_0x359b70===null)_0x359b70=!![];var _0x2865a4=_0x3da1a5[_0x34353f(0x1a7)](_0x34353f(0x25e));if(!_0x2865a4[_0x34353f(0x1c3)])return;_0x2865a4['find']('.button--options')[_0x34353f(0x179)](function(){var _0x4beb02=_0x34353f,_0x1c79aa=$(this);if(!_0x1c79aa[_0x4beb02(0x1a7)](_0x4beb02(0x280))[_0x4beb02(0x1c3)])_0x1c79aa[_0x4beb02(0x20d)]('<span>Ещё</span>');}),_0x359b70?_0x2865a4[_0x34353f(0x1a7)](_0x34353f(0x1dd))[_0x34353f(0x179)](function(){var _0x2dfe04=_0x34353f,_0x3a80b8=$(this),_0x4c5770=_0x3a80b8[_0x2dfe04(0x1a7)](_0x2dfe04(0x280));if(_0x4c5770[_0x2dfe04(0x1c3)])_0x4c5770['css'](_0x2dfe04(0x1b4),_0x2dfe04(0x1e4));}):_0x2865a4[_0x34353f(0x1a7)]('.full-start__button')[_0x34353f(0x179)](function(){var _0x1e0ba7=_0x34353f,_0x586d90=$(this),_0x30b8db=_0x586d90[_0x1e0ba7(0x1a7)](_0x1e0ba7(0x280));if(_0x30b8db[_0x1e0ba7(0x1c3)])_0x30b8db[_0x1e0ba7(0x1d1)](_0x1e0ba7(0x1b4),'');});}function _0x518f96(_0x590135,_0x2d6b9e){var _0xb58a03=_0x1e843c;if(!_0x590135||!_0x590135[_0xb58a03(0x1c3)]||!_0x590135[0x0])return;_0x3868cb();var _0x3ec156=_0x590135[_0xb58a03(0x1a7)]('.full-start-new__buttons');if(!_0x3ec156[_0xb58a03(0x1c3)])return;_0x27cfe5(_0x590135),_0x416db3(_0x590135);!_0x2d6b9e&&_0x3ec156[_0xb58a03(0x1a7)]('.button--folder')['remove']();var _0x2de9e6=_0x3ec156[_0xb58a03(0x1a7)](_0xb58a03(0x1ec))[_0xb58a03(0x198)](),_0x82edf8=_0x2210a3(_0x590135,!![]),_0x111545=_0x82edf8['items'],_0x52311d=_0x82edf8[_0xb58a03(0x1df)],_0x916698=_0x4bb9bd(),_0x3c987d=_0x361162(),_0x57da1e=_0x5a9894(),_0x47c712=_0x12f927(),_0x5f50e2=_0x51d206(_0x2e6676(_0x1393a2),_0x111545);_0x3ec156['empty']();_0x2de9e6['length']&&_0x3ec156['append'](_0x2de9e6);var _0x39fc93={},_0x4e0480=[];_0x47c712['length']>0x0&&_0x47c712[_0xb58a03(0x276)](function(_0x252bf2){var _0xc0d9aa=_0xb58a03;if(_0x252bf2[_0xc0d9aa(0x223)]===_0xc0d9aa(0x266)&&!_0x39fc93[_0x252bf2['id']]){var _0x382372=_0xbe6507(_0x252bf2['id']);_0x382372[_0xc0d9aa(0x1c3)]&&(_0x57da1e['indexOf'](_0x252bf2['id'])!==-0x1&&_0x382372[_0xc0d9aa(0x1e2)]('folder-hidden'),_0x3ec156[_0xc0d9aa(0x20d)](_0x382372),_0x39fc93[_0x252bf2['id']]=!![]);}else{if(_0x252bf2['type']===_0xc0d9aa(0x1d2)&&!_0x39fc93[_0x252bf2['id']]){var _0xdcc6c7=_0x252bf2['id'];_0x52311d[_0xdcc6c7]&&_0x52311d[_0xdcc6c7]['length']&&(_0x916698[_0xc0d9aa(0x170)](_0xdcc6c7)?_0x52311d[_0xdcc6c7]['attr'](_0xc0d9aa(0x1bb),_0xc0d9aa(0x164)):_0x52311d[_0xdcc6c7]['attr']('style',''),_0x3ec156[_0xc0d9aa(0x20d)](_0x52311d[_0xdcc6c7]),_0x39fc93[_0xdcc6c7]=!![]);}}}),Object[_0xb58a03(0x16a)](_0x3c987d)[_0xb58a03(0x276)](function(_0x186adb){var _0x552c33=_0xb58a03;!_0x39fc93[_0x186adb]&&_0x4e0480[_0x552c33(0x242)](_0x186adb);}),_0x4e0480[_0xb58a03(0x276)](function(_0x33ddd2){var _0x2f39b9=_0xb58a03,_0x519d3d=_0xbe6507(_0x33ddd2);if(_0x519d3d[_0x2f39b9(0x1c3)]){_0x57da1e[_0x2f39b9(0x171)](_0x33ddd2)!==-0x1&&_0x519d3d[_0x2f39b9(0x1e2)](_0x2f39b9(0x1b6));var _0x56c294=_0x3ec156[_0x2f39b9(0x1f3)]()['first']();_0x56c294['length']?_0x519d3d[_0x2f39b9(0x27c)](_0x56c294):_0x3ec156['append'](_0x519d3d),_0x39fc93[_0x33ddd2]=!![];}}),_0x5f50e2['forEach'](function(_0x11eb24){var _0x5c0ed5=_0xb58a03;!_0x39fc93[_0x11eb24]&&_0x52311d[_0x11eb24]&&_0x52311d[_0x11eb24]['length']&&(_0x916698[_0x5c0ed5(0x170)](_0x11eb24)?_0x52311d[_0x11eb24]['attr']('style',_0x5c0ed5(0x164)):_0x52311d[_0x11eb24][_0x5c0ed5(0x211)](_0x5c0ed5(0x1bb),''),_0x3ec156[_0x5c0ed5(0x20d)](_0x52311d[_0x11eb24]),_0x39fc93[_0x11eb24]=!![]);}),_0x34b87b=[],_0x5f50e2['forEach'](function(_0x1e1975){var _0x27b234=_0xb58a03;_0x52311d[_0x1e1975]&&_0x52311d[_0x1e1975][_0x27b234(0x1c3)]&&_0x34b87b[_0x27b234(0x242)](_0x52311d[_0x1e1975]);}),_0x40e8da(_0x52311d),_0x20899e(_0x590135),_0xa34d09(_0x590135),_0x1fb766(_0x590135),!_0x2d6b9e&&setTimeout(function(){_0x20899e(_0x590135),_0xa34d09(_0x590135),_0x1fb766(_0x590135);},0xc8),Lampa[_0xb58a03(0x1c7)][_0xb58a03(0x255)]('content');}function _0x2d9bca(_0x79e05c,_0x65037e,_0x20db02){var _0x2fb547=_0x1e843c,_0x33f48d=$(_0x2fb547(0x281)),_0x81e299=$(_0x2fb547(0x17f));_0x81e299['on'](_0x2fb547(0x1af),function(){var _0x4344e3=_0x2fb547;Lampa[_0x4344e3(0x29b)]['close']();var _0x396632=_0x15cbc9();delete _0x396632[_0x79e05c],Lampa[_0x4344e3(0x1ea)][_0x4344e3(0x178)](_0x55c316,_0x396632);var _0x52be9a=Lampa[_0x4344e3(0x1ea)][_0x4344e3(0x250)](_0x4cdd92,{});_0x52be9a[_0x79e05c]&&_0xa83fca(_0x79e05c,_0x52be9a[_0x79e05c],_0x65037e);if(_0x20db02)_0x20db02();}),_0x33f48d[_0x2fb547(0x20d)](_0x81e299),_0x286acb[_0x2fb547(0x276)](function(_0x2f6aa6){var _0x5d7b90=_0x2fb547,_0x305664=$('<div\x20class=\x22icon-picker-item\x20selector\x22><div\x20class=\x22icon-picker-icon\x22>'+_0x2f6aa6['svg']+'</div></div>');_0x305664['on'](_0x5d7b90(0x1af),function(){var _0x3fbcbb=_0x5d7b90;Lampa['Modal'][_0x3fbcbb(0x22c)](),_0x257793(_0x79e05c,_0x2f6aa6[_0x3fbcbb(0x299)]);if(_0x20db02)_0x20db02();}),_0x33f48d[_0x5d7b90(0x20d)](_0x305664);}),Lampa[_0x2fb547(0x29b)][_0x2fb547(0x1ac)]({'title':_0x2fb547(0x1bc),'html':_0x33f48d,'size':_0xa4804a(),'scroll_to_center':!![],'onBack':function(){var _0x6d54ab=_0x2fb547;Lampa[_0x6d54ab(0x29b)]['close']();if(_0x20db02)_0x20db02();}});}function _0x1892fd(_0x19a173,_0x183543){var _0x3aae1d=_0x1e843c,_0x48add6=$(_0x3aae1d(0x281)),_0x21c006=$(_0x3aae1d(0x17f));_0x21c006['on'](_0x3aae1d(0x1af),function(){var _0x5f40e7=_0x3aae1d;Lampa[_0x5f40e7(0x29b)][_0x5f40e7(0x22c)](),_0x763ec(_0x19a173,_0x4494ef),Lampa['Noty'][_0x5f40e7(0x17e)](_0x5f40e7(0x1ce)),setTimeout(function(){_0x183543&&_0x183543['length']&&_0x183543[0x0]&&_0x30864c(_0x183543,_0x1036a9,_0x254f19);},0x64);}),_0x48add6[_0x3aae1d(0x20d)](_0x21c006),_0x286acb[_0x3aae1d(0x276)](function(_0xa3e6d4){var _0x36e4d5=_0x3aae1d,_0x281ef5=$(_0x36e4d5(0x277)+_0xa3e6d4[_0x36e4d5(0x299)]+_0x36e4d5(0x222));_0x281ef5['on']('hover:enter',function(){var _0x41f1b7=_0x36e4d5;Lampa[_0x41f1b7(0x29b)]['close'](),_0x763ec(_0x19a173,_0xa3e6d4[_0x41f1b7(0x299)]),Lampa[_0x41f1b7(0x1cd)][_0x41f1b7(0x17e)]('Иконка\x20изменена'),setTimeout(function(){var _0x3422fa=_0x41f1b7;_0x183543&&_0x183543[_0x3422fa(0x1c3)]&&_0x183543[0x0]&&_0x30864c(_0x183543,_0x1036a9,_0x254f19);},0x64);}),_0x48add6[_0x36e4d5(0x20d)](_0x281ef5);}),Lampa[_0x3aae1d(0x29b)][_0x3aae1d(0x1ac)]({'title':_0x3aae1d(0x227),'html':_0x48add6,'size':_0xa4804a(),'scroll_to_center':!![],'onBack':function(){var _0x368219=_0x3aae1d;Lampa[_0x368219(0x29b)]['close'](),setTimeout(function(){var _0x31fc1e=_0x368219;_0x183543&&_0x183543[_0x31fc1e(0x1c3)]&&_0x183543[0x0]&&_0x30864c(_0x183543,_0x1036a9,_0x254f19);},0x64);}});}function _0x169143(_0x3d9fca,_0x3a34f7,_0x3448b3,_0xa5bbfb,_0x2920c4,_0x232bcd,_0x540ffd){var _0x20f865=_0x1e843c;Lampa['Modal']['close'](),Lampa[_0x20f865(0x292)][_0x20f865(0x1c2)]({'free':!![],'title':_0x20f865(0x269),'nosave':!![],'value':_0x3a34f7,'onBack':function(){setTimeout(function(){var _0x2a0f6a=_0x2bca;_0x3448b3&&_0x3448b3[_0x2a0f6a(0x1c3)]&&_0x3448b3[0x0]&&_0x30864c(_0x3448b3,_0x3d9fca,_0x232bcd);},0xc8);}},function(_0x13cc54){var _0x341f2d=_0x20f865;if(_0x13cc54&&_0x13cc54[_0x341f2d(0x187)]()){var _0x5ad971=_0x13cc54[_0x341f2d(0x187)]();_0x26e274(_0x3d9fca,_0x5ad971),_0x11f56e(_0x3d9fca,_0x5ad971,_0x3448b3),Lampa[_0x341f2d(0x1cd)][_0x341f2d(0x17e)](_0x341f2d(0x24d)),setTimeout(function(){var _0x5a4d58=_0x341f2d;_0x3448b3&&_0x3448b3[_0x5a4d58(0x1c3)]&&_0x3448b3[0x0]&&_0x30864c(_0x3448b3,_0x3d9fca,_0x232bcd);},0xc8);}else Lampa[_0x341f2d(0x1cd)][_0x341f2d(0x17e)](_0x341f2d(0x240)),setTimeout(function(){_0x3448b3&&_0x3448b3['length']&&_0x3448b3[0x0]&&_0x30864c(_0x3448b3,_0x3d9fca,_0x232bcd);},0xc8);});}function _0x21a29e(_0x3bd41e,_0xbfadae,_0x2323e8){var _0x412987=_0x1e843c;Lampa[_0x412987(0x29b)][_0x412987(0x22c)](),Lampa[_0x412987(0x292)][_0x412987(0x1c2)]({'free':!![],'title':'Изменить\x20название\x20папки','nosave':!![],'value':_0xbfadae,'onBack':function(){setTimeout(function(){_0x2323e8&&_0x2323e8['length']&&_0x2323e8[0x0]&&_0x30864c(_0x2323e8,_0x3bd41e,_0x254f19);},0xc8);}},function(_0x2be3f8){var _0x5ec834=_0x412987;if(_0x2be3f8&&_0x2be3f8[_0x5ec834(0x187)]()){var _0x47e344=_0x2be3f8[_0x5ec834(0x187)]();_0x586ca3(_0x3bd41e,_0x47e344),Lampa[_0x5ec834(0x1cd)][_0x5ec834(0x17e)]('Название\x20папки\x20изменено'),setTimeout(function(){var _0x15ed4e=_0x5ec834;_0x2323e8&&_0x2323e8[_0x15ed4e(0x1c3)]&&_0x2323e8[0x0]&&_0x30864c(_0x2323e8,_0x3bd41e,_0x254f19);},0xc8);}else Lampa['Noty'][_0x5ec834(0x17e)]('Название\x20не\x20может\x20быть\x20пустым'),setTimeout(function(){var _0x759fad=_0x5ec834;_0x2323e8&&_0x2323e8[_0x759fad(0x1c3)]&&_0x2323e8[0x0]&&_0x30864c(_0x2323e8,_0x3bd41e,_0x254f19);},0xc8);});}function _0x237b2b(){var _0x307aad=_0x1e843c;Lampa[_0x307aad(0x292)][_0x307aad(0x1c2)]({'free':!![],'title':_0x307aad(0x252),'nosave':!![],'value':'','nomic':!![]},function(_0x11df3a){var _0x28a67d=_0x307aad;if(!_0x11df3a||!_0x11df3a['trim']()){Lampa[_0x28a67d(0x1cd)]['show'](_0x28a67d(0x1ef)),_0x30864c(_0x68d450,_0x1036a9,_0x254f19);return;}_0x5bc8c6(_0x11df3a[_0x28a67d(0x187)]());});}function _0x5bc8c6(_0x1e5962){var _0x3087a4=_0x1e843c,_0x351d01=$(_0x3087a4(0x281));_0x286acb[_0x3087a4(0x276)](function(_0x1b5ccc){var _0x4c4305=_0x3087a4,_0x111b00=$(_0x4c4305(0x16c)+_0x1b5ccc['svg']+_0x4c4305(0x290));_0x111b00['on']('hover:enter',function(){var _0x388ac3=_0x4c4305;Lampa['Modal'][_0x388ac3(0x22c)](),_0x2af7ca(_0x1e5962,_0x1b5ccc[_0x388ac3(0x299)]);}),_0x351d01[_0x4c4305(0x20d)](_0x111b00);}),Lampa[_0x3087a4(0x29b)][_0x3087a4(0x1ac)]({'title':_0x3087a4(0x227),'html':_0x351d01,'size':_0xa4804a(),'scroll_to_center':!![],'onBack':function(){var _0xbf6f3e=_0x3087a4;Lampa[_0xbf6f3e(0x29b)][_0xbf6f3e(0x22c)](),_0x237b2b();}});}function _0x2af7ca(_0x4596ff,_0x52250f){var _0x7a3213=_0x1e843c,_0x45c613=[],_0x3da14e=$(_0x7a3213(0x1f4)),_0x4cce40=_0x4bb9bd(),_0x4fa1b4=[];_0x34b87b['forEach'](function(_0x3d23cc){var _0x14e999=_0x7a3213,_0x2bf5f0=_0x5510f6(_0x3d23cc);_0x4cce40[_0x14e999(0x171)](_0x2bf5f0)===-0x1&&_0x4fa1b4[_0x14e999(0x242)](_0x3d23cc);});var _0x7411b9={};_0x4fa1b4[_0x7a3213(0x276)](function(_0x3b37d6){var _0x5af1d9=_0x7a3213,_0x26b2f7=_0x3b37d6['find'](_0x5af1d9(0x280))[_0x5af1d9(0x234)]()['text']()[_0x5af1d9(0x187)]()||_0x3b37d6['text']()[_0x5af1d9(0x187)]();_0x26b2f7&&(_0x7411b9[_0x26b2f7]=(_0x7411b9[_0x26b2f7]||0x0)+0x1);}),_0x4fa1b4['forEach'](function(_0x5c442f){var _0x12b600=_0x7a3213,_0x42ae4f=_0x5510f6(_0x5c442f),_0x5549b9=_0x29cbe1(_0x5c442f),_0x16a554=_0x5c442f['find'](_0x12b600(0x299))[_0x12b600(0x234)](),_0x1552e8=_0x16a554['length']?_0x16a554[_0x12b600(0x1c5)]():$(_0x12b600(0x201)),_0x50c236=_0x5c442f[_0x12b600(0x1a7)](_0x12b600(0x280))[_0x12b600(0x234)]()[_0x12b600(0x28e)]()[_0x12b600(0x187)]()||_0x5c442f['text']()[_0x12b600(0x187)]();if(_0x50c236&&_0x7411b9[_0x50c236]>0x1){var _0x4aa40c=_0x5c442f['attr'](_0x12b600(0x278))||'',_0x5c66d7=_0x5c442f[_0x12b600(0x211)]('data-subtitle')||_0x5c442f[_0x12b600(0x211)](_0x12b600(0x220))||_0x5c442f[_0x12b600(0x211)]('data-id')||'';if(_0x5c66d7){var _0x14585f=_0x5c66d7[_0x12b600(0x26b)](/\s+/)[0x0];if(_0x14585f['length']>0x1e)_0x14585f=_0x14585f['substring'](0x0,0x1e);_0x5549b9=_0x50c236+'\x20('+_0x14585f+')';}else{var _0x363837=_0x4aa40c[_0x12b600(0x17c)](/(?:button--|view--)(\w+)/);_0x363837&&_0x363837[0x1]&&(_0x5549b9=_0x50c236+'\x20('+_0x363837[0x1]+')');}}var _0x36246f=$(_0x12b600(0x15f)+_0x5549b9+_0x12b600(0x26a));_0x36246f[_0x12b600(0x1a7)]('.menu-edit-list__icon')[_0x12b600(0x20d)](_0x1552e8),_0x36246f[_0x12b600(0x1a7)](_0x12b600(0x19c))['on'](_0x12b600(0x1af),function(){var _0x37cc03=_0x12b600,_0x555991=_0x45c613['indexOf'](_0x42ae4f);_0x555991!==-0x1?(_0x45c613[_0x37cc03(0x199)](_0x555991,0x1),_0x36246f[_0x37cc03(0x1a7)](_0x37cc03(0x1f6))[_0x37cc03(0x211)]('opacity','0')):(_0x45c613[_0x37cc03(0x242)](_0x42ae4f),_0x36246f[_0x37cc03(0x1a7)](_0x37cc03(0x1f6))[_0x37cc03(0x211)](_0x37cc03(0x293),'1'));}),_0x3da14e[_0x12b600(0x20d)](_0x36246f);});var _0x7b1dbc=$(_0x7a3213(0x1fb)+_0x4596ff+'\x22</div>\x20\x20\x20\x20\x20\x20\x20\x20</div>');_0x7b1dbc['on'](_0x7a3213(0x1af),function(){var _0x5dfc04=_0x7a3213;if(_0x45c613[_0x5dfc04(0x1c3)]<0x1){Lampa[_0x5dfc04(0x1cd)]['show'](_0x5dfc04(0x190));return;}var _0x2c05ea=_0x5dfc04(0x20f)+Date[_0x5dfc04(0x1d5)]()+'_'+Math[_0x5dfc04(0x1b0)](Math[_0x5dfc04(0x29d)]()*0x2710);_0x586ca3(_0x2c05ea,_0x4596ff),_0x763ec(_0x2c05ea,_0x52250f);var _0x317e87=_0x361162();_0x317e87[_0x2c05ea]=_0x45c613,_0xab48b7(_0x317e87),Lampa[_0x5dfc04(0x29b)][_0x5dfc04(0x22c)](),Lampa[_0x5dfc04(0x1cd)][_0x5dfc04(0x17e)](_0x5dfc04(0x19b)+_0x4596ff+_0x5dfc04(0x203)),setTimeout(function(){var _0x4fe466=_0x5dfc04;_0x68d450&&_0x68d450['length']&&_0x68d450[0x0]&&(_0x518f96(_0x68d450),Lampa['Controller'][_0x4fe466(0x255)](_0x4fe466(0x195)));},0xc8);}),_0x3da14e[_0x7a3213(0x20d)](_0x7b1dbc),Lampa[_0x7a3213(0x29b)]['open']({'title':_0x7a3213(0x219),'html':_0x3da14e,'size':_0xa4804a(),'scroll_to_center':!![],'onBack':function(){var _0x15208f=_0x7a3213;Lampa[_0x15208f(0x29b)]['close'](),_0x5bc8c6(_0x4596ff);}});}function _0x30864c(_0x3ccb5a,_0x54f158,_0x177583){var _0x178506=_0x1e843c;if(!_0x3ccb5a||!_0x3ccb5a[_0x178506(0x1c3)]||!_0x3ccb5a[0x0])return;if(_0x177583)_0x254f19=_0x177583;else{var _0x186d8b=Lampa[_0x178506(0x1c7)]['enabled']();_0x254f19=_0x186d8b?_0x186d8b[_0x178506(0x237)]:'content';}!_0x54f158?_0x1036a9=_0x5241dd(_0x3ccb5a):_0x1036a9=_0x54f158;var _0x427fab=_0x2210a3(_0x3ccb5a,![]),_0x122fb8=_0x427fab[_0x178506(0x19f)],_0x19c5f6=_0x427fab['map'],_0x1d9044=_0x51d206(_0x2e6676(_0x1393a2),_0x122fb8),_0x4b2042=new Set(_0x2e6676(_0x14f4d6)),_0x26c062=_0x361162(),_0x1325d5=_0x4bb9bd(),_0x5bcd03=_0x36b91b(),_0x78c958=_0x2a8e21(),_0x91e596=_0x5a9894(),_0x1b86b3=_0x12f927(),_0x1cf93c=Lampa[_0x178506(0x1ea)][_0x178506(0x250)](_0x63af85);if(_0x1cf93c===null)_0x1cf93c=!![];var _0x50619c=$(_0x178506(0x1f4)),_0xe6372b=$(_0x178506(0x21d)+'<div\x20class=\x22menu-edit-list__icon\x22>'+_0x178506(0x16d)+_0x178506(0x17a)+'<line\x20x1=\x2212\x22\x20y1=\x2211\x22\x20x2=\x2212\x22\x20y2=\x2217\x22></line>'+_0x178506(0x202)+_0x178506(0x1d0)+'</div>'+_0x178506(0x29c)+_0x178506(0x279));_0xe6372b['on'](_0x178506(0x1af),function(){Lampa['Modal']['close'](),_0x237b2b();}),_0x50619c['append'](_0xe6372b);var _0x466746=_0x1cf93c?0x1:0x0,_0x286435=$(_0x178506(0x1f2)+_0x466746+_0x178506(0x1e8));if(!_0x1cf93c)_0x286435[_0x178506(0x1e2)](_0x178506(0x27f));_0x286435['find'](_0x178506(0x163))['on'](_0x178506(0x1af),function(){var _0x5e5811=_0x178506;_0x286435['toggleClass']('button-hidden');var _0x2bab17=_0x286435[_0x5e5811(0x1a7)](_0x5e5811(0x1f6));_0x2bab17[_0x5e5811(0x211)](_0x5e5811(0x293),_0x286435[_0x5e5811(0x28a)]('button-hidden')?0x0:0x1);}),_0x50619c['append'](_0x286435),_0x50619c[_0x178506(0x20d)](_0x178506(0x22b));var _0x4b7430={};_0x1d9044['forEach'](function(_0x109fb7){var _0x3221a2=_0x178506,_0x1c6201=_0x19c5f6[_0x109fb7];if(!_0x1c6201||!_0x1c6201[_0x3221a2(0x1c3)])return;var _0x20b1a2=_0x1c6201[_0x3221a2(0x1a7)](_0x3221a2(0x280))[_0x3221a2(0x234)]()[_0x3221a2(0x28e)]()[_0x3221a2(0x187)]()||_0x1c6201[_0x3221a2(0x28e)]()[_0x3221a2(0x187)]();_0x20b1a2&&(_0x4b7430[_0x20b1a2]=(_0x4b7430[_0x20b1a2]||0x0)+0x1);});var _0xd5648c=_0x15cbc9(),_0x4bb51d=Lampa[_0x178506(0x1ea)][_0x178506(0x250)](_0x4cdd92,{}),_0x414dd6=[],_0x179775={};Object[_0x178506(0x16a)](_0x26c062)['forEach'](function(_0x705fa4){var _0xca8295=_0x178506;!_0x1b86b3[_0xca8295(0x15c)](function(_0x1584ae){return _0x1584ae['id']===_0x705fa4;})&&(_0x414dd6[_0xca8295(0x242)]({'type':_0xca8295(0x266),'id':_0x705fa4}),_0x179775[_0x705fa4]=!![]);});_0x1b86b3['length']>0x0&&_0x1b86b3[_0x178506(0x276)](function(_0x195f22){var _0xc8bd21=_0x178506;if(_0x195f22['type']==='folder'&&!_0x179775[_0x195f22['id']])_0x414dd6['push']({'type':_0xc8bd21(0x266),'id':_0x195f22['id']}),_0x179775[_0x195f22['id']]=!![];else _0x195f22[_0xc8bd21(0x223)]===_0xc8bd21(0x1d2)&&!_0x179775[_0x195f22['id']]&&(!_0x1325d5[_0xc8bd21(0x170)](_0x195f22['id'])&&(_0x414dd6[_0xc8bd21(0x242)]({'type':'button','id':_0x195f22['id']}),_0x179775[_0x195f22['id']]=!![]));});_0x1d9044['forEach'](function(_0x4c6d2a){var _0x154c6e=_0x178506;!_0x179775[_0x4c6d2a]&&!_0x1325d5['includes'](_0x4c6d2a)&&(_0x414dd6[_0x154c6e(0x242)]({'type':_0x154c6e(0x1d2),'id':_0x4c6d2a}),_0x179775[_0x4c6d2a]=!![]);}),_0x414dd6[_0x178506(0x276)](function(_0x1d492f){var _0x3615e0=_0x178506;if(_0x1d492f[_0x3615e0(0x223)]===_0x3615e0(0x266)){var _0x10eae0=_0x1d492f['id'],_0x332d6d=_0x5bcd03[_0x10eae0]||'Папка',_0x32c645=_0x78c958[_0x10eae0]||_0x4494ef,_0x374284=_0x26c062[_0x10eae0]||[],_0x3d690e=_0x91e596[_0x3615e0(0x171)](_0x10eae0)!==-0x1,_0x7c7f72=$(_0x3615e0(0x1d8)+(_0x3d690e?_0x3615e0(0x168):'')+_0x3615e0(0x1cb)+_0x10eae0+'\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__icon\x22>'+_0x32c645+_0x3615e0(0x1be)+_0x332d6d+_0x3615e0(0x27b)+_0x374284[_0x3615e0(0x1c3)]+_0x3615e0(0x217)+(_0x3d690e?'0':'1')+_0x3615e0(0x1bf));_0x7c7f72['find'](_0x3615e0(0x251))['on'](_0x3615e0(0x1af),function(_0x2cd57d){_0x2cd57d['stopPropagation'](),_0x21a29e(_0x10eae0,_0x332d6d,_0x3ccb5a);}),_0x7c7f72['find'](_0x3615e0(0x177))['on'](_0x3615e0(0x1af),function(_0x1f9e39){var _0x52f879=_0x3615e0;_0x1f9e39['stopPropagation'](),Lampa[_0x52f879(0x29b)][_0x52f879(0x22c)](),setTimeout(function(){_0x1892fd(_0x10eae0,_0x3ccb5a);},0x64);}),_0x7c7f72[_0x3615e0(0x1a7)]('.move-up')['on']('hover:enter',function(_0x1974de){var _0x94b617=_0x3615e0;_0x1974de[_0x94b617(0x26d)]();var _0xcf7a98=_0x7c7f72[_0x94b617(0x23c)]();_0xcf7a98[_0x94b617(0x1c3)]&&!_0xcf7a98['hasClass'](_0x94b617(0x294))&&!_0xcf7a98[_0x94b617(0x28a)]('menu-edit-list__create-folder')&&_0xcf7a98['data']('id')!=='show_names'&&_0x7c7f72[_0x94b617(0x27c)](_0xcf7a98);}),_0x7c7f72[_0x3615e0(0x1a7)]('.move-down')['on'](_0x3615e0(0x1af),function(_0xe22763){var _0x5d2392=_0x3615e0;_0xe22763[_0x5d2392(0x26d)]();var _0x1cd8fa=_0x7c7f72[_0x5d2392(0x1c8)]();_0x1cd8fa[_0x5d2392(0x1c3)]&&!_0x1cd8fa[_0x5d2392(0x28a)](_0x5d2392(0x294))&&!_0x1cd8fa['hasClass']('folder-reset-button')&&_0x7c7f72[_0x5d2392(0x275)](_0x1cd8fa);}),_0x7c7f72[_0x3615e0(0x1a7)](_0x3615e0(0x163))['on'](_0x3615e0(0x1af),function(_0xc75ed0){var _0x60664=_0x3615e0;_0xc75ed0[_0x60664(0x26d)]();var _0x4fad7e=_0x5a9894(),_0x484dc6=_0x4fad7e[_0x60664(0x171)](_0x10eae0);_0x484dc6!==-0x1?(_0x4fad7e['splice'](_0x484dc6,0x1),_0x7c7f72[_0x60664(0x1a7)](_0x60664(0x1f6))[_0x60664(0x211)](_0x60664(0x293),'1'),_0x7c7f72['removeClass'](_0x60664(0x245))):(_0x4fad7e[_0x60664(0x242)](_0x10eae0),_0x7c7f72[_0x60664(0x1a7)](_0x60664(0x1f6))['attr']('opacity','0'),_0x7c7f72[_0x60664(0x1e2)](_0x60664(0x245))),_0x1883f3(_0x4fad7e);}),_0x7c7f72[_0x3615e0(0x1a7)]('.menu-edit-list__delete')['on'](_0x3615e0(0x1af),function(_0x1e5fd6){var _0x582db8=_0x3615e0;_0x1e5fd6[_0x582db8(0x26d)](),Lampa['Modal']['close'](),Lampa[_0x582db8(0x1cd)][_0x582db8(0x17e)]('Папка\x20удалена'),_0x354ca4(_0x10eae0),setTimeout(function(){var _0x30d50b=_0x582db8;_0x68d450&&_0x68d450['length']&&_0x68d450[0x0]&&(_0x518f96(_0x68d450),Lampa[_0x30d50b(0x1c7)][_0x30d50b(0x255)](_0x30d50b(0x195)));},0xc8);}),_0x50619c['append'](_0x7c7f72);}else{var _0x32ad9d=_0x1d492f['id'],_0xf8580c=_0x19c5f6[_0x32ad9d];if(!_0xf8580c||!_0xf8580c[_0x3615e0(0x1c3)])return;var _0x5c7a8a=_0x4d023d(_0x32ad9d,_0xf8580c),_0x221439=_0xd5648c[_0x32ad9d]||_0x4bb51d[_0x32ad9d]||_0xf8580c[_0x3615e0(0x1a7)](_0x3615e0(0x299))['first']()[_0x3615e0(0x249)](_0x3615e0(0x291))||'',_0x191466=_0x4b2042[_0x3615e0(0x185)](_0x32ad9d)?0x0:0x1,_0x4b390e=_0xf8580c[_0x3615e0(0x1a7)]('span')[_0x3615e0(0x234)]()[_0x3615e0(0x28e)]()[_0x3615e0(0x187)]()||_0xf8580c['text']()[_0x3615e0(0x187)](),_0x372dde=_0x4b390e||_0x5c7a8a;if(_0x4b390e&&_0x4b7430[_0x4b390e]>0x1){var _0x4eb23e=_0xf8580c[_0x3615e0(0x211)](_0x3615e0(0x278))||'',_0x2df6d1=_0xf8580c['attr']('data-subtitle')||_0xf8580c['attr'](_0x3615e0(0x220))||_0xf8580c['attr'](_0x3615e0(0x193))||'';if(_0x2df6d1){var _0x1da506=_0x2df6d1[_0x3615e0(0x26b)](/\s+/)[0x0];if(_0x1da506[_0x3615e0(0x1c3)]>0x1e)_0x1da506=_0x1da506['substring'](0x0,0x1e);_0x372dde=_0x4b390e+_0x3615e0(0x27b)+_0x1da506+_0x3615e0(0x259);}else{var _0x27e374=_0x4eb23e[_0x3615e0(0x17c)](/(?:button--|view--)(\w+)/);_0x27e374&&_0x27e374[0x1]&&(_0x372dde=_0x4b390e+'\x20<span\x20class=\x22menu-edit-list__title-sub\x22>('+_0x27e374[0x1]+_0x3615e0(0x259));}}var _0x27f5ac=$(_0x3615e0(0x1a4)+_0x32ad9d+_0x3615e0(0x260)+_0x221439+_0x3615e0(0x1be)+_0x372dde+'</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__edit\x20selector\x22\x20title=\x22Изменить\x20название\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20width=\x2222\x22\x20height=\x2222\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22\x20xmlns=\x22http://www.w3.org/2000/svg\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M16.474\x205.408L18.592\x207.526M16.474\x205.408L7.408\x2014.474C7.146\x2014.736\x207\x2015.088\x207\x2015.456V17.5H9.044C9.412\x2017.5\x209.764\x2017.354\x2010.026\x2017.092L19.092\x208.026M16.474\x205.408L19.092\x208.026M19.092\x208.026L21\x206.118C21.39\x205.728\x2021.39\x205.092\x2021\x204.704L19.296\x203C18.908\x202.61\x2018.272\x202.61\x2017.882\x203L16.474\x204.408\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x221.5\x22\x20stroke-linecap=\x22round\x22\x20stroke-linejoin=\x22round\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__icon-edit\x20selector\x22\x20title=\x22Сменить\x20иконку\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20width=\x2222\x22\x20height=\x2222\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22\x20xmlns=\x22http://www.w3.org/2000/svg\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<rect\x20x=\x223\x22\x20y=\x223\x22\x20width=\x2218\x22\x20height=\x2218\x22\x20rx=\x222\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x221.5\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<circle\x20cx=\x228.5\x22\x20cy=\x228.5\x22\x20r=\x221.5\x22\x20fill=\x22currentColor\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M21\x2015l-5-5L5\x2021\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x221.5\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__move\x20move-up\x20selector\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20width=\x2222\x22\x20height=\x2214\x22\x20viewBox=\x220\x200\x2022\x2014\x22\x20fill=\x22none\x22\x20xmlns=\x22http://www.w3.org/2000/svg\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M2\x2012L11\x203L20\x2012\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x224\x22\x20stroke-linecap=\x22round\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__move\x20move-down\x20selector\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20width=\x2222\x22\x20height=\x2214\x22\x20viewBox=\x220\x200\x2022\x2014\x22\x20fill=\x22none\x22\x20xmlns=\x22http://www.w3.org/2000/svg\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M2\x202L11\x2011L20\x202\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x224\x22\x20stroke-linecap=\x22round\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__toggle\x20toggle\x20selector\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20width=\x2226\x22\x20height=\x2226\x22\x20viewBox=\x220\x200\x2026\x2026\x22\x20fill=\x22none\x22\x20xmlns=\x22http://www.w3.org/2000/svg\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<rect\x20x=\x221.89111\x22\x20y=\x221.78369\x22\x20width=\x2221.793\x22\x20height=\x2221.793\x22\x20rx=\x223.5\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x223\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M7.44873\x2012.9658L10.8179\x2016.3349L18.1269\x209.02588\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x223\x22\x20class=\x22dot\x22\x20opacity=\x22'+_0x191466+'\x22\x20stroke-linecap=\x22round\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>');_0x4b2042[_0x3615e0(0x185)](_0x32ad9d)&&(_0x27f5ac[_0x3615e0(0x1e2)](_0x3615e0(0x27f)),_0x27f5ac[_0x3615e0(0x1e2)](_0x3615e0(0x214)));var _0x4de9e7=_0x27f5ac[_0x3615e0(0x1a7)](_0x3615e0(0x1c4));_0x27f5ac['find']('.menu-edit-list__icon-edit')['on']('hover:enter',function(_0x1f55d6){var _0x5482b9=_0x3615e0;_0x1f55d6[_0x5482b9(0x26d)]();var _0x5a3e92=_0x1036a9;Lampa[_0x5482b9(0x29b)]['close'](),setTimeout(function(){_0x2d9bca(_0x32ad9d,_0x3ccb5a,function(){_0x1036a9=_0x5a3e92,setTimeout(function(){var _0x3bce5f=_0x2bca;_0x3ccb5a&&_0x3ccb5a[_0x3bce5f(0x1c3)]&&_0x3ccb5a[0x0]&&_0x30864c(_0x3ccb5a,_0x5a3e92,_0x254f19);},0x64);});},0x64);}),_0x27f5ac[_0x3615e0(0x1a7)]('.menu-edit-list__edit')['on'](_0x3615e0(0x1af),function(_0x1cd4e){var _0x4c8678=_0x3615e0;_0x1cd4e[_0x4c8678(0x26d)]();var _0x184757=_0x4b390e||_0x5c7a8a;_0x169143(_0x32ad9d,_0x184757,_0x3ccb5a,_0x27f5ac,_0x4de9e7,_0x254f19,$(this));}),_0x27f5ac[_0x3615e0(0x1a7)](_0x3615e0(0x23e))['on'](_0x3615e0(0x1af),function(_0x4abc76){var _0x4b4af4=_0x3615e0;_0x4abc76[_0x4b4af4(0x26d)]();var _0x399204=_0x27f5ac[_0x4b4af4(0x23c)]();_0x399204['length']&&!_0x399204[_0x4b4af4(0x28a)](_0x4b4af4(0x294))&&_0x399204['data']('id')&&_0x399204[_0x4b4af4(0x176)]('id')!==_0x4b4af4(0x1e7)&&_0x27f5ac[_0x4b4af4(0x27c)](_0x399204);}),_0x27f5ac[_0x3615e0(0x1a7)](_0x3615e0(0x205))['on'](_0x3615e0(0x1af),function(_0x3c74dc){var _0x5d9fca=_0x3615e0;_0x3c74dc['stopPropagation']();var _0x1d445d=_0x27f5ac[_0x5d9fca(0x1c8)]();_0x1d445d[_0x5d9fca(0x1c3)]&&!_0x1d445d[_0x5d9fca(0x28a)](_0x5d9fca(0x294))&&!_0x1d445d[_0x5d9fca(0x28a)](_0x5d9fca(0x186))&&_0x27f5ac[_0x5d9fca(0x275)](_0x1d445d);}),_0x27f5ac[_0x3615e0(0x1a7)](_0x3615e0(0x163))['on'](_0x3615e0(0x1af),function(_0x1a1644){var _0x585234=_0x3615e0;_0x1a1644[_0x585234(0x26d)](),_0x27f5ac[_0x585234(0x258)]('button-hidden'),_0x27f5ac['toggleClass']('button-hidden-item');var _0x458846=_0x27f5ac[_0x585234(0x1a7)](_0x585234(0x1f6));_0x458846[_0x585234(0x211)](_0x585234(0x293),_0x27f5ac[_0x585234(0x28a)](_0x585234(0x27f))?0x0:0x1);}),_0x50619c[_0x3615e0(0x20d)](_0x27f5ac);}});var _0x4cce70=$(_0x178506(0x1a8));_0x4cce70['on']('hover:enter',function(){var _0x3f825d=_0x178506;Lampa[_0x3f825d(0x1ea)][_0x3f825d(0x178)](_0x1393a2,[]),Lampa[_0x3f825d(0x1ea)]['set'](_0x14f4d6,[]),Lampa[_0x3f825d(0x1ea)][_0x3f825d(0x178)](_0x63af85,!![]),Lampa['Storage'][_0x3f825d(0x178)](_0x1f755d,{}),Lampa['Storage'][_0x3f825d(0x178)](_0x55c316,{}),Lampa[_0x3f825d(0x1ea)][_0x3f825d(0x178)](_0x57f8e9,{}),Lampa['Storage'][_0x3f825d(0x178)](_0x57620d,{}),Lampa[_0x3f825d(0x1ea)][_0x3f825d(0x178)](_0x3f9f45,[]),Lampa[_0x3f825d(0x1ea)][_0x3f825d(0x178)](_0x274e19,[]),_0xab48b7({}),_0x34b87b=[],Lampa[_0x3f825d(0x29b)][_0x3f825d(0x22c)](),Lampa['Noty'][_0x3f825d(0x17e)](_0x3f825d(0x282)),setTimeout(function(){var _0x5d8fe8=_0x3f825d;_0x3ccb5a&&_0x3ccb5a['length']&&_0x3ccb5a[0x0]&&(_0x518f96(_0x3ccb5a),Lampa[_0x5d8fe8(0x1c7)][_0x5d8fe8(0x255)](_0x5d8fe8(0x195)));},0xc8);}),_0x50619c[_0x178506(0x20d)](_0x4cce70),Lampa[_0x178506(0x29b)]['open']({'title':_0x178506(0x285),'html':_0x50619c,'size':_0xa4804a(),'scroll_to_center':!![],'onBack':function _0x3a68c8(){var _0x5d8360=_0x178506,_0x42479c=[],_0x8b4801=[],_0x320a30=[],_0x8954c7=_0x1cf93c,_0xed253e=_0x50619c[_0x5d8360(0x1a7)](_0x5d8360(0x22d));_0xed253e['length']&&(_0x8954c7=!_0xed253e[_0x5d8360(0x28a)]('button-hidden'),Lampa[_0x5d8360(0x1ea)]['set'](_0x63af85,_0x8954c7));_0x50619c[_0x5d8360(0x1a7)](_0x5d8360(0x15a))[_0x5d8360(0x179)](function(){var _0x19c663=_0x5d8360,_0x59db3d=$(this),_0x932b6f=_0x59db3d['data']('id');if(!_0x932b6f||_0x932b6f==='show_names')return;_0x932b6f['indexOf'](_0x19c663(0x20f))===0x0?_0x320a30[_0x19c663(0x242)]({'type':_0x19c663(0x266),'id':_0x932b6f}):(_0x320a30[_0x19c663(0x242)]({'type':'button','id':_0x932b6f}),_0x42479c[_0x19c663(0x242)](_0x932b6f),_0x59db3d[_0x19c663(0x28a)](_0x19c663(0x27f))&&_0x8b4801[_0x19c663(0x242)](_0x932b6f));}),_0x2350f7(_0x320a30);var _0x17ca63=_0x2e6676(_0x1393a2),_0x4ad5d1=![];if(_0x42479c[_0x5d8360(0x1c3)]!==_0x17ca63['length'])_0x4ad5d1=!![];else for(var _0x3e18f8=0x0;_0x3e18f8<_0x42479c[_0x5d8360(0x1c3)];_0x3e18f8++){if(_0x42479c[_0x3e18f8]!==_0x17ca63[_0x3e18f8]){_0x4ad5d1=!![];break;}}_0x4ad5d1&&Lampa[_0x5d8360(0x1ea)][_0x5d8360(0x178)](_0x1393a2,_0x42479c),Lampa[_0x5d8360(0x1ea)]['set'](_0x14f4d6,_0x8b4801),Lampa[_0x5d8360(0x29b)]['close'](),setTimeout(function(){var _0xa7637d=_0x5d8360;if(_0x3ccb5a&&_0x3ccb5a[_0xa7637d(0x1c3)]&&_0x3ccb5a[0x0]){var _0x4c37e9=_0x3ccb5a[_0xa7637d(0x1a7)](_0xa7637d(0x25e));_0x4c37e9[_0xa7637d(0x1c3)]&&_0x4c37e9[_0xa7637d(0x1e2)](_0xa7637d(0x208)),setTimeout(function(){_0x518f96(_0x3ccb5a),setTimeout(function(){var _0x532db5=_0x2bca;_0x4c37e9[_0x532db5(0x1c3)]&&_0x4c37e9[_0x532db5(0x244)](_0x532db5(0x208));},0x64),setTimeout(function(){var _0x25b2bb=_0x2bca;try{_0x254f19?Lampa[_0x25b2bb(0x1c7)]['toggle'](_0x254f19):Lampa[_0x25b2bb(0x1c7)][_0x25b2bb(0x255)](_0x25b2bb(0x195)),_0x1036a9&&setTimeout(function(){_0x24b705(_0x3ccb5a,_0x1036a9),_0x1036a9=null;},0x32);}catch(_0x213eca){try{Lampa[_0x25b2bb(0x1c7)]['toggle']('content');}catch(_0x258703){}}},0x32);},0x96);}},0x64);}});}function _0x413f81(){var _0x493d02=_0x1e843c;_0x3868cb(),Lampa['Listener']['follow'](_0x493d02(0x21a),function(_0x13b246){var _0x25a4f9=_0x493d02;if(_0x13b246[_0x25a4f9(0x223)]==='complite'||_0x13b246[_0x25a4f9(0x223)]==='archive'){var _0x82c03f;if(_0x13b246['object']&&_0x13b246[_0x25a4f9(0x241)][_0x25a4f9(0x283)]&&typeof _0x13b246['object'][_0x25a4f9(0x283)][_0x25a4f9(0x173)]===_0x25a4f9(0x248))_0x82c03f=_0x13b246[_0x25a4f9(0x241)][_0x25a4f9(0x283)][_0x25a4f9(0x173)]();else _0x13b246[_0x25a4f9(0x283)]&&typeof _0x13b246[_0x25a4f9(0x283)][_0x25a4f9(0x173)]==='function'&&(_0x82c03f=_0x13b246['activity']['render']());if(!_0x82c03f)return;var _0x41cc86=$(_0x82c03f);if(!_0x41cc86||!_0x41cc86[_0x25a4f9(0x1c3)])return;_0x68d450=_0x41cc86;var _0x4585b9=_0x41cc86[_0x25a4f9(0x1a7)](_0x25a4f9(0x25e));_0x4585b9[_0x25a4f9(0x1c3)]&&(_0x4585b9[_0x25a4f9(0x1e2)](_0x25a4f9(0x208)),setTimeout(function(){var _0x16e6cb=_0x25a4f9;try{_0x518f96(_0x41cc86);var _0x516e60=_0x41cc86[_0x16e6cb(0x1a7)]('.full-start__button');_0x516e60[_0x16e6cb(0x1de)](_0x16e6cb(0x246))['on'](_0x16e6cb(0x246),function(){_0x30864c(_0x41cc86);});}catch(_0x5213dd){}},0x64),setTimeout(function(){var _0x3b734b=_0x25a4f9;try{_0x518f96(_0x41cc86,!![]),_0x4585b9[_0x3b734b(0x244)](_0x3b734b(0x208));}catch(_0x5f0fe3){_0x4585b9[_0x3b734b(0x244)](_0x3b734b(0x208));}},0x190));}});}function _0x3af0f2(){var _0x93daf=_0x1e843c;Lampa[_0x93daf(0x284)][_0x93daf(0x209)]=_0x43a7b3,_0x413f81();}function _0x58a12d(){var _0x5d944d=_0x1e843c;if(Lampa[_0x5d944d(0x284)][_0x5d944d(0x288)]!==_0x5d944d(0x1d9)){Lampa[_0x5d944d(0x1cd)][_0x5d944d(0x17e)](_0x5d944d(0x1a2));return;}window[_0x5d944d(0x1f8)]=!![],window[_0x5d944d(0x1e6)]?_0x3af0f2():Lampa[_0x5d944d(0x200)][_0x5d944d(0x1db)](_0x5d944d(0x182),function(_0x2263d6){if(_0x2263d6['type']==='ready')_0x3af0f2();});}!window[_0x1e843c(0x1f8)]&&_0x58a12d();}()));function _0x2bca(_0x5addc9,_0x4485ab){var _0x2106bc=_0x250f();return _0x2bca=function(_0x3bce13,_0x570a75){_0x3bce13=_0x3bce13-0x159;var _0xc8df7d=_0x2106bc[_0x3bce13];return _0xc8df7d;},_0x2bca(_0x5addc9,_0x4485ab);}function _0x250f(){var _0x30faf2=['off','map','Дом','nodeType','addClass','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><path\x20d=\x22M2\x2017l3-12\x204\x207\x203-8\x203\x208\x204-7\x203\x2012H2z\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M2\x2017h20v3H2z\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','inline','btnId','appready','show_names','\x22\x20stroke-linecap=\x22round\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x20\x20\x20\x20\x20\x20\x20\x20</div>','replace','Storage','<path\x20d=\x22M2\x2012L11\x203L20\x2012\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x224\x22\x20stroke-linecap=\x22round\x22/>','.button--priority','Щит','view--','Введите\x20название\x20папки','data-subtitle','<div\x20class=\x22menu-edit-list__title\x22>','<div\x20class=\x22menu-edit-list__item\x22\x20data-id=\x22show_names\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__icon\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22\x20xmlns=\x22http://www.w3.org/2000/svg\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M3\x2012H21M3\x206H21M3\x2018H21\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22\x20stroke-linecap=\x22round\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__title\x22>Названия\x20кнопок</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__toggle\x20toggle\x20selector\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20width=\x2226\x22\x20height=\x2226\x22\x20viewBox=\x220\x200\x2026\x2026\x22\x20fill=\x22none\x22\x20xmlns=\x22http://www.w3.org/2000/svg\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<rect\x20x=\x221.89111\x22\x20y=\x221.78369\x22\x20width=\x2221.793\x22\x20height=\x2221.793\x22\x20rx=\x223.5\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x223\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M7.44873\x2012.9658L10.8179\x2016.3349L18.1269\x209.02588\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x223\x22\x20class=\x22dot\x22\x20opacity=\x22','children','<div\x20class=\x22menu-edit-list\x22></div>','filter','.dot','console','plugin_card_buttons_editor_ready','Звезда','exception','<div\x20class=\x22selector\x20folder-create-confirm\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div>Создать\x20папку\x20\x22','remove','title_reactions','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><path\x20d=\x22M12\x202L15.09\x208.26L22\x209.27L17\x2014.14L18.18\x2021.02L12\x2017.77L5.82\x2021.02L7\x2014.14L2\x209.27L8.91\x208.26L12\x202Z\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','Сериал','Listener','<svg></svg>','<line\x20x1=\x229\x22\x20y1=\x2214\x22\x20x2=\x2215\x22\x20y2=\x2214\x22></line>','\x22\x20создана','Колокол','.move-down','Буфер','apply','buttons-loading','plugins','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><rect\x20x=\x229\x22\x20y=\x221\x22\x20width=\x226\x22\x20height=\x2211\x22\x20rx=\x223\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M5\x2011a7\x207\x200\x200014\x200M12\x2019v4M8\x2023h8\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><rect\x20x=\x223\x22\x20y=\x2212\x22\x20width=\x224\x22\x20height=\x229\x22\x20rx=\x221\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><rect\x20x=\x2210\x22\x20y=\x227\x22\x20width=\x224\x22\x20height=\x2214\x22\x20rx=\x221\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><rect\x20x=\x2217\x22\x20y=\x223\x22\x20width=\x224\x22\x20height=\x2218\x22\x20rx=\x221\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','Кнопка','append','Музыка','folder_','button-hide','attr','parse','2529IEMfqs','button-hidden-item','<div>','prototype',')</span></div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__delete\x20selector\x22\x20title=\x22Удалить\x20папку\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20width=\x2222\x22\x20height=\x2222\x22\x20viewBox=\x220\x200\x2026\x2026\x22\x20fill=\x22none\x22\x20xmlns=\x22http://www.w3.org/2000/svg\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<rect\x20x=\x221.89111\x22\x20y=\x221.78369\x22\x20width=\x2221.793\x22\x20height=\x2221.793\x22\x20rx=\x223.5\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x223\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M9.5\x209.5L16.5\x2016.5M16.5\x209.5L9.5\x2016.5\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x223\x22\x20stroke-linecap=\x22round\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__edit\x20selector\x22\x20title=\x22Переименовать\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20width=\x2222\x22\x20height=\x2222\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22\x20xmlns=\x22http://www.w3.org/2000/svg\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M16.474\x205.408L18.592\x207.526M16.474\x205.408L7.408\x2014.474C7.146\x2014.736\x207\x2015.088\x207\x2015.456V17.5H9.044C9.412\x2017.5\x209.764\x2017.354\x2010.026\x2017.092L19.092\x208.026M16.474\x205.408L19.092\x208.026M19.092\x208.026L21\x206.118C21.39\x205.728\x2021.39\x205.092\x2021\x204.704L19.296\x203C18.908\x202.61\x2018.272\x202.61\x2017.882\x203L16.474\x204.408\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x221.5\x22\x20stroke-linecap=\x22round\x22\x20stroke-linejoin=\x22round\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__icon-edit\x20selector\x22\x20title=\x22Сменить\x20иконку\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20width=\x2222\x22\x20height=\x2222\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22\x20xmlns=\x22http://www.w3.org/2000/svg\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<rect\x20x=\x223\x22\x20y=\x223\x22\x20width=\x2218\x22\x20height=\x2218\x22\x20rx=\x222\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x221.5\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<circle\x20cx=\x228.5\x22\x20cy=\x228.5\x22\x20r=\x221.5\x22\x20fill=\x22currentColor\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M21\x2015l-5-5L5\x2021\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x221.5\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__move\x20move-up\x20selector\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20width=\x2222\x22\x20height=\x2214\x22\x20viewBox=\x220\x200\x2022\x2014\x22\x20fill=\x22none\x22\x20xmlns=\x22http://www.w3.org/2000/svg\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M2\x2012L11\x203L20\x2012\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x224\x22\x20stroke-linecap=\x22round\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__move\x20move-down\x20selector\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20width=\x2222\x22\x20height=\x2214\x22\x20viewBox=\x220\x200\x2022\x2014\x22\x20fill=\x22none\x22\x20xmlns=\x22http://www.w3.org/2000/svg\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M2\x202L11\x2011L20\x202\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x224\x22\x20stroke-linecap=\x22round\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__toggle\x20toggle\x20selector\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20width=\x2226\x22\x20height=\x2226\x22\x20viewBox=\x220\x200\x2026\x2026\x22\x20fill=\x22none\x22\x20xmlns=\x22http://www.w3.org/2000/svg\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<rect\x20x=\x221.89111\x22\x20y=\x221.78369\x22\x20width=\x2221.793\x22\x20height=\x2221.793\x22\x20rx=\x223.5\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x223\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M7.44873\x2012.9658L10.8179\x2016.3349L18.1269\x209.02588\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x223\x22\x20class=\x22dot\x22\x20opacity=\x22','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><rect\x20x=\x223\x22\x20y=\x2211\x22\x20width=\x2218\x22\x20height=\x2211\x22\x20rx=\x222\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M7\x2011V7a5\x205\x200\x200110\x200v4\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','Выберите\x20кнопки\x20для\x20папки','activity,full','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><path\x20d=\x22M6\x209H4a2\x202\x200\x20010-4h2M18\x209h2a2\x202\x200\x20000-4h-2M8\x2021h8M12\x2017v4M7\x205h10v4a5\x205\x200\x2001-10\x200V5z\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><path\x20d=\x22M23\x207l-7\x205\x207\x205V7z\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><rect\x20x=\x221\x22\x20y=\x225\x22\x20width=\x2215\x22\x20height=\x2214\x22\x20rx=\x222\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','<div\x20class=\x22menu-edit-list__item\x20menu-edit-list__create-folder\x20selector\x22>','63yBrysW','link','data-name','head','</div></div>','type','Папка','string','@bylampa','Выберите\x20иконку\x20для\x20папки','Инфо','Utils','<div\x20class=\x22menu-edit-list__move\x20move-up\x20selector\x22>','<div\x20class=\x22menu-edit-split\x22></div>','close','.menu-edit-list__item[data-id=\x22show_names\x22]','<div\x20class=\x22menu-edit-list__move\x20move-down\x20selector\x22>','body','jquery','button--priority','info','collectionFocus','first','</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__toggle\x20selector\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20width=\x2226\x22\x20height=\x2226\x22\x20viewBox=\x220\x200\x2026\x2026\x22\x20fill=\x22none\x22\x20xmlns=\x22http://www.w3.org/2000/svg\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<rect\x20x=\x221.89111\x22\x20y=\x221.78369\x22\x20width=\x2221.793\x22\x20height=\x2221.793\x22\x20rx=\x223.5\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x223\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M7.44873\x2012.9658L10.8179\x2016.3349L18.1269\x209.02588\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x223\x22\x20class=\x22dot\x22\x20opacity=\x22','Card\x20Buttons\x20Editor','name','substring','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><path\x20d=\x22M12\x202L2\x207l10\x205\x2010-5-10-5z\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M2\x2017l10\x205\x2010-5M2\x2012l10\x205\x2010-5\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','Маска','title_subscribe','prev','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><circle\x20cx=\x228\x22\x20cy=\x2212\x22\x20r=\x225\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M12\x2012h9l-2\x203\x202\x203h-3l-2-3\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','.move-up','log','Название\x20не\x20может\x20быть\x20пустым','object','push','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><path\x20d=\x22M9\x2018V5l12-2v13\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><circle\x20cx=\x226\x22\x20cy=\x2218\x22\x20r=\x223\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><circle\x20cx=\x2218\x22\x20cy=\x2216\x22\x20r=\x223\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','removeClass','folder-hidden-item','hover:long','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><circle\x20cx=\x2212\x22\x20cy=\x2212\x22\x20r=\x2210\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><polyline\x20points=\x2212\x206\x2012\x2012\x2016\x2014\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','function','prop','isArray','trace','.focus','Название\x20кнопки\x20изменено','contents','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><path\x20d=\x22M3\x209l9-7\x209\x207v11a2\x202\x200\x2001-2\x202H5a2\x202\x200\x2001-2-2V9z\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M9\x2022V12h6v10\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','get','.menu-edit-list__edit','Название\x20папки','Список','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><polygon\x20points=\x225\x203\x2019\x2012\x205\x2021\x205\x203\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','toggle','hide','Оценить','toggleClass',')</span>','card_buttons_folders','71812UPuqMM','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><circle\x20cx=\x2212\x22\x20cy=\x2212\x22\x20r=\x2210\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M12\x202a10\x2010\x200\x20010\x2020\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','more','.full-start-new__buttons','\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.button-hide\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20none\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.button--play\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20none\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20@keyframes\x20button-fade-in\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20from\x20{\x20opacity:\x200;\x20transform:\x20translateY(5px);\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20to\x20{\x20opacity:\x201;\x20transform:\x20translateY(0);\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.full-start-new__buttons\x20.full-start__button\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20opacity:\x200;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20animation:\x20button-fade-in\x200.3s\x20ease\x20forwards;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.full-start-new__buttons.buttons-loading\x20.full-start__button\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20visibility:\x20hidden\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20animation:\x20none;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.button--folder\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20pointer;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.folder-hidden\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20none\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-split\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin:\x201em\x201em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20height:\x200;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-top:\x202px\x20solid\x20rgba(255,\x20255,\x20255,\x200.1);\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__item\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-webkit-box;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-webkit-flex;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-moz-box;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-ms-flexbox;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x200.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-border-radius:\x200.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-moz-border-radius:\x200.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x200.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-box-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-align-items:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-moz-box-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-ms-flex-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x203px\x20solid\x20transparent;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__item:nth-child(even)\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(255,\x20255,\x20255,\x200.1);\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__item.folder-item\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(255,\x20200,\x2050,\x200.15)\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-left:\x203px\x20solid\x20rgba(255,\x20200,\x2050,\x200.5);\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__item.folder-hidden-item\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20opacity:\x200.4;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__item.button-hidden-item\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20opacity:\x200.4;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__icon\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x202.4em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20height:\x202.4em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-right:\x201em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-flex-shrink:\x200;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-ms-flex-negative:\x200;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20flex-shrink:\x200;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-border-radius:\x20100%;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-moz-border-radius:\x20100%;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x20100%;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-webkit-box;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-webkit-flex;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-moz-box;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-ms-flexbox;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-box-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-align-items:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-moz-box-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-ms-flex-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-box-pack:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-justify-content:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-moz-box-pack:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-ms-flex-pack:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__icon\x20>\x20svg,\x20.menu-edit-list__icon\x20>\x20img\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x201.4em\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20height:\x201.4em\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__title\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x201.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-weight:\x20300;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20line-height:\x201.2;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-box-flex:\x201;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-flex-grow:\x201;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-moz-box-flex:\x201;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-ms-flex-positive:\x201;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20flex-grow:\x201;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__title-sub\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20opacity:\x200.5;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x200.85em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__move,\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__toggle,\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__edit,\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__icon-edit,\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__delete\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x202.4em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20height:\x202.4em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-webkit-box;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-webkit-flex;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-moz-box;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-ms-flexbox;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-box-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-align-items:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-moz-box-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-ms-flex-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-box-pack:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-justify-content:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-moz-box-pack:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-ms-flex-pack:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20pointer;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x203px\x20solid\x20transparent;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__move\x20svg,\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__toggle\x20svg,\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__edit\x20svg,\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__icon-edit\x20svg,\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__delete\x20svg\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x201.4em\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20height:\x201.4em\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__move.focus,\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__toggle.focus,\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__edit.focus,\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__icon-edit.focus,\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__delete.focus\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20white;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-border-radius:\x200.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-moz-border-radius:\x200.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x200.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20#000;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20transparent;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__toggle\x20svg\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x201.4em\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20height:\x201.4em\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__create-folder\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(100,200,100,0.2);\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-bottom:\x201em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x203px\x20solid\x20transparent;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-webkit-box;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-webkit-flex;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-moz-box;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-ms-flexbox;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-box-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-align-items:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-moz-box-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-ms-flex-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-box-pack:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-justify-content:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-moz-box-pack:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-ms-flex-pack:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__create-folder\x20.menu-edit-list__icon\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-right:\x200.5em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__create-folder\x20.menu-edit-list__title\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-box-flex:\x200;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-flex-grow:\x200;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-moz-box-flex:\x200;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-ms-flex-positive:\x200;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20flex-grow:\x200;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.menu-edit-list__create-folder.focus\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(100,200,100,0.3);\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20rgba(255,255,255,0.8);\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.folder-create-confirm\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(100,200,100,0.3);\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-top:\x201em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x200.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x203px\x20solid\x20transparent;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x201.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-weight:\x20300;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20line-height:\x201.2;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.folder-create-confirm\x20>\x20div\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20text-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x200.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.folder-create-confirm.focus\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20rgba(255,255,255,0.8);\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.folder-reset-button\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(200,80,80,0.6);\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin:\x201em\x200\x200\x200;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x200.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border:\x203px\x20solid\x20transparent;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20text-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x200.5em\x200.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x201.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-weight:\x20300;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20line-height:\x201.2;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.folder-reset-button.focus\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-color:\x20rgba(255,255,255,0.8);\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.reset-button\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(200,80,80,0.6);\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin:\x201em\x203px\x200\x203px;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x200.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20text-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x201em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20pointer;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20order:\x209999\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.reset-button.focus\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20box-shadow:\x200\x200\x200\x203px\x20rgba(255,255,255,0.8);\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.icon-reset-button\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(200,80,80,0.6);\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin:\x200.5em\x200.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x200.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20text-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x200.8em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20pointer;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x20calc(100%\x20-\x200.6em);\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x201.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-weight:\x20300;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20line-height:\x201.2;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.icon-reset-button.focus\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20box-shadow:\x200\x200\x200\x203px\x20rgba(255,255,255,0.8);\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.icon-picker-list\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20flex-wrap:\x20wrap;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.icon-picker-item\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-webkit-box;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-webkit-flex;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-moz-box;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-ms-flexbox;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x204em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20height:\x204em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-box-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-align-items:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-moz-box-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-ms-flex-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-box-pack:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-justify-content:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-moz-box-pack:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-ms-flex-pack:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20cursor:\x20pointer;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x200.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin:\x200.3em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.icon-picker-item.focus\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20rgba(255,255,255,0.2);\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.icon-picker-icon\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x202.4em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20height:\x202.4em;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-webkit-box;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-webkit-flex;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-moz-box;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20-ms-flexbox;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-box-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-align-items:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-moz-box-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-ms-flex-align:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20align-items:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-box-pack:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-webkit-justify-content:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-moz-box-pack:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20-ms-flex-pack:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20justify-content:\x20center;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.icon-picker-icon\x20svg\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20width:\x201.6em\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20height:\x201.6em\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.rating-value\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20background:\x20none\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20padding:\x200\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20border-radius:\x200\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20color:\x20inherit\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20font-size:\x20inherit\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20@media\x20(min-width:\x20586px)\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.full-start-new__buttons\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20flex-wrap:\x20wrap\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.full-start__button\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-bottom:\x2010px\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20@media\x20(max-width:\x20585px)\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.full-start-new__buttons\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20display:\x20flex\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20flex-wrap:\x20wrap\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20.full-start__button\x20{\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20margin-bottom:\x2010px\x20!important;\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20}\x20\x20\x20\x20\x20\x20\x20\x20','\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__icon\x22>','data-button-id','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><rect\x20x=\x222\x22\x20y=\x224\x22\x20width=\x2220\x22\x20height=\x2216\x22\x20rx=\x222\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><polygon\x20points=\x2210\x208\x2010\x2016\x2016\x2012\x22\x20fill=\x22currentColor\x22/></svg>','concat','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><path\x20d=\x22M12\x2021.35l-1.45-1.32C5.4\x2015.36\x202\x2012.28\x202\x208.5\x202\x205.42\x204.42\x203\x207.5\x203c1.74\x200\x203.41.81\x204.5\x202.09C13.09\x203.81\x2014.76\x203\x2016.5\x203\x2019.58\x203\x2022\x205.42\x2022\x208.5c0\x203.78-3.4\x206.86-8.55\x2011.54L12\x2021.35z\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','Поделиться','folder','data-original-title','full-start__button\x20selector\x20button--folder','Изменить\x20название\x20кнопки','</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__toggle\x20selector\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<svg\x20width=\x2226\x22\x20height=\x2226\x22\x20viewBox=\x220\x200\x2026\x2026\x22\x20fill=\x22none\x22\x20xmlns=\x22http://www.w3.org/2000/svg\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<rect\x20x=\x221.89111\x22\x20y=\x221.78369\x22\x20width=\x2221.793\x22\x20height=\x2221.793\x22\x20rx=\x223.5\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x223\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<path\x20d=\x22M7.44873\x2012.9658L10.8179\x2016.3349L18.1269\x209.02588\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x223\x22\x20class=\x22dot\x22\x20opacity=\x220\x22\x20stroke-linecap=\x22round\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>','split','Огонь','stopPropagation','(((.+)+)+)+$','{}.constructor(\x22return\x20this\x22)(\x20)','card_buttons_order','view--trailer','selectbox_icon','sort','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><path\x20d=\x22M21\x2015v4a2\x202\x200\x2001-2\x202H5a2\x202\x200\x2001-2-2v-4M7\x2010l5\x205\x205-5M12\x2015V3\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','insertAfter','forEach','<div\x20class=\x22icon-picker-item\x20selector\x22><div\x20class=\x22icon-picker-icon\x22>','class','</div>','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><circle\x20cx=\x2212\x22\x20cy=\x2212\x22\x20r=\x223\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M19.4\x2015a1.65\x201.65\x200\x2000.33\x201.82l.06.06a2\x202\x200\x2001-2.83\x202.83l-.06-.06a1.65\x201.65\x200\x2000-1.82-.33\x201.65\x201.65\x200\x2000-1\x201.51V21a2\x202\x200\x2001-4\x200v-.09A1.65\x201.65\x200\x20009\x2019.4a1.65\x201.65\x200\x2000-1.82.33l-.06.06a2\x202\x200\x2001-2.83-2.83l.06-.06A1.65\x201.65\x200\x20004.68\x2015a1.65\x201.65\x200\x2000-1.51-1H3a2\x202\x200\x20010-4h.09A1.65\x201.65\x200\x20004.6\x209a1.65\x201.65\x200\x2000-.33-1.82l-.06-.06a2\x202\x200\x20012.83-2.83l.06.06A1.65\x201.65\x200\x20009\x204.68a1.65\x201.65\x200\x20001-1.51V3a2\x202\x200\x20014\x200v.09a1.65\x201.65\x200\x20001\x201.51\x201.65\x201.65\x200\x20001.82-.33l.06-.06a2\x202\x200\x20012.83\x202.83l-.06.06A1.65\x201.65\x200\x200019.4\x209a1.65\x201.65\x200\x20001.51\x201H21a2\x202\x200\x20010\x204h-.09a1.65\x201.65\x200\x2000-1.51\x201z\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','\x20<span\x20class=\x22menu-edit-list__title-sub\x22>(','insertBefore','focus','search','button-hidden','span','<div\x20class=\x22icon-picker-list\x22></div>','Настройки\x20сброшены','activity','Manifest','Редактор\x20кнопок','data-folder-id','8704680dUkRmv','origin','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><circle\x20cx=\x2212\x22\x20cy=\x2212\x22\x20r=\x2210\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M2\x2012h20M12\x202a15.3\x2015.3\x200\x20014\x2010\x2015.3\x2015.3\x200\x2001-4\x2010M12\x202a15.3\x2015.3\x200\x2000-4\x2010\x2015.3\x2015.3\x200\x20004\x2010\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','hasClass','4AFUwQh','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><circle\x20cx=\x2218\x22\x20cy=\x225\x22\x20r=\x223\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><circle\x20cx=\x226\x22\x20cy=\x2212\x22\x20r=\x223\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><circle\x20cx=\x2218\x22\x20cy=\x2219\x22\x20r=\x223\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M8.59\x2013.51l6.83\x203.98M15.41\x206.51l-6.82\x203.98\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','slice','text','replaceWith','</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>','outerHTML','Input','opacity','menu-edit-split','Поиск','Редактирование\x20порядка,\x20видимости,\x20названий\x20и\x20группировка\x20кнопок\x20в\x20карточке','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><polygon\x20points=\x2213\x202\x203\x2014\x2012\x2014\x2011\x2022\x2021\x2010\x2012\x2010\x2013\x202\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','title_watch','svg','Замок','Modal','<div\x20class=\x22menu-edit-list__title\x22>Создать\x20папку</div>','random','card_buttons_folder_hide','html','toUpperCase','card_buttons_folder_icons','.menu-edit-list__item','getElementById','some','.menu-edit-list__icon','view--torrent','<div\x20class=\x22menu-edit-list__item\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__icon\x22></div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__title\x22>','button--folder','charAt','12286792tYDiid','.toggle','display:\x20none\x20!important','small','shots-view-button','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><rect\x20x=\x222\x22\x20y=\x222\x22\x20width=\x2220\x22\x20height=\x2220\x22\x20rx=\x222\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M7\x207h3v3H7zM14\x207h3v3h-3zM7\x2014h3v3H7zM14\x2014h3v3h-3z\x22\x20fill=\x22currentColor\x22/></svg>','\x20folder-hidden-item','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><path\x20d=\x22M22\x2019a2\x202\x200\x2001-2\x202H4a2\x202\x200\x2001-2-2V5a2\x202\x200\x20012-2h5l2\x203h9a2\x202\x200\x20012\x202v11z\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','keys','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><line\x20x1=\x228\x22\x20y1=\x226\x22\x20x2=\x2221\x22\x20y2=\x226\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><line\x20x1=\x228\x22\x20y1=\x2212\x22\x20x2=\x2221\x22\x20y2=\x2212\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><line\x20x1=\x228\x22\x20y1=\x2218\x22\x20x2=\x2221\x22\x20y2=\x2218\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><line\x20x1=\x223\x22\x20y1=\x226\x22\x20x2=\x223.01\x22\x20y2=\x226\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><line\x20x1=\x223\x22\x20y1=\x2212\x22\x20x2=\x223.01\x22\x20y2=\x2212\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><line\x20x1=\x223\x22\x20y1=\x2218\x22\x20x2=\x223.01\x22\x20y2=\x2218\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','<div\x20class=\x22icon-picker-item\x20selector\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22icon-picker-icon\x22>','<svg\x20xmlns=\x22http://www.w3.org/2000/svg\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22>','Кинотеатр','button--','includes','indexOf','other','render','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><path\x20d=\x22M12\x202C7.5\x206.5\x204\x2010\x204\x2014c0\x204.42\x203.58\x208\x208\x208s8-3.58\x208-8c0-4-3.5-7.5-8-12z\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M12\x2022c-1.5-2-2-4-2-6\x200-2\x201-4\x202-6\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','table','data','.menu-edit-list__icon-edit','set','each','<path\x20d=\x22M22\x2019a2\x202\x200\x200\x201-2\x202H4a2\x202\x200\x200\x201-2-2V5a2\x202\x200\x200\x201\x202-2h5l2\x203h9a2\x202\x200\x200\x201\x202\x202z\x22></path>','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><polygon\x20points=\x2222\x203\x202\x203\x2010\x2012.46\x2010\x2019\x2014\x2021\x2014\x2012.46\x2022\x203\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','match','Календарь','show','<div\x20class=\x22icon-reset-button\x20selector\x22>По\x20умолчанию</div>','\x22\x20stroke-linecap=\x22round\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>','Select','app','Содержимое\x20папки\x20обновлено','card_buttons_editor','has','folder-reset-button','trim','Lang','<div\x20class=\x22menu-edit-list__item\x22>','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><path\x20d=\x22M20\x2021v-2a4\x204\x200\x2000-4-4H8a4\x204\x200\x2000-4\x204v2\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><circle\x20cx=\x2212\x22\x20cy=\x227\x22\x20r=\x224\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><path\x20d=\x22M12\x202C6.48\x202\x202\x206.48\x202\x2012s4.48\x2010\x2010\x2010\x2010-4.48\x2010-10S17.52\x202\x2012\x202z\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><circle\x20cx=\x228.5\x22\x20cy=\x2210\x22\x20r=\x221.5\x22\x20fill=\x22currentColor\x22/><circle\x20cx=\x2215.5\x22\x20cy=\x2210\x22\x20r=\x221.5\x22\x20fill=\x22currentColor\x22/><path\x20d=\x22M8\x2014c.83\x202.67\x204\x202.67\x208\x200\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','trigger','Компас','card_buttons_original_icons','button--rating','Выберите\x20минимум\x201\x20кнопку','3737874KzGfGv','.full-start__button[data-button-id=\x22','data-id','card_buttons_item_order','content','<div\x20class=\x22menu-edit-list__icon\x22></div>','<div\x20class=\x22selector\x20folder-create-confirm\x22>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div>Сохранить\x20изменения</div>\x20\x20\x20\x20\x20\x20\x20\x20</div>','detach','splice','58265hfcbHa','Папка\x20\x22','.menu-edit-list__toggle','Ключ','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><circle\x20cx=\x2212\x22\x20cy=\x2212\x22\x20r=\x2210\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><line\x20x1=\x2212\x22\x20y1=\x2216\x22\x20x2=\x2212\x22\x20y2=\x2212\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><line\x20x1=\x2212\x22\x20y1=\x228\x22\x20x2=\x2212.01\x22\x20y2=\x228\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','items','114470ZUMxGy','html:','Ошибка\x20доступа','card_buttons_hide','<div\x20class=\x22menu-edit-list__item\x22\x20data-id=\x22','card_buttons_icons','hash','find','<div\x20class=\x22folder-reset-button\x20selector\x22>Сбросить\x20все\x20изменения</div>','Редактирование:\x20','Микрофон','toString','open','medium','Глобус','hover:enter','floor','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><rect\x20x=\x222\x22\x20y=\x223\x22\x20width=\x2220\x22\x20height=\x2218\x22\x20rx=\x222\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M2\x207h20M2\x2011h20M2\x2015h20M2\x2019h20\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><rect\x20x=\x223\x22\x20y=\x224\x22\x20width=\x2218\x22\x20height=\x2218\x22\x20rx=\x222\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M16\x202v4M8\x202v4M3\x2010h18\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','data:','display','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><rect\x20x=\x222\x22\x20y=\x222\x22\x20width=\x2220\x22\x20height=\x2220\x22\x20rx=\x222\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><path\x20d=\x22M2\x2012h20M7\x202v20M17\x202v20\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/></svg>','folder-hidden','warn','Фильтр','error','translate','style','Выберите\x20иконку','card_buttons_titles','</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22menu-edit-list__title\x22>','\x22\x20stroke-linecap=\x22round\x22/>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</svg>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20</div>','<svg\x20width=\x2224\x22\x20height=\x2224\x22\x20viewBox=\x220\x200\x2024\x2024\x22\x20fill=\x22none\x22><circle\x20cx=\x2212\x22\x20cy=\x2212\x22\x20r=\x2210\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x222\x22/><circle\x20cx=\x2212\x22\x20cy=\x2212\x22\x20r=\x224\x22\x20fill=\x22currentColor\x22/></svg>','6255710UBygRl','edit','length','.menu-edit-list__title','clone','text:','Controller','next','full_torrents','Трофей','\x22\x20data-id=\x22','bind','Noty','Иконка\x20сброшена','settings_input_links','</svg>','css','button','Корона','template','now','<svg\x20width=\x2222\x22\x20height=\x2214\x22\x20viewBox=\x220\x200\x2022\x2014\x22\x20fill=\x22none\x22\x20xmlns=\x22http://www.w3.org/2000/svg\x22>','card_buttons_show_names','<div\x20class=\x22menu-edit-list__item\x20folder-item','bylampa','Настройки','follow','<path\x20d=\x22M2\x202L11\x2011L20\x202\x22\x20stroke=\x22currentColor\x22\x20stroke-width=\x224\x22\x20stroke-linecap=\x22round\x22/>','.full-start__button'];_0x250f=function(){return _0x30faf2;};return _0x250f();}
+    // Polyfills для совместимости со старыми устройствами
+    if (!Array.prototype.forEach) {
+        Array.prototype.forEach = function (callback, thisArg) {
+            var T, k;
+            if (this == null) throw new TypeError('this is null or not defined');
+            var O = Object(this);
+            var len = O.length >>> 0;
+            if (typeof callback !== 'function') throw new TypeError(callback + ' is not a function');
+            if (arguments.length > 1) T = thisArg;
+            k = 0;
+            while (k < len) {
+                var kValue;
+                if (k in O) {
+                    kValue = O[k];
+                    callback.call(T, kValue, k, O);
+                }
+                k++;
+            }
+        };
+    }
+
+    if (!Array.prototype.filter) {
+        Array.prototype.filter = function (callback, thisArg) {
+            if (this == null) throw new TypeError('this is null or not defined');
+            var O = Object(this);
+            var len = O.length >>> 0;
+            if (typeof callback !== 'function') throw new TypeError(callback + ' is not a function');
+            var res = [];
+            var T = thisArg;
+            var k = 0;
+            while (k < len) {
+                if (k in O) {
+                    var kValue = O[k];
+                    if (callback.call(T, kValue, k, O)) res.push(kValue);
+                }
+                k++;
+            }
+            return res;
+        };
+    }
+
+    if (!Array.prototype.find) {
+        Array.prototype.find = function (callback, thisArg) {
+            if (this == null) throw new TypeError('this is null or not defined');
+            var O = Object(this);
+            var len = O.length >>> 0;
+            if (typeof callback !== 'function') throw new TypeError(callback + ' is not a function');
+            var T = thisArg;
+            var k = 0;
+            while (k < len) {
+                var kValue = O[k];
+                if (callback.call(T, kValue, k, O)) return kValue;
+                k++;
+            }
+            return undefined;
+        };
+    }
+
+    if (!Array.prototype.some) {
+        Array.prototype.some = function (callback, thisArg) {
+            if (this == null) throw new TypeError('this is null or not defined');
+            var O = Object(this);
+            var len = O.length >>> 0;
+            if (typeof callback !== 'function') throw new TypeError(callback + ' is not a function');
+            var T = thisArg;
+            var k = 0;
+            while (k < len) {
+                if (k in O && callback.call(T, O[k], k, O)) return true;
+                k++;
+            }
+            return false;
+        };
+    }
+
+    if (!Array.prototype.indexOf) {
+        Array.prototype.indexOf = function (searchElement, fromIndex) {
+            if (this == null) throw new TypeError('this is null or not defined');
+            var O = Object(this);
+            var len = O.length >>> 0;
+            if (len === 0) return -1;
+            var n = fromIndex | 0;
+            if (n >= len) return -1;
+            var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+            while (k < len) {
+                if (k in O && O[k] === searchElement) return k;
+                k++;
+            }
+            return -1;
+        };
+    }
+
+    var LAMPAC_ICON = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><path d="M20.331 14.644l-13.794-13.831 17.55 10.075zM2.938 0c-0.813 0.425-1.356 1.2-1.356 2.206v27.581c0 1.006 0.544 1.781 1.356 2.206l16.038-16zM29.512 14.1l-3.681-2.131-4.106 4.031 4.106 4.031 3.756-2.131c1.125-0.893 1.125-2.906-0.075-3.8zM6.538 31.188l17.55-10.075-3.756-3.756z" fill="currentColor"></path></svg>';
+
+    var EXCLUDED_CLASSES = ['button--play', 'button--edit-order', 'button--folder'];
+
+    // Функция перевода
+    function getTranslation(key) {
+        var translated = Lampa.Lang.translate(key);
+        return translated && translated !== key ? translated : key.replace('buttons_plugin_', '');
+    }
+
+    // Добавляем переводы для UI элементов плагина
+    Lampa.Lang.add({
+        buttons_plugin_button_order: {
+            uk: 'Порядок кнопок',
+            ru: 'Порядок кнопок',
+            en: 'Buttons order',
+            be: 'Парадак кнопак',
+            zh: '按钮顺序'
+        },
+        buttons_plugin_reset_default: {
+            uk: 'Скинути за замовчуванням',
+            ru: 'Сбросить по умолчанию',
+            en: 'Reset to default',
+            be: 'Скінуць па змаўчанні',
+            zh: '重置为默认'
+        },
+        buttons_plugin_button_editor: {
+            uk: 'Редактор кнопок',
+            ru: 'Редактор кнопок',
+            en: 'Buttons editor',
+            be: 'Рэдактар кнопак',
+            zh: '按钮编辑器'
+        },
+        buttons_plugin_button_editor_enabled: {
+            uk: 'Редактор кнопок включено',
+            ru: 'Редактор кнопок включен',
+            en: 'Buttons editor enabled',
+            be: 'Рэдактар кнопак уключаны',
+            zh: '按钮编辑器已启用'
+        },
+        buttons_plugin_button_editor_disabled: {
+            uk: 'Редактор кнопок вимкнено',
+            ru: 'Редактор кнопок выключен',
+            en: 'Buttons editor disabled',
+            be: 'Рэдактар кнопак адключаны',
+            zh: '按钮编辑器已禁用'
+        },
+        buttons_plugin_button_unknown: {
+            uk: 'Кнопка',
+            ru: 'Кнопка',
+            en: 'Button',
+            be: 'Кнопка',
+            zh: '按钮'
+        },
+        buttons_plugin_folder_name: {
+            uk: 'Назва папки',
+            ru: 'Название папки',
+            en: 'Folder name',
+            be: 'Назва папкі',
+            zh: '文件夹名称'
+        },
+        buttons_plugin_folder_created: {
+            uk: 'Папку створено',
+            ru: 'Папка создана',
+            en: 'Folder created',
+            be: 'Папка створана',
+            zh: '文件夹已创建'
+        },
+        buttons_plugin_folder_deleted: {
+            uk: 'Папку видалено',
+            ru: 'Папка удалена',
+            en: 'Folder deleted',
+            be: 'Папка выдалена',
+            zh: '文件夹已删除'
+        },
+        buttons_plugin_folder_order: {
+            uk: 'Порядок кнопок в папці',
+            ru: 'Порядок кнопок в папке',
+            en: 'Buttons order in folder',
+            be: 'Парадак кнопак у папцы',
+            zh: '文件夹中的按钮顺序'
+        },
+        buttons_plugin_create_folder: {
+            uk: 'Створити папку',
+            ru: 'Создать папку',
+            en: 'Create folder',
+            be: 'Стварыць папку',
+            zh: '创建文件夹'
+        },
+        buttons_plugin_select_buttons: {
+            uk: 'Виберіть кнопки для папки',
+            ru: 'Выберите кнопки для папки',
+            en: 'Select buttons for folder',
+            be: 'Выберыце кнопкі для папкі',
+            zh: '选择文件夹的按钮'
+        },
+        buttons_plugin_min_2_buttons: {
+            uk: 'Виберіть мінімум 2 кнопки',
+            ru: 'Выберите минимум 2 кнопки',
+            en: 'Select at least 2 buttons',
+            be: 'Выберыце мінімум 2 кнопкі',
+            zh: '至少选择2个按钮'
+        },
+        buttons_plugin_edit_order: {
+            uk: 'Змінити порядок',
+            ru: 'Изменить порядок',
+            en: 'Edit order',
+            be: 'Змяніць парадак',
+            zh: '编辑顺序'
+        },
+        buttons_plugin_settings_reset: {
+            uk: 'Налаштування скинуто',
+            ru: 'Настройки сброшены',
+            en: 'Settings reset',
+            be: 'Налады скінуты',
+            zh: '设置已重置'
+        },
+        buttons_plugin_move: {
+            uk: 'Зсув',
+            ru: 'Сдвиг',
+            en: 'Move',
+            be: 'Зрух',
+            zh: '移动'
+        },
+        buttons_plugin_view: {
+            uk: 'Вигляд',
+            ru: 'Вид',
+            en: 'View',
+            be: 'Выгляд',
+            zh: '视图'
+        },
+        buttons_plugin_show: {
+            uk: 'Показ',
+            ru: 'Показ',
+            en: 'Show',
+            be: 'Паказ',
+            zh: '显示'
+        }
+    });
+
+    var DEFAULT_GROUPS = [
+        { name: 'online', patterns: ['online', 'lampac', 'modss', 'showy'] },
+        { name: 'torrent', patterns: ['torrent'] },
+        { name: 'trailer', patterns: ['trailer', 'rutube'] },
+        { name: 'shots', patterns: ['shots'] },
+        { name: 'book', patterns: ['book'] },
+        { name: 'reaction', patterns: ['reaction'] },
+        { name: 'subscribe', patterns: ['subscribe'] }
+    ];
+
+    var currentButtons = [];
+    var allButtonsCache = [];
+    var allButtonsOriginal = [];
+    var currentContainer = null;
+
+    // Вспомогательная функция для поиска кнопки
+    function findButton(btnId) {
+        var btn = allButtonsCache.find(function (b) { return getBtnIdentifier(b) === btnId; });
+        if (!btn) {
+            btn = allButtonsOriginal.find(function (b) { return getBtnIdentifier(b) === btnId; });
+        }
+        return btn;
+    }
+
+    // Вспомогательная функция для получения всех ID кнопок в папках
+    function getButtonsInFolders() {
+        var folders = getFolders();
+        var buttonsInFolders = [];
+        folders.forEach(function (folder) {
+            buttonsInFolders = buttonsInFolders.concat(folder.buttons);
+        });
+        return buttonsInFolders;
+    }
+
+    function getCustomOrder() {
+        return Lampa.Storage.get('button_custom_order', []);
+    }
+
+    function setCustomOrder(order) {
+        Lampa.Storage.set('button_custom_order', order);
+    }
+
+    function getItemOrder() {
+        return Lampa.Storage.get('button_item_order', []);
+    }
+
+    function setItemOrder(order) {
+        Lampa.Storage.set('button_item_order', order);
+    }
+
+    function getHiddenButtons() {
+        return Lampa.Storage.get('button_hidden', []);
+    }
+
+    function setHiddenButtons(hidden) {
+        Lampa.Storage.set('button_hidden', hidden);
+    }
+
+    function getButtonDisplayModes() {
+        return Lampa.Storage.get('button_display_modes', {});
+    }
+
+    function setButtonDisplayModes(modes) {
+        Lampa.Storage.set('button_display_modes', modes);
+    }
+
+    function getButtonDisplayMode(btnId) {
+        var modes = getButtonDisplayModes();
+        return modes[btnId] || 1; // По умолчанию режим 1 (стандартный)
+    }
+
+    function setButtonDisplayMode(btnId, mode) {
+        var modes = getButtonDisplayModes();
+        modes[btnId] = mode;
+        setButtonDisplayModes(modes);
+    }
+
+    function getFolders() {
+        return Lampa.Storage.get('button_folders', []);
+    }
+
+    function setFolders(folders) {
+        Lampa.Storage.set('button_folders', folders);
+    }
+
+    function getBtnIdentifier(button) {
+        var classes = button.attr('class') || '';
+        var text = button.find('span').text().trim().replace(/\s+/g, '_');
+        var subtitle = button.attr('data-subtitle') || '';
+
+        if (classes.indexOf('modss') !== -1 || text.indexOf('MODS') !== -1 || text.indexOf('MOD') !== -1) {
+            return 'modss_online_button';
+        }
+
+        if (classes.indexOf('showy') !== -1 || text.indexOf('Showy') !== -1) {
+            return 'showy_online_button';
+        }
+
+        var viewClasses = classes.split(' ').filter(function (c) {
+            return c.indexOf('view--') === 0 || c.indexOf('button--') === 0;
+        }).join('_');
+
+        if (!viewClasses && !text) {
+            return 'button_unknown';
+        }
+
+        var id = viewClasses + '_' + text;
+
+        if (subtitle) {
+            id = id + '_' + subtitle.replace(/\s+/g, '_').substring(0, 30);
+        }
+
+        return id;
+    }
+
+    function detectBtnCategory(button) {
+        var classes = button.attr('class') || '';
+
+        // Специальная проверка для Shots - должна быть первой!
+        if (classes.indexOf('shots-view-button') !== -1 || classes.indexOf('shots') !== -1) {
+            return 'shots';
+        }
+
+        for (var i = 0; i < DEFAULT_GROUPS.length; i++) {
+            var group = DEFAULT_GROUPS[i];
+            for (var j = 0; j < group.patterns.length; j++) {
+                if (classes.indexOf(group.patterns[j]) !== -1) {
+                    return group.name;
+                }
+            }
+        }
+
+        return 'other';
+    }
+
+    function shouldSkipBtn(button) {
+        var classes = button.attr('class') || '';
+        for (var i = 0; i < EXCLUDED_CLASSES.length; i++) {
+            if (classes.indexOf(EXCLUDED_CLASSES[i]) !== -1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function groupBtnsByType(container) {
+        var allButtons = container.find('.full-start__button').not('.button--edit-order, .button--folder, .button--play');
+
+        var categories = {
+            online: [],
+            torrent: [],
+            trailer: [],
+            shots: [],
+            book: [],
+            reaction: [],
+            subscribe: [],
+            other: []
+        };
+
+        allButtons.each(function () {
+            var $btn = $(this);
+
+            // Пропускаем кнопки из .person-start__bottom (info, subscribe)
+            if ($btn.closest('.person-start__bottom').length) {
+                return;
+            }
+
+            if (shouldSkipBtn($btn)) return;
+
+            var type = detectBtnCategory($btn);
+
+            if (type === 'online' && $btn.hasClass('lampac--button') && !$btn.hasClass('modss--button') && !$btn.hasClass('showy--button')) {
+                var svgElement = $btn.find('svg').first();
+                if (svgElement.length && !svgElement.hasClass('modss-online-icon')) {
+                    svgElement.replaceWith(LAMPAC_ICON);
+                }
+            }
+
+            if (categories[type]) {
+                categories[type].push($btn);
+            } else {
+                categories.other.push($btn);
+            }
+        });
+
+        return categories;
+    }
+
+    function arrangeBtnsByOrder(buttons) {
+        var customOrder = getCustomOrder();
+
+        var priority = [];
+        var regular = [];
+
+        buttons.forEach(function (btn) {
+            var id = getBtnIdentifier(btn);
+            if (id === 'modss_online_button' || id === 'showy_online_button') {
+                priority.push(btn);
+            } else {
+                regular.push(btn);
+            }
+        });
+
+        priority.sort(function (a, b) {
+            var idA = getBtnIdentifier(a);
+            var idB = getBtnIdentifier(b);
+            if (idA === 'modss_online_button') return -1;
+            if (idB === 'modss_online_button') return 1;
+            if (idA === 'showy_online_button') return -1;
+            if (idB === 'showy_online_button') return 1;
+            return 0;
+        });
+
+        if (!customOrder.length) {
+            regular.sort(function (a, b) {
+                var typeOrder = ['online', 'torrent', 'trailer', 'shots', 'book', 'reaction', 'subscribe', 'other'];
+                var typeA = detectBtnCategory(a);
+                var typeB = detectBtnCategory(b);
+                var indexA = typeOrder.indexOf(typeA);
+                var indexB = typeOrder.indexOf(typeB);
+                if (indexA === -1) indexA = 999;
+                if (indexB === -1) indexB = 999;
+                return indexA - indexB;
+            });
+            return priority.concat(regular);
+        }
+
+        var sorted = [];
+        var remaining = regular.slice();
+
+        customOrder.forEach(function (id) {
+            for (var i = 0; i < remaining.length; i++) {
+                if (getBtnIdentifier(remaining[i]) === id) {
+                    sorted.push(remaining[i]);
+                    remaining.splice(i, 1);
+                    break;
+                }
+            }
+        });
+
+        return priority.concat(sorted).concat(remaining);
+    }
+
+    function applyBtnVisibility(buttons) {
+        var hidden = getHiddenButtons();
+        buttons.forEach(function (btn) {
+            var id = getBtnIdentifier(btn);
+            if (hidden.indexOf(id) !== -1) {
+                btn.addClass('hidden');
+            } else {
+                btn.removeClass('hidden');
+            }
+        });
+    }
+
+    function applyButtonDisplayModes(buttons) {
+        buttons.forEach(function (btn) {
+            var id = getBtnIdentifier(btn);
+            var mode = getButtonDisplayMode(id);
+
+            // Удаляем все классы режимов
+            btn.removeClass('button-mode-1 button-mode-2 button-mode-3');
+
+            // Добавляем класс текущего режима
+            btn.addClass('button-mode-' + mode);
+
+            // Универсальная обработка для всех кнопок с нестандартной структурой
+            // Проверяем есть ли у кнопки текстовые ноды или span элементы вне SVG
+            var hasTextContent = false;
+            btn.contents().each(function () {
+                if ((this.nodeType === 3 && this.nodeValue.trim()) ||
+                    (this.nodeName === 'SPAN' && !$(this).parent().is('svg') && !$(this).hasClass('text-wrapper'))) {
+                    hasTextContent = true;
+                    return false; // break
+                }
+            });
+
+            if (hasTextContent) {
+                // Сначала разворачиваем все обернутые ноды
+                btn.find('.text-wrapper').each(function () {
+                    $(this).replaceWith($(this).contents());
+                });
+
+                // Получаем все текстовые ноды и span элементы (не в SVG и не специальные классы)
+                var nodesToWrap = [];
+                btn.contents().each(function () {
+                    if (this.nodeType === 3 && this.nodeValue.trim()) { // Text node
+                        nodesToWrap.push(this);
+                    } else if (this.nodeName === 'SPAN' &&
+                        !$(this).parent().is('svg') &&
+                        !$(this).hasClass('text-wrapper') &&
+                        !$(this).hasClass('shots-view-button__title') &&
+                        !$(this).hasClass('shots-view-button__count')) {
+                        // Для span элемента - добавляем класс вместо оборачивания
+                        $(this).addClass('text-wrapper');
+                    }
+                });
+
+                // Оборачиваем только текстовые ноды в .text-wrapper
+                nodesToWrap.forEach(function (node) {
+                    $(node).wrap('<span class="text-wrapper"></span>');
+                });
+            }
+        });
+    }
+
+    function animateBtnFadeIn(buttons) {
+        buttons.forEach(function (btn, index) {
+            btn.css({
+                'opacity': '0',
+                'animation': 'button-fade-in 0.4s ease forwards',
+                'animation-delay': (index * 0.08) + 's'
+            });
+        });
+    }
+
+    function buildEditorBtn() {
+        var btn = $('<div class="full-start__button selector button--edit-order" style="order: 9999;">' +
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 29" fill="none"><use xlink:href="#sprite-edit"></use></svg>' +
+            '</div>');
+
+        btn.on('hover:enter', function () {
+            openEditDialog();
+        });
+
+        // Проверяем настройку и скрываем кнопку если редактор выключен
+        if (Lampa.Storage.get('buttons_editor_enabled') === false) {
+            btn.hide();
+        }
+
+        return btn;
+    }
+
+    function saveOrder() {
+        var order = [];
+        currentButtons.forEach(function (btn) {
+            order.push(getBtnIdentifier(btn));
+        });
+        setCustomOrder(order);
+    }
+
+    function saveItemOrder() {
+        var order = [];
+        var items = $('.menu-edit-list .menu-edit-list__item').not('.menu-edit-list__create-folder');
+
+        items.each(function () {
+            var $item = $(this);
+            var itemType = $item.data('itemType');
+
+            if (itemType === 'folder') {
+                order.push({
+                    type: 'folder',
+                    id: $item.data('folderId')
+                });
+            } else if (itemType === 'button') {
+                order.push({
+                    type: 'button',
+                    id: $item.data('buttonId')
+                });
+            }
+        });
+
+        setItemOrder(order);
+    }
+
+    function applyChanges() {
+        if (!currentContainer) return;
+
+        var categories = groupBtnsByType(currentContainer);
+        var allButtons = []
+            .concat(categories.online)
+            .concat(categories.torrent)
+            .concat(categories.trailer)
+            .concat(categories.shots)
+            .concat(categories.book)
+            .concat(categories.reaction)
+            .concat(categories.subscribe)
+            .concat(categories.other);
+
+        allButtons = arrangeBtnsByOrder(allButtons);
+        allButtonsCache = allButtons;
+
+        var folders = getFolders();
+        var foldersUpdated = false;
+
+        folders.forEach(function (folder) {
+            var updatedButtons = [];
+            var usedButtons = [];
+
+            folder.buttons.forEach(function (oldBtnId) {
+                var found = false;
+
+                for (var i = 0; i < allButtons.length; i++) {
+                    var btn = allButtons[i];
+                    var newBtnId = getBtnIdentifier(btn);
+
+                    if (usedButtons.indexOf(newBtnId) !== -1) continue;
+
+                    if (newBtnId === oldBtnId) {
+                        updatedButtons.push(newBtnId);
+                        usedButtons.push(newBtnId);
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    for (var i = 0; i < allButtons.length; i++) {
+                        var btn = allButtons[i];
+                        var newBtnId = getBtnIdentifier(btn);
+
+                        if (usedButtons.indexOf(newBtnId) !== -1) continue;
+
+                        var text = btn.find('span').text().trim();
+                        var classes = btn.attr('class') || '';
+
+                        if ((oldBtnId.indexOf('modss') !== -1 || oldBtnId.indexOf('MODS') !== -1) &&
+                            (classes.indexOf('modss') !== -1 || text.indexOf('MODS') !== -1)) {
+                            updatedButtons.push(newBtnId);
+                            usedButtons.push(newBtnId);
+                            found = true;
+                            break;
+                        } else if ((oldBtnId.indexOf('showy') !== -1 || oldBtnId.indexOf('Showy') !== -1) &&
+                            (classes.indexOf('showy') !== -1 || text.indexOf('Showy') !== -1)) {
+                            updatedButtons.push(newBtnId);
+                            usedButtons.push(newBtnId);
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!found) {
+                    updatedButtons.push(oldBtnId);
+                }
+            });
+
+            if (updatedButtons.length !== folder.buttons.length ||
+                updatedButtons.some(function (id, i) { return id !== folder.buttons[i]; })) {
+                folder.buttons = updatedButtons;
+                foldersUpdated = true;
+            }
+        });
+
+        if (foldersUpdated) {
+            setFolders(folders);
+        }
+
+        // Оптимизация: получаем buttonsInFolders один раз
+        var buttonsInFolders = [];
+        folders.forEach(function (folder) {
+            buttonsInFolders = buttonsInFolders.concat(folder.buttons);
+        });
+
+        var filteredButtons = allButtons.filter(function (btn) {
+            return buttonsInFolders.indexOf(getBtnIdentifier(btn)) === -1;
+        });
+
+        currentButtons = filteredButtons;
+        applyBtnVisibility(filteredButtons);
+        applyButtonDisplayModes(filteredButtons);
+
+        var targetContainer = currentContainer.find('.full-start-new__buttons');
+        if (!targetContainer.length) return;
+
+        targetContainer.find('.full-start__button').not('.button--edit-order').detach();
+
+        var itemOrder = getItemOrder();
+        var visibleButtons = [];
+
+        if (itemOrder.length > 0) {
+            var addedFolders = [];
+            var addedButtons = [];
+
+            itemOrder.forEach(function (item) {
+                if (item.type === 'folder') {
+                    var folder = folders.find(function (f) { return f.id === item.id; });
+                    if (folder) {
+                        var folderBtn = createFolderButton(folder);
+                        targetContainer.append(folderBtn);
+                        visibleButtons.push(folderBtn);
+                        addedFolders.push(folder.id);
+                    }
+                } else if (item.type === 'button') {
+                    var btnId = item.id;
+                    if (buttonsInFolders.indexOf(btnId) === -1) {
+                        var btn = currentButtons.find(function (b) { return getBtnIdentifier(b) === btnId; });
+                        if (btn && !btn.hasClass('hidden')) {
+                            targetContainer.append(btn);
+                            visibleButtons.push(btn);
+                            addedButtons.push(btnId);
+                        }
+                    }
+                }
+            });
+
+            currentButtons.forEach(function (btn) {
+                var btnId = getBtnIdentifier(btn);
+                if (addedButtons.indexOf(btnId) === -1 && !btn.hasClass('hidden') && buttonsInFolders.indexOf(btnId) === -1) {
+                    var insertBefore = null;
+                    var btnType = detectBtnCategory(btn);
+                    var typeOrder = ['online', 'torrent', 'trailer', 'shots', 'book', 'reaction', 'subscribe', 'other'];
+                    var btnTypeIndex = typeOrder.indexOf(btnType);
+                    if (btnTypeIndex === -1) btnTypeIndex = 999;
+
+                    if (btnId === 'modss_online_button' || btnId === 'showy_online_button') {
+                        var firstNonPriority = targetContainer.find('.full-start__button').not('.button--edit-order, .button--folder').filter(function () {
+                            var id = getBtnIdentifier($(this));
+                            return id !== 'modss_online_button' && id !== 'showy_online_button';
+                        }).first();
+
+                        if (firstNonPriority.length) {
+                            insertBefore = firstNonPriority;
+                        }
+
+                        if (btnId === 'showy_online_button') {
+                            var modsBtn = targetContainer.find('.full-start__button').filter(function () {
+                                return getBtnIdentifier($(this)) === 'modss_online_button';
+                            });
+                            if (modsBtn.length) {
+                                insertBefore = modsBtn.next();
+                                if (!insertBefore.length || insertBefore.hasClass('button--edit-order')) {
+                                    insertBefore = null;
+                                }
+                            }
+                        }
+                    } else {
+                        targetContainer.find('.full-start__button').not('.button--edit-order, .button--folder').each(function () {
+                            var existingBtn = $(this);
+                            var existingId = getBtnIdentifier(existingBtn);
+
+                            if (existingId === 'modss_online_button' || existingId === 'showy_online_button') {
+                                return true;
+                            }
+
+                            var existingType = detectBtnCategory(existingBtn);
+                            var existingTypeIndex = typeOrder.indexOf(existingType);
+                            if (existingTypeIndex === -1) existingTypeIndex = 999;
+
+                            if (btnTypeIndex < existingTypeIndex) {
+                                insertBefore = existingBtn;
+                                return false;
+                            }
+                        });
+                    }
+
+                    if (insertBefore && insertBefore.length) {
+                        btn.insertBefore(insertBefore);
+                    } else {
+                        var editBtn = targetContainer.find('.button--edit-order');
+                        if (editBtn.length) {
+                            btn.insertBefore(editBtn);
+                        } else {
+                            targetContainer.append(btn);
+                        }
+                    }
+                    visibleButtons.push(btn);
+                }
+            });
+
+            folders.forEach(function (folder) {
+                if (addedFolders.indexOf(folder.id) === -1) {
+                    var folderBtn = createFolderButton(folder);
+                    targetContainer.append(folderBtn);
+                    visibleButtons.push(folderBtn);
+                }
+            });
+        } else {
+            currentButtons.forEach(function (btn) {
+                var btnId = getBtnIdentifier(btn);
+                if (!btn.hasClass('hidden') && buttonsInFolders.indexOf(btnId) === -1) {
+                    targetContainer.append(btn);
+                    visibleButtons.push(btn);
+                }
+            });
+
+            folders.forEach(function (folder) {
+                var folderBtn = createFolderButton(folder);
+                targetContainer.append(folderBtn);
+                visibleButtons.push(folderBtn);
+            });
+        }
+
+        animateBtnFadeIn(visibleButtons);
+
+        var editBtn = targetContainer.find('.button--edit-order');
+        if (editBtn.length) {
+            editBtn.detach();
+            targetContainer.append(editBtn);
+        }
+
+        saveOrder();
+
+        setTimeout(function () {
+            if (currentContainer) {
+                setupButtonNavigation(currentContainer);
+            }
+        }, 100);
+    }
+
+    function capitalizeText(str) {
+        if (!str) return str;
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    function getBtnDisplayText(btn, allButtons) {
+        var text = btn.find('span').text().trim();
+        var classes = btn.attr('class') || '';
+        var subtitle = btn.attr('data-subtitle') || '';
+
+        if (!text) {
+            var viewClass = classes.split(' ').find(function (c) {
+                return c.indexOf('view--') === 0 || c.indexOf('button--') === 0;
+            });
+            if (viewClass) {
+                text = viewClass.replace('view--', '').replace('button--', '').replace(/_/g, ' ');
+                text = capitalizeText(text);
+            } else {
+                text = getTranslation('buttons_plugin_button_unknown');
+            }
+            return text;
+        }
+
+        var sameTextCount = 0;
+        allButtons.forEach(function (otherBtn) {
+            if (otherBtn.find('span').text().trim() === text) {
+                sameTextCount++;
+            }
+        });
+
+        if (sameTextCount > 1) {
+            if (subtitle) {
+                return text + ' <span style="opacity:0.5">(' + subtitle.substring(0, 30) + ')</span>';
+            }
+
+            var viewClass = classes.split(' ').find(function (c) {
+                return c.indexOf('view--') === 0;
+            });
+            if (viewClass) {
+                var identifier = viewClass.replace('view--', '').replace(/_/g, ' ');
+                identifier = capitalizeText(identifier);
+                return text + ' <span style="opacity:0.5">(' + identifier + ')</span>';
+            }
+        }
+
+        return text;
+    }
+
+    function createFolderButton(folder) {
+        var firstBtnId = folder.buttons[0];
+        var firstBtn = findButton(firstBtnId);
+        var icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+            '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>' +
+            '</svg>';
+
+        if (firstBtn) {
+            var btnIcon = firstBtn.find('svg').first();
+            if (btnIcon.length) {
+                icon = btnIcon.prop('outerHTML');
+            }
+        }
+
+        var btn = $('<div class="full-start__button selector button--folder" data-folder-id="' + folder.id + '">' +
+            icon +
+            '<span>' + folder.name + '</span>' +
+            '</div>');
+
+        btn.on('hover:enter', function () {
+            openFolderMenu(folder);
+        });
+
+        return btn;
+    }
+
+    function openFolderMenu(folder) {
+        var items = [];
+
+        folder.buttons.forEach(function (btnId) {
+            var btn = findButton(btnId);
+            if (btn) {
+                var displayName = getBtnDisplayText(btn, allButtonsOriginal);
+                var iconElement = btn.find('svg').first();
+                var icon = iconElement.length ? iconElement.prop('outerHTML') : '';
+                var subtitle = btn.attr('data-subtitle') || '';
+
+                var item = {
+                    title: displayName.replace(/<[^>]*>/g, ''),
+                    button: btn,
+                    btnId: btnId
+                };
+
+                if (icon) {
+                    item.template = 'selectbox_icon';
+                    item.icon = icon;
+                }
+
+                if (subtitle) {
+                    item.subtitle = subtitle;
+                }
+
+                items.push(item);
+            }
+        });
+
+        items.push({
+            title: getTranslation('buttons_plugin_edit_order'),
+            edit: true
+        });
+
+        Lampa.Select.show({
+            title: folder.name,
+            items: items,
+            onSelect: function (item) {
+                if (item.edit) {
+                    openFolderEditDialog(folder);
+                } else {
+                    item.button.trigger('hover:enter');
+                }
+            },
+            onBack: function () {
+                Lampa.Controller.toggle('full_start');
+            }
+        });
+    }
+
+    function openFolderEditDialog(folder) {
+        var list = $('<div class="menu-edit-list"></div>');
+
+        folder.buttons.forEach(function (btnId) {
+            var btn = findButton(btnId);
+            if (btn) {
+                var displayName = getBtnDisplayText(btn, allButtonsOriginal);
+                var iconElement = btn.find('svg').first();
+                var icon = iconElement.length ? iconElement.clone() : $('<svg></svg>');
+
+                var item = $('<div class="menu-edit-list__item">' +
+                    '<div class="menu-edit-list__icon"></div>' +
+                    '<div class="menu-edit-list__title">' + displayName + '</div>' +
+                    '<div class="menu-edit-list__move move-up selector">' +
+                    '<svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                    '<path d="M2 12L11 3L20 12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>' +
+                    '</svg>' +
+                    '</div>' +
+                    '<div class="menu-edit-list__move move-down selector">' +
+                    '<svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                    '<path d="M2 2L11 11L20 2" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>' +
+                    '</svg>' +
+                    '</div>' +
+                    '</div>');
+
+                item.find('.menu-edit-list__icon').append(icon);
+                item.data('btnId', btnId);
+
+                item.find('.move-up').on('hover:enter', function () {
+                    var prev = item.prev();
+                    if (prev.length) {
+                        item.insertBefore(prev);
+                        saveFolderButtonOrder(folder, list);
+                    }
+                });
+
+                item.find('.move-down').on('hover:enter', function () {
+                    var next = item.next();
+                    if (next.length) {
+                        item.insertAfter(next);
+                        saveFolderButtonOrder(folder, list);
+                    }
+                });
+
+                list.append(item);
+            }
+        });
+
+        Lampa.Modal.open({
+            title: getTranslation('buttons_plugin_folder_order'),
+            html: list,
+            size: 'small',
+            scroll_to_center: true,
+            onBack: function () {
+                Lampa.Modal.close();
+                updateFolderIcon(folder);
+                openFolderMenu(folder);
+            }
+        });
+    }
+
+    function saveFolderButtonOrder(folder, list) {
+        var newOrder = [];
+        list.find('.menu-edit-list__item').each(function () {
+            var btnId = $(this).data('btnId');
+            newOrder.push(btnId);
+        });
+
+        folder.buttons = newOrder;
+
+        var folders = getFolders();
+        for (var i = 0; i < folders.length; i++) {
+            if (folders[i].id === folder.id) {
+                folders[i].buttons = newOrder;
+                break;
+            }
+        }
+        setFolders(folders);
+
+        updateFolderIcon(folder);
+    }
+
+    function updateFolderIcon(folder) {
+        if (!folder.buttons || folder.buttons.length === 0) return;
+
+        var folderBtn = currentContainer.find('.button--folder[data-folder-id="' + folder.id + '"]');
+        if (folderBtn.length) {
+            var firstBtnId = folder.buttons[0];
+            var firstBtn = findButton(firstBtnId);
+
+            if (firstBtn) {
+                var iconElement = firstBtn.find('svg').first();
+                if (iconElement.length) {
+                    var btnIcon = iconElement.clone();
+                    folderBtn.find('svg').replaceWith(btnIcon);
+                }
+            } else {
+                var defaultIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+                    '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>' +
+                    '</svg>';
+                folderBtn.find('svg').replaceWith(defaultIcon);
+            }
+        }
+    }
+
+    function createFolder(name, buttonIds) {
+        var folders = getFolders();
+        var folder = {
+            id: 'folder_' + Date.now(),
+            name: name,
+            buttons: buttonIds
+        };
+        folders.push(folder);
+        setFolders(folders);
+        return folder;
+    }
+
+    function deleteFolder(folderId) {
+        var folders = getFolders();
+        folders = folders.filter(function (f) { return f.id !== folderId; });
+        setFolders(folders);
+    }
+
+    function openCreateFolderDialog() {
+        Lampa.Input.edit({
+            free: true,
+            title: getTranslation('buttons_plugin_folder_name'),
+            nosave: true,
+            value: '',
+            nomic: true
+        }, function (folderName) {
+            if (!folderName || !folderName.trim()) {
+                Lampa.Noty.show(getTranslation('buttons_plugin_folder_name'));
+                openEditDialog();
+                return;
+            }
+            openSelectButtonsDialog(folderName.trim());
+        });
+    }
+
+    function openSelectButtonsDialog(folderName) {
+        var selectedButtons = [];
+        var list = $('<div class="menu-edit-list"></div>');
+
+        var buttonsInFolders = getButtonsInFolders();
+        var sortedButtons = arrangeBtnsByOrder(allButtonsOriginal.slice());
+
+        sortedButtons.forEach(function (btn) {
+            var btnId = getBtnIdentifier(btn);
+
+            if (buttonsInFolders.indexOf(btnId) !== -1) {
+                return;
+            }
+
+            var displayName = getBtnDisplayText(btn, sortedButtons);
+            var iconElement = btn.find('svg').first();
+            var icon = iconElement.length ? iconElement.clone() : $('<svg></svg>');
+
+            var item = $('<div class="menu-edit-list__item">' +
+                '<div class="menu-edit-list__icon"></div>' +
+                '<div class="menu-edit-list__title">' + displayName + '</div>' +
+                '<div class="menu-edit-list__toggle selector">' +
+                '<svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                '<rect x="1.89111" y="1.78369" width="21.793" height="21.793" rx="3.5" stroke="currentColor" stroke-width="3"/>' +
+                '<path d="M7.44873 12.9658L10.8179 16.3349L18.1269 9.02588" stroke="currentColor" stroke-width="3" class="dot" opacity="0" stroke-linecap="round"/>' +
+                '</svg>' +
+                '</div>' +
+                '</div>');
+
+            item.find('.menu-edit-list__icon').append(icon);
+
+            item.find('.menu-edit-list__toggle').on('hover:enter', function () {
+                var index = selectedButtons.indexOf(btnId);
+                if (index !== -1) {
+                    selectedButtons.splice(index, 1);
+                    item.find('.dot').attr('opacity', '0');
+                } else {
+                    selectedButtons.push(btnId);
+                    item.find('.dot').attr('opacity', '1');
+                }
+            });
+
+            list.append(item);
+        });
+
+        var createBtn = $('<div class="selector folder-create-confirm">' +
+            '<div style="text-align: center; padding: 1em;">' + getTranslation('buttons_plugin_create_folder') + ' "' + folderName + '"</div>' +
+            '</div>');
+
+        createBtn.on('hover:enter', function () {
+            if (selectedButtons.length < 2) {
+                Lampa.Noty.show(getTranslation('buttons_plugin_min_2_buttons'));
+                return;
+            }
+
+            var folder = createFolder(folderName, selectedButtons);
+
+            var itemOrder = getItemOrder();
+
+            if (itemOrder.length === 0) {
+                currentButtons.forEach(function (btn) {
+                    itemOrder.push({
+                        type: 'button',
+                        id: getBtnIdentifier(btn)
+                    });
+                });
+            }
+
+            var folderAdded = false;
+
+            for (var i = 0; i < selectedButtons.length; i++) {
+                var btnId = selectedButtons[i];
+
+                for (var j = 0; j < itemOrder.length; j++) {
+                    if (itemOrder[j].type === 'button' && itemOrder[j].id === btnId) {
+                        if (!folderAdded) {
+                            itemOrder[j] = {
+                                type: 'folder',
+                                id: folder.id
+                            };
+                            folderAdded = true;
+                        } else {
+                            itemOrder.splice(j, 1);
+                            j--;
+                        }
+                        break;
+                    }
+                }
+
+                for (var k = 0; k < currentButtons.length; k++) {
+                    if (getBtnIdentifier(currentButtons[k]) === btnId) {
+                        currentButtons.splice(k, 1);
+                        break;
+                    }
+                }
+            }
+
+            if (!folderAdded) {
+                itemOrder.push({
+                    type: 'folder',
+                    id: folder.id
+                });
+            }
+
+            setItemOrder(itemOrder);
+
+            Lampa.Modal.close();
+            Lampa.Noty.show(getTranslation('buttons_plugin_folder_created') + ' "' + folderName + '"');
+
+            if (currentContainer) {
+                currentContainer.data('buttons-processed', false);
+                reorderButtons(currentContainer);
+            }
+            refreshController();
+        });
+
+        list.append(createBtn);
+
+        Lampa.Modal.open({
+            title: getTranslation('buttons_plugin_select_buttons'),
+            html: list,
+            size: 'medium',
+            scroll_to_center: true,
+            onBack: function () {
+                Lampa.Modal.close();
+                openEditDialog();
+            }
+        });
+    }
+
+    function openEditDialog() {
+        if (currentContainer) {
+            var categories = groupBtnsByType(currentContainer);
+            var allButtons = []
+                .concat(categories.online)
+                .concat(categories.torrent)
+                .concat(categories.trailer)
+                .concat(categories.shots)
+                .concat(categories.book)
+                .concat(categories.reaction)
+                .concat(categories.subscribe)
+                .concat(categories.other);
+
+            allButtons = arrangeBtnsByOrder(allButtons);
+            allButtonsCache = allButtons;
+
+            var folders = getFolders();
+            var buttonsInFolders = [];
+            folders.forEach(function (folder) {
+                buttonsInFolders = buttonsInFolders.concat(folder.buttons);
+            });
+
+            var filteredButtons = allButtons.filter(function (btn) {
+                return buttonsInFolders.indexOf(getBtnIdentifier(btn)) === -1;
+            });
+
+            currentButtons = filteredButtons;
+        }
+
+        var list = $('<div class="menu-edit-list"></div>');
+        var hidden = getHiddenButtons();
+        var folders = getFolders();
+        var itemOrder = getItemOrder();
+
+        var createFolderBtn = $('<div class="menu-edit-list__item menu-edit-list__create-folder selector">' +
+            '<div class="menu-edit-list__icon">' +
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+            '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>' +
+            '<line x1="12" y1="11" x2="12" y2="17"></line>' +
+            '<line x1="9" y1="14" x2="15" y2="14"></line>' +
+            '</svg>' +
+            '</div>' +
+            '<div class="menu-edit-list__title">' + getTranslation('buttons_plugin_create_folder') + '</div>' +
+            '</div>');
+
+        createFolderBtn.on('hover:enter', function () {
+            Lampa.Modal.close();
+            openCreateFolderDialog();
+        });
+
+        // Сначала добавляем кнопку создания папки
+        list.append(createFolderBtn);
+
+        // Затем добавляем заголовок с подписями
+        var header = $('<div class="menu-edit-list__header">' +
+            '<div class="menu-edit-list__header-spacer"></div>' +
+            '<div class="menu-edit-list__header-move">' + getTranslation('buttons_plugin_move') + '</div>' +
+            '<div class="menu-edit-list__header-mode">' + getTranslation('buttons_plugin_view') + '</div>' +
+            '<div class="menu-edit-list__header-toggle">' + getTranslation('buttons_plugin_show') + '</div>' +
+            '</div>');
+        list.append(header);
+
+        function createFolderItem(folder) {
+            var item = $('<div class="menu-edit-list__item folder-item">' +
+                '<div class="menu-edit-list__icon">' +
+                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+                '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>' +
+                '</svg>' +
+                '</div>' +
+                '<div class="menu-edit-list__title">' + folder.name + ' <span style="opacity:0.5">(' + folder.buttons.length + ')</span></div>' +
+                '<div class="menu-edit-list__move move-up selector">' +
+                '<svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                '<path d="M2 12L11 3L20 12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>' +
+                '</svg>' +
+                '</div>' +
+                '<div class="menu-edit-list__move move-down selector">' +
+                '<svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                '<path d="M2 2L11 11L20 2" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>' +
+                '</svg>' +
+                '</div>' +
+                '<div class="menu-edit-list__delete selector">' +
+                '<svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                '<rect x="1.89111" y="1.78369" width="21.793" height="21.793" rx="3.5" stroke="currentColor" stroke-width="3"/>' +
+                '<path d="M9.5 9.5L16.5 16.5M16.5 9.5L9.5 16.5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>' +
+                '</svg>' +
+                '</div>' +
+                '</div>');
+
+            item.data('folderId', folder.id);
+            item.data('itemType', 'folder');
+
+            item.find('.move-up').on('hover:enter', function () {
+                var prev = item.prev();
+                while (prev.length && prev.hasClass('menu-edit-list__create-folder')) {
+                    prev = prev.prev();
+                }
+                if (prev.length) {
+                    item.insertBefore(prev);
+                    saveItemOrder();
+                }
+            });
+
+            item.find('.move-down').on('hover:enter', function () {
+                var next = item.next();
+                while (next.length && next.hasClass('folder-reset-button')) {
+                    next = next.next();
+                }
+                if (next.length && !next.hasClass('folder-reset-button')) {
+                    item.insertAfter(next);
+                    saveItemOrder();
+                }
+            });
+
+            item.find('.menu-edit-list__delete').on('hover:enter', function () {
+                var folderId = folder.id;
+                var folderButtons = folder.buttons.slice();
+
+                deleteFolder(folderId);
+
+                var itemOrder = getItemOrder();
+                var newItemOrder = [];
+
+                for (var i = 0; i < itemOrder.length; i++) {
+                    if (itemOrder[i].type === 'folder' && itemOrder[i].id === folderId) {
+                        continue;
+                    }
+                    if (itemOrder[i].type === 'button') {
+                        var isInFolder = false;
+                        for (var j = 0; j < folderButtons.length; j++) {
+                            if (itemOrder[i].id === folderButtons[j]) {
+                                isInFolder = true;
+                                break;
+                            }
+                        }
+                        if (isInFolder) {
+                            continue;
+                        }
+                    }
+                    newItemOrder.push(itemOrder[i]);
+                }
+
+                setItemOrder(newItemOrder);
+
+                var customOrder = getCustomOrder();
+                var newCustomOrder = [];
+                for (var i = 0; i < customOrder.length; i++) {
+                    var found = false;
+                    for (var j = 0; j < folderButtons.length; j++) {
+                        if (customOrder[i] === folderButtons[j]) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        newCustomOrder.push(customOrder[i]);
+                    }
+                }
+                setCustomOrder(newCustomOrder);
+
+                item.remove();
+                Lampa.Noty.show(getTranslation('buttons_plugin_folder_deleted'));
+
+                setTimeout(function () {
+                    if (currentContainer) {
+                        currentContainer.find('.button--play, .button--edit-order, .button--folder').remove();
+                        currentContainer.data('buttons-processed', false);
+
+                        var targetContainer = currentContainer.find('.full-start-new__buttons');
+                        var existingButtons = targetContainer.find('.full-start__button').toArray();
+
+                        allButtonsOriginal.forEach(function (originalBtn) {
+                            var btnId = getBtnIdentifier(originalBtn);
+                            var exists = false;
+
+                            for (var i = 0; i < existingButtons.length; i++) {
+                                if (getBtnIdentifier($(existingButtons[i])) === btnId) {
+                                    exists = true;
+                                    break;
+                                }
+                            }
+
+                            if (!exists) {
+                                var clonedBtn = originalBtn.clone(true, true);
+                                clonedBtn.css({
+                                    'opacity': '1',
+                                    'animation': 'none'
+                                });
+                                targetContainer.append(clonedBtn);
+                            }
+                        });
+
+                        reorderButtons(currentContainer);
+
+                        setTimeout(function () {
+                            var updatedItemOrder = [];
+                            targetContainer.find('.full-start__button').not('.button--edit-order').each(function () {
+                                var $btn = $(this);
+                                if ($btn.hasClass('button--folder')) {
+                                    var fId = $btn.attr('data-folder-id');
+                                    updatedItemOrder.push({
+                                        type: 'folder',
+                                        id: fId
+                                    });
+                                } else {
+                                    var btnId = getBtnIdentifier($btn);
+                                    updatedItemOrder.push({
+                                        type: 'button',
+                                        id: btnId
+                                    });
+                                }
+                            });
+                            setItemOrder(updatedItemOrder);
+
+                            var categories = groupBtnsByType(currentContainer);
+                            var allButtons = []
+                                .concat(categories.online)
+                                .concat(categories.torrent)
+                                .concat(categories.trailer)
+                                .concat(categories.shots)
+                                .concat(categories.book)
+                                .concat(categories.reaction)
+                                .concat(categories.subscribe)
+                                .concat(categories.other);
+
+                            allButtons = arrangeBtnsByOrder(allButtons);
+                            allButtonsCache = allButtons;
+
+                            var folders = getFolders();
+                            var buttonsInFolders = [];
+                            folders.forEach(function (folder) {
+                                buttonsInFolders = buttonsInFolders.concat(folder.buttons);
+                            });
+
+                            var filteredButtons = allButtons.filter(function (btn) {
+                                return buttonsInFolders.indexOf(getBtnIdentifier(btn)) === -1;
+                            });
+
+                            currentButtons = filteredButtons;
+
+                            folderButtons.forEach(function (btnId) {
+                                var btn = allButtons.find(function (b) { return getBtnIdentifier(b) === btnId; });
+                                if (btn) {
+                                    var btnItem = createButtonItem(btn);
+
+                                    var inserted = false;
+                                    list.find('.menu-edit-list__item').not('.menu-edit-list__create-folder, .folder-reset-button').each(function () {
+                                        var $existingItem = $(this);
+                                        var existingType = $existingItem.data('itemType');
+
+                                        if (existingType === 'button') {
+                                            var existingBtnId = $existingItem.data('buttonId');
+                                            var existingIndex = updatedItemOrder.findIndex(function (item) {
+                                                return item.type === 'button' && item.id === existingBtnId;
+                                            });
+                                            var newIndex = updatedItemOrder.findIndex(function (item) {
+                                                return item.type === 'button' && item.id === btnId;
+                                            });
+
+                                            if (newIndex !== -1 && existingIndex !== -1 && newIndex < existingIndex) {
+                                                btnItem.insertBefore($existingItem);
+                                                inserted = true;
+                                                return false;
+                                            }
+                                        }
+                                    });
+
+                                    if (!inserted) {
+                                        var resetButton = list.find('.folder-reset-button');
+                                        if (resetButton.length) {
+                                            btnItem.insertBefore(resetButton);
+                                        } else {
+                                            list.append(btnItem);
+                                        }
+                                    }
+                                }
+                            });
+
+                            setTimeout(function () {
+                                try {
+                                    Lampa.Controller.toggle('modal');
+                                } catch (e) { }
+                            }, 100);
+                        }, 100);
+                    }
+                }, 50);
+            });
+
+            return item;
+        }
+
+        function createButtonItem(btn) {
+            var displayName = getBtnDisplayText(btn, currentButtons);
+            var icon = btn.find('svg').first().clone();
+            var btnId = getBtnIdentifier(btn);
+            var isHidden = hidden.indexOf(btnId) !== -1;
+            var displayMode = getButtonDisplayMode(btnId);
+
+            var item = $('<div class="menu-edit-list__item' + (isHidden ? ' item-hidden' : '') + '">' +
+                '<div class="menu-edit-list__icon"></div>' +
+                '<div class="menu-edit-list__title">' + displayName + '</div>' +
+                '<div class="menu-edit-list__move move-up selector">' +
+                '<svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                '<path d="M2 12L11 3L20 12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>' +
+                '</svg>' +
+                '</div>' +
+                '<div class="menu-edit-list__move move-down selector">' +
+                '<svg width="22" height="14" viewBox="0 0 22 14" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                '<path d="M2 2L11 11L20 2" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>' +
+                '</svg>' +
+                '</div>' +
+                '<div class="menu-edit-list__display-mode selector" data-mode="' + displayMode + '">' +
+                '<svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                '<rect x="1.89111" y="1.78369" width="21.793" height="21.793" rx="3.5" stroke="currentColor" stroke-width="3"/>' +
+                '<text x="13" y="17" text-anchor="middle" fill="currentColor" font-size="12" font-weight="bold" class="mode-number">' + displayMode + '</text>' +
+                '</svg>' +
+                '</div>' +
+                '<div class="menu-edit-list__toggle toggle selector">' +
+                '<svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+                '<rect x="1.89111" y="1.78369" width="21.793" height="21.793" rx="3.5" stroke="currentColor" stroke-width="3"/>' +
+                '<path d="M7.44873 12.9658L10.8179 16.3349L18.1269 9.02588" stroke="currentColor" stroke-width="3" class="dot" opacity="' + (isHidden ? '0' : '1') + '" stroke-linecap="round"/>' +
+                '</svg>' +
+                '</div>' +
+                '</div>');
+
+            item.find('.menu-edit-list__icon').append(icon);
+            item.data('button', btn);
+            item.data('buttonId', btnId);
+            item.data('itemType', 'button');
+
+            item.find('.move-up').on('hover:enter', function () {
+                var prev = item.prev();
+                while (prev.length && prev.hasClass('menu-edit-list__create-folder')) {
+                    prev = prev.prev();
+                }
+                if (prev.length && !prev.hasClass('menu-edit-list__create-folder')) {
+                    item.insertBefore(prev);
+                    var btnIndex = currentButtons.indexOf(btn);
+                    if (btnIndex > 0) {
+                        currentButtons.splice(btnIndex, 1);
+                        currentButtons.splice(btnIndex - 1, 0, btn);
+                    }
+                    saveItemOrder();
+                }
+            });
+
+            item.find('.move-down').on('hover:enter', function () {
+                var next = item.next();
+                while (next.length && next.hasClass('folder-reset-button')) {
+                    next = next.next();
+                }
+                if (next.length && !next.hasClass('folder-reset-button')) {
+                    item.insertAfter(next);
+                    var btnIndex = currentButtons.indexOf(btn);
+                    if (btnIndex < currentButtons.length - 1) {
+                        currentButtons.splice(btnIndex, 1);
+                        currentButtons.splice(btnIndex + 1, 0, btn);
+                    }
+                    saveItemOrder();
+                }
+            });
+
+            item.find('.menu-edit-list__display-mode').on('hover:enter', function () {
+                var currentMode = parseInt($(this).attr('data-mode')) || 1;
+                var newMode = currentMode >= 3 ? 1 : currentMode + 1;
+
+                $(this).attr('data-mode', newMode);
+                $(this).find('.mode-number').text(newMode);
+
+                setButtonDisplayMode(btnId, newMode);
+
+                // Применяем режим к кнопке
+                btn.removeClass('button-mode-1 button-mode-2 button-mode-3');
+                btn.addClass('button-mode-' + newMode);
+            });
+
+            item.find('.toggle').on('hover:enter', function () {
+                var hidden = getHiddenButtons();
+                var index = hidden.indexOf(btnId);
+
+                if (index !== -1) {
+                    hidden.splice(index, 1);
+                    btn.removeClass('hidden');
+                    item.find('.dot').attr('opacity', '1');
+                    item.removeClass('item-hidden');
+                } else {
+                    hidden.push(btnId);
+                    btn.addClass('hidden');
+                    item.find('.dot').attr('opacity', '0');
+                    item.addClass('item-hidden');
+                }
+
+                setHiddenButtons(hidden);
+            });
+
+            return item;
+        }
+
+        if (itemOrder.length > 0) {
+            itemOrder.forEach(function (item) {
+                if (item.type === 'folder') {
+                    var folder = folders.find(function (f) { return f.id === item.id; });
+                    if (folder) {
+                        list.append(createFolderItem(folder));
+                    }
+                } else if (item.type === 'button') {
+                    var btn = currentButtons.find(function (b) { return getBtnIdentifier(b) === item.id; });
+                    if (btn) {
+                        list.append(createButtonItem(btn));
+                    }
+                }
+            });
+
+            currentButtons.forEach(function (btn) {
+                var btnId = getBtnIdentifier(btn);
+                var found = itemOrder.some(function (item) {
+                    return item.type === 'button' && item.id === btnId;
+                });
+                if (!found) {
+                    list.append(createButtonItem(btn));
+                }
+            });
+
+            folders.forEach(function (folder) {
+                var found = itemOrder.some(function (item) {
+                    return item.type === 'folder' && item.id === folder.id;
+                });
+                if (!found) {
+                    list.append(createFolderItem(folder));
+                }
+            });
+        } else {
+            folders.forEach(function (folder) {
+                list.append(createFolderItem(folder));
+            });
+
+            currentButtons.forEach(function (btn) {
+                list.append(createButtonItem(btn));
+            });
+        }
+
+        var resetBtn = $('<div class="selector folder-reset-button">' +
+            '<div style="text-align: center; padding: 1em;">' + getTranslation('buttons_plugin_reset_default') + '</div>' +
+            '</div>');
+
+        resetBtn.on('hover:enter', function () {
+            var folders = getFolders();
+
+            Lampa.Storage.set('button_custom_order', []);
+            Lampa.Storage.set('button_hidden', []);
+            Lampa.Storage.set('button_folders', []);
+            Lampa.Storage.set('button_item_order', []);
+            Lampa.Storage.set('button_display_modes', {}); // Сброс режимов отображения
+            Lampa.Modal.close();
+            Lampa.Noty.show(getTranslation('buttons_plugin_settings_reset'));
+
+            setTimeout(function () {
+                if (currentContainer) {
+                    currentContainer.find('.button--play, .button--edit-order, .button--folder').remove();
+                    currentContainer.data('buttons-processed', false);
+
+                    var targetContainer = currentContainer.find('.full-start-new__buttons');
+                    var existingButtons = targetContainer.find('.full-start__button').toArray();
+
+                    allButtonsOriginal.forEach(function (originalBtn) {
+                        var btnId = getBtnIdentifier(originalBtn);
+                        var exists = false;
+
+                        for (var i = 0; i < existingButtons.length; i++) {
+                            if (getBtnIdentifier($(existingButtons[i])) === btnId) {
+                                exists = true;
+                                break;
+                            }
+                        }
+
+                        if (!exists) {
+                            var clonedBtn = originalBtn.clone(true, true);
+                            clonedBtn.css({
+                                'opacity': '1',
+                                'animation': 'none'
+                            });
+                            targetContainer.append(clonedBtn);
+                        }
+                    });
+
+                    reorderButtons(currentContainer);
+                    refreshController();
+                }
+            }, 100);
+        });
+
+        list.append(resetBtn);
+
+        Lampa.Modal.open({
+            title: getTranslation('buttons_plugin_button_order'),
+            html: list,
+            size: 'small',
+            scroll_to_center: true,
+            onBack: function () {
+                Lampa.Modal.close();
+                applyChanges();
+                Lampa.Controller.toggle('full_start');
+            }
+        });
+    }
+
+    function reorderButtons(container, isFreshRender) {
+        var targetContainer = container.find('.full-start-new__buttons');
+        if (!targetContainer.length) return false;
+
+        currentContainer = container;
+        container.find('.button--play, .button--edit-order, .button--folder').remove();
+
+        var categories = groupBtnsByType(container);
+
+        var allButtons = []
+            .concat(categories.online)
+            .concat(categories.torrent)
+            .concat(categories.trailer)
+            .concat(categories.shots)
+            .concat(categories.book)
+            .concat(categories.reaction)
+            .concat(categories.subscribe)
+            .concat(categories.other);
+
+        allButtons = arrangeBtnsByOrder(allButtons);
+        allButtonsCache = allButtons;
+
+        if (isFreshRender || allButtonsOriginal.length === 0) {
+            allButtonsOriginal = [];
+            allButtons.forEach(function (btn) {
+                allButtonsOriginal.push(btn.clone(true, true));
+            });
+        }
+
+        var folders = getFolders();
+        var buttonsInFolders = [];
+        folders.forEach(function (folder) {
+            buttonsInFolders = buttonsInFolders.concat(folder.buttons);
+        });
+
+        var filteredButtons = allButtons.filter(function (btn) {
+            return buttonsInFolders.indexOf(getBtnIdentifier(btn)) === -1;
+        });
+
+        currentButtons = filteredButtons;
+        applyBtnVisibility(filteredButtons);
+        applyButtonDisplayModes(filteredButtons);
+
+        targetContainer.children().detach();
+
+        var visibleButtons = [];
+        var itemOrder = getItemOrder();
+
+        if (itemOrder.length > 0) {
+            var addedFolders = [];
+            var addedButtons = [];
+
+            itemOrder.forEach(function (item) {
+                if (item.type === 'folder') {
+                    var folder = folders.find(function (f) { return f.id === item.id; });
+                    if (folder) {
+                        var folderBtn = createFolderButton(folder);
+                        targetContainer.append(folderBtn);
+                        visibleButtons.push(folderBtn);
+                        addedFolders.push(folder.id);
+                    }
+                } else if (item.type === 'button') {
+                    var btn = filteredButtons.find(function (b) { return getBtnIdentifier(b) === item.id; });
+                    if (btn && !btn.hasClass('hidden')) {
+                        targetContainer.append(btn);
+                        visibleButtons.push(btn);
+                        addedButtons.push(getBtnIdentifier(btn));
+                    }
+                }
+            });
+
+            filteredButtons.forEach(function (btn) {
+                var btnId = getBtnIdentifier(btn);
+                if (addedButtons.indexOf(btnId) === -1 && !btn.hasClass('hidden')) {
+                    var insertBefore = null;
+                    var btnType = detectBtnCategory(btn);
+                    var typeOrder = ['online', 'torrent', 'trailer', 'shots', 'book', 'reaction', 'subscribe', 'other'];
+                    var btnTypeIndex = typeOrder.indexOf(btnType);
+                    if (btnTypeIndex === -1) btnTypeIndex = 999;
+
+                    if (btnId === 'modss_online_button' || btnId === 'showy_online_button') {
+                        var firstNonPriority = targetContainer.find('.full-start__button').not('.button--edit-order, .button--folder').filter(function () {
+                            var id = getBtnIdentifier($(this));
+                            return id !== 'modss_online_button' && id !== 'showy_online_button';
+                        }).first();
+
+                        if (firstNonPriority.length) {
+                            insertBefore = firstNonPriority;
+                        }
+
+                        if (btnId === 'showy_online_button') {
+                            var modsBtn = targetContainer.find('.full-start__button').filter(function () {
+                                return getBtnIdentifier($(this)) === 'modss_online_button';
+                            });
+                            if (modsBtn.length) {
+                                insertBefore = modsBtn.next();
+                                if (!insertBefore.length || insertBefore.hasClass('button--edit-order')) {
+                                    insertBefore = null;
+                                }
+                            }
+                        }
+                    } else {
+                        targetContainer.find('.full-start__button').not('.button--edit-order, .button--folder').each(function () {
+                            var existingBtn = $(this);
+                            var existingId = getBtnIdentifier(existingBtn);
+
+                            if (existingId === 'modss_online_button' || existingId === 'showy_online_button') {
+                                return true;
+                            }
+
+                            var existingType = detectBtnCategory(existingBtn);
+                            var existingTypeIndex = typeOrder.indexOf(existingType);
+                            if (existingTypeIndex === -1) existingTypeIndex = 999;
+
+                            if (btnTypeIndex < existingTypeIndex) {
+                                insertBefore = existingBtn;
+                                return false;
+                            }
+                        });
+                    }
+
+                    if (insertBefore && insertBefore.length) {
+                        btn.insertBefore(insertBefore);
+                    } else {
+                        targetContainer.append(btn);
+                    }
+                    visibleButtons.push(btn);
+                }
+            });
+
+            folders.forEach(function (folder) {
+                if (addedFolders.indexOf(folder.id) === -1) {
+                    var folderBtn = createFolderButton(folder);
+                    targetContainer.append(folderBtn);
+                    visibleButtons.push(folderBtn);
+                }
+            });
+        } else {
+            folders.forEach(function (folder) {
+                var folderBtn = createFolderButton(folder);
+                targetContainer.append(folderBtn);
+                visibleButtons.push(folderBtn);
+            });
+
+            filteredButtons.forEach(function (btn) {
+                if (!btn.hasClass('hidden')) {
+                    targetContainer.append(btn);
+                    visibleButtons.push(btn);
+                }
+            });
+        }
+
+        var editButton = buildEditorBtn();
+        targetContainer.append(editButton);
+        visibleButtons.push(editButton);
+
+        animateBtnFadeIn(visibleButtons);
+
+        setTimeout(function () {
+            setupButtonNavigation(container);
+        }, 100);
+
+        return true;
+    }
+
+    function setupButtonNavigation(container) {
+        // Lampa автоматически обрабатывает навигацию для flex-wrap: wrap
+        // Просто убедимся что контроллер обновлен
+        if (Lampa.Controller && typeof Lampa.Controller.toggle === 'function') {
+            try {
+                Lampa.Controller.toggle('full_start');
+            } catch (e) { }
+        }
+    }
+
+    function refreshController() {
+        if (!Lampa.Controller || typeof Lampa.Controller.toggle !== 'function') return;
+
+        setTimeout(function () {
+            try {
+                Lampa.Controller.toggle('full_start');
+
+                if (currentContainer) {
+                    setTimeout(function () {
+                        setupButtonNavigation(currentContainer);
+                    }, 100);
+                }
+            } catch (e) { }
+        }, 50);
+    }
+
+    function init() {
+        var style = $('<style>' +
+            '@keyframes button-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }' +
+            '.full-start-new__buttons .full-start__button { opacity: 0; }' +
+            '.full-start__button.hidden { display: none !important; }' +
+            '.button--folder { cursor: pointer; }' +
+            '.full-start-new__buttons { ' +
+            'display: flex !important; ' +
+            'flex-direction: row !important; ' +
+            'flex-wrap: wrap !important; ' +
+            'gap: 0.5em !important; ' +
+            '}' +
+            '.full-start-new__buttons.buttons-loading .full-start__button { visibility: hidden !important; }' +
+            '.menu-edit-list__create-folder { background: rgba(100,200,100,0.2); }' +
+            '.menu-edit-list__create-folder.focus { background: rgba(100,200,100,0.3); border: 3px solid rgba(255,255,255,0.8); }' +
+            '.menu-edit-list__delete { width: 2.4em; height: 2.4em; display: flex; align-items: center; justify-content: center; cursor: pointer; }' +
+            '.menu-edit-list__delete svg { width: 1.2em !important; height: 1.2em !important; }' +
+            '.menu-edit-list__delete.focus { border: 2px solid rgba(255,255,255,0.8); border-radius: 0.3em; }' +
+            '.folder-item .menu-edit-list__move { margin-right: 0; }' +
+            '.folder-create-confirm { background: rgba(100,200,100,0.3); margin-top: 1em; border-radius: 0.3em; }' +
+            '.folder-create-confirm.focus { border: 3px solid rgba(255,255,255,0.8); }' +
+            '.folder-reset-button { background: rgba(200,100,100,0.3); margin-top: 1em; border-radius: 0.3em; }' +
+            '.folder-reset-button.focus { border: 3px solid rgba(255,255,255,0.8); }' +
+            '.menu-edit-list__move { width: 2.4em; height: 2.4em; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-right: 0.5em; }' +
+            '.menu-edit-list__move svg { width: 1.2em !important; height: 1.2em !important; }' +
+            '.menu-edit-list__move.focus { border: 2px solid rgba(255,255,255,0.8); border-radius: 0.3em; }' +
+            '.menu-edit-list__toggle { width: 2.4em; height: 2.4em; display: flex; align-items: center; justify-content: center; cursor: pointer; }' +
+            '.menu-edit-list__toggle svg { width: 1.2em !important; height: 1.2em !important; }' +
+            '.menu-edit-list__toggle.focus { border: 2px solid rgba(255,255,255,0.8); border-radius: 0.3em; }' +
+            '.menu-edit-list__display-mode { width: 2.4em; height: 2.4em; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-right: 0.5em; }' +
+            '.menu-edit-list__display-mode svg { width: 1.2em !important; height: 1.2em !important; }' +
+            '.menu-edit-list__display-mode.focus { border: 2px solid rgba(255,255,255,0.8); border-radius: 0.3em; background: rgba(255,255,255,0.9); }' +
+            '.menu-edit-list__display-mode.focus svg { color: #000 !important; }' +
+            '.menu-edit-list__display-mode.focus rect { stroke: #000 !important; }' +
+            '.menu-edit-list__display-mode.focus text { fill: #000 !important; }' +
+            '.menu-edit-list__header { display: flex; align-items: center; padding: 0.5em 1em; margin-bottom: 0.5em; opacity: 0.6; font-size: 0.85em; }' +
+            '.menu-edit-list__header-spacer { flex: 1; }' +
+            '.menu-edit-list__header-move { width: 5.3em; text-align: center; margin-right: 0.5em; }' +
+            '.menu-edit-list__header-mode { width: 2.9em; text-align: center; }' +
+            '.menu-edit-list__header-toggle { width: 2.4em; text-align: center; margin-left: 0.5em; }' +
+            '.menu-edit-list__create-folder { margin-bottom: 1em; }' +
+            '.menu-edit-list__item { display: flex; align-items: center; position: relative; }' +
+            '.menu-edit-list__item .menu-edit-list__icon { flex-shrink: 0; }' +
+            '.menu-edit-list__item .menu-edit-list__title { flex: 1; min-width: 0; }' +
+            '.menu-edit-list__item .menu-edit-list__move, .menu-edit-list__item .menu-edit-list__display-mode, .menu-edit-list__item .menu-edit-list__toggle { flex-shrink: 0; }' +
+            '.menu-edit-list__item.item-hidden { opacity: 0.4; }' +
+            '.menu-edit-list__item.item-hidden .menu-edit-list__title { opacity: 0.6; }' +
+            '.menu-edit-list__item.item-hidden .menu-edit-list__icon { opacity: 0.5; }' +
+            '' +
+            '/* Режим 1: Стандартный (иконка, текст при наведении) */' +
+            '.full-start__button.button-mode-1 .text-wrapper { display: none !important; }' +
+            '.full-start__button.button-mode-1:hover .text-wrapper, .full-start__button.button-mode-1.focus .text-wrapper { display: inline !important; }' +
+            '.full-start__button.button-mode-1 > span:not(.text-wrapper) { opacity: 0 !important; transition: opacity 0.3s; }' +
+            '.full-start__button.button-mode-1:hover > span:not(.text-wrapper), .full-start__button.button-mode-1.focus > span:not(.text-wrapper) { opacity: 1 !important; }' +
+            '' +
+            '/* Режим 2: Только иконка (текст всегда скрыт) */' +
+            '.full-start__button.button-mode-2 .text-wrapper { display: none !important; }' +
+            '.full-start__button.button-mode-2 > span:not(.text-wrapper) { display: none !important; }' +
+            '' +
+            '/* Режим 3: Иконка + текст всегда */' +
+            '.full-start__button.button-mode-3 .text-wrapper { display: inline !important; }' +
+            '.full-start__button.button-mode-3 > span:not(.text-wrapper) { opacity: 1 !important; display: inline !important; }' +
+            '</style>');
+        $('body').append(style);
+
+        Lampa.Listener.follow('full', function (e) {
+            if (e.type !== 'complite') return;
+
+            var container = e.object.activity.render();
+            var targetContainer = container.find('.full-start-new__buttons');
+            if (targetContainer.length) {
+                targetContainer.addClass('buttons-loading');
+            }
+
+            setTimeout(function () {
+                try {
+                    if (!container.data('buttons-processed')) {
+                        container.data('buttons-processed', true);
+                        if (reorderButtons(container, true)) {
+                            if (targetContainer.length) {
+                                targetContainer.removeClass('buttons-loading');
+                            }
+                            refreshController();
+                        }
+                    }
+                } catch (err) {
+                    if (targetContainer.length) {
+                        targetContainer.removeClass('buttons-loading');
+                    }
+                }
+            }, 400);
+        });
+    }
+
+    // Добавляем настройку в раздел "Интерфейс"
+    if (Lampa.SettingsApi) {
+        Lampa.SettingsApi.addParam({
+            component: 'interface',
+            param: {
+                name: 'buttons_editor_enabled',
+                type: 'trigger',
+                default: true
+            },
+            field: {
+                name: getTranslation('buttons_plugin_button_editor')
+            },
+            onChange: function (value) {
+                setTimeout(function () {
+                    var currentValue = Lampa.Storage.get('buttons_editor_enabled', true);
+                    if (currentValue) {
+                        $('.button--edit-order').show();
+                        Lampa.Noty.show(getTranslation('buttons_plugin_button_editor_enabled'));
+                    } else {
+                        $('.button--edit-order').hide();
+                        Lampa.Noty.show(getTranslation('buttons_plugin_button_editor_disabled'));
+                    }
+                }, 100);
+            },
+            onRender: function (element) {
+                setTimeout(function () {
+                    // Вставляем после "Показать реакции" в разделе "Карточка"
+                    var reactionsParam = $('div[data-name="card_interfice_reactions"]');
+                    if (reactionsParam.length) {
+                        reactionsParam.after(element);
+                    } else {
+                        // Fallback: вставляем после "Размер интерфейса" как в buttons2
+                        $('div[data-name="interface_size"]').after(element);
+                    }
+                }, 0);
+            }
+        });
+    }
+
+    init();
+
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = {};
+    }
 })();
