@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '1.0.3';
+    const PLUGIN_VERSION = '1.0.1';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -174,23 +174,16 @@
             url: buildStreamUrl(item.Id, container),
             poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
             timeline: Lampa.Timeline.view(timelineKey),
-            movie: movie // Оставляем полный оригинальный объект
+            movie: movie
         };
         
-        let launchObj = playObj;
-
-        // Разрываем цикл: клонируем только верхний уровень стартового объекта
-        if (isApple) {
-            launchObj = Object.assign({}, playObj);
-            launchObj.playlist = [playObj];
-        }
 
         markHistoryAndWatch(movie, null, null);
 
-        Lampa.Player.play(launchObj);
+        Lampa.Player.play(playObj);
         
         if (isApple) {
-            Lampa.Player.playlist(launchObj.playlist);
+            Lampa.Player.playlist(playObj.playlist);
         } else {
             Lampa.Player.playlist([playObj]);
         }
@@ -412,7 +405,7 @@
                                                     url: buildStreamUrl(ep.Id, container),
                                                     poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
                                                     timeline: epTimeline,
-                                                    movie: object.movie, // Оставляем полный оригинальный объект
+                                                    movie: object.movie,
                                                     season: seasonNumber,
                                                     episode: epNumForTimeline
                                                 };
@@ -420,17 +413,14 @@
 
                                             var currentEp = playlist[epNumber - 1];
                                             if (currentEp) {
-                                                var launchEp = currentEp;
-
-                                                // Разрываем цикл: клонируем только верхний уровень стартового объекта
+                                                // Костыль исключительно для Apple TV
                                                 if (isApple && playlist.length > 1) {
-                                                    launchEp = Object.assign({}, currentEp);
-                                                    launchEp.playlist = playlist;
+                                                    currentEp.playlist = playlist;
                                                 }
 
                                                 markHistoryAndWatch(object.movie, seasonNumber, epNumber);
 
-                                                Lampa.Player.play(launchEp);
+                                                Lampa.Player.play(currentEp);
                                                 Lampa.Player.playlist(playlist);
                                             }
                                         }
