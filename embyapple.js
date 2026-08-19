@@ -2,7 +2,7 @@
     'use strict';
 
     const PLUGIN_NAME = 'Emby';
-    const PLUGIN_VERSION = '1.0.2'; // Версия обновлена
+    const PLUGIN_VERSION = '1.0.3';
 
     const STORAGE_URL = 'emby_url';
     const STORAGE_API_KEY = 'emby_api_key';
@@ -52,20 +52,6 @@
     // Проверка на устройства Apple
     const isApple = (typeof Lampa !== 'undefined' && Lampa.Platform.is('apple')) || 
                     /Mac|iPhone|iPod|iPad|AppleTV/i.test(navigator.userAgent);
-
-    // Очистка объекта movie от циклических ссылок (DOM-элементов) Lampa
-    function sanitizeMovie(m) {
-        if (!m) return null;
-        return {
-            id: m.id,
-            tmdb_id: m.tmdb_id,
-            title: m.title,
-            name: m.name,
-            original_title: m.original_title,
-            original_name: m.original_name,
-            number_of_seasons: m.number_of_seasons
-        };
-    }
 
     function buildApiUrl(endpoint) {
         const base = getUrl().replace(/\/$/, '');
@@ -188,20 +174,23 @@
             url: buildStreamUrl(item.Id, container),
             poster: item.PrimaryImageTag ? `${base}/Items/${item.Id}/Images/Primary?tag=${item.PrimaryImageTag}` : '',
             timeline: Lampa.Timeline.view(timelineKey),
-            movie: sanitizeMovie(movie) // Очищаем данные фильма
+            movie: movie // Оставляем полный оригинальный объект
         };
         
-        // Костыль для Apple TV - используем копию объекта для предотвращения циклической ссылки
+        let launchObj = playObj;
+
+        // Разрываем цикл: клонируем только верхний уровень стартового объекта
         if (isApple) {
-            playObj.playlist = [{ ...playObj }]; 
+            launchObj = Object.assign({}, playObj);
+            launchObj.playlist = [playObj];
         }
 
         markHistoryAndWatch(movie, null, null);
 
-        Lampa.Player.play(playObj);
+        Lampa.Player.play(launchObj);
         
         if (isApple) {
-            Lampa.Player.playlist(playObj.playlist);
+            Lampa.Player.playlist(launchObj.playlist);
         } else {
             Lampa.Player.playlist([playObj]);
         }
@@ -405,8 +394,7 @@
                                         
                                         if (episodeData && episodeData.Items) {
                                             var sortedEpisodes = episodeData.Items.sort(function(a, b) { return (a.IndexNumber || 0) - (b.IndexNumber || 0); });
-                                            var cleanMovie = sanitizeMovie(object.movie); // Очищаем данные сериала
-
+                                            
                                             var playlist = sortedEpisodes.map(function(ep, i) {
                                                 var tmdbEp = current_episodes[i];
                                                 var epTimeline = tmdbEp ? tmdbEp.timeline : null;
@@ -424,7 +412,7 @@
                                                     url: buildStreamUrl(ep.Id, container),
                                                     poster: ep.PrimaryImageTag ? `${getUrl().replace(/\/$/, '')}/Items/${ep.Id}/Images/Primary?tag=${ep.PrimaryImageTag}` : '',
                                                     timeline: epTimeline,
-                                                    movie: cleanMovie, // Используем чистый объект
+                                                    movie: object.movie, // Оставляем полный оригинальный объект
                                                     season: seasonNumber,
                                                     episode: epNumForTimeline
                                                 };
@@ -432,14 +420,17 @@
 
                                             var currentEp = playlist[epNumber - 1];
                                             if (currentEp) {
-                                                // Костыль исключительно для Apple TV - используем копии объектов
+                                                var launchEp = currentEp;
+
+                                                // Разрываем цикл: клонируем только верхний уровень стартового объекта
                                                 if (isApple && playlist.length > 1) {
-                                                    currentEp.playlist = playlist.map(function(p) { return { ...p }; });
+                                                    launchEp = Object.assign({}, currentEp);
+                                                    launchEp.playlist = playlist;
                                                 }
 
                                                 markHistoryAndWatch(object.movie, seasonNumber, epNumber);
 
-                                                Lampa.Player.play(currentEp);
+                                                Lampa.Player.play(launchEp);
                                                 Lampa.Player.playlist(playlist);
                                             }
                                         }
