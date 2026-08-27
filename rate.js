@@ -70,7 +70,7 @@
 			headers: {
 				'X-API-KEY': decodeSecret([85, 4, 115, 118, 107, 125, 10, 70, 85, 67, 82, 14, 32, 110, 102, 43, 9, 19, 85, 73, 4, 83, 33, 110, 52, 44, 92, 21, 72, 22, 87, 1, 118, 32, 100, 127], atob('X0tQM3Bhc3N3b3Jk'))
 			},
-			cache_time: 60 * 60 * 24 * 1000 //86400000 сек = 1день Время кэша в секундах
+			cache_time: 60 * 60 * 24 * 1000 
 		};
 		getRating();
 
@@ -185,7 +185,7 @@
 								kp: data.ratingKinopoisk,
 								imdb: data.ratingImdb,
 								timestamp: new Date().getTime()
-							}); // Кешируем данные
+							});
 							return _showRating(movieRating);
 						}, function (a, c) {
 							showError(network.errorDecode(a, c));
@@ -213,7 +213,7 @@
 									kp: ratingKinopoisk,
 									imdb: ratingImdb,
 									timestamp: new Date().getTime()
-								}); // Кешируем данные
+								}); 
 								return _showRating(movieRating);
 							} catch (ex) {
 							}
@@ -229,7 +229,7 @@
 						kp: 0,
 						imdb: 0,
 						timestamp: new Date().getTime()
-					}); // Кешируем данные
+					}); 
 					return _showRating(movieRating);
 				}
 			} else {
@@ -237,7 +237,7 @@
 					kp: 0,
 					imdb: 0,
 					timestamp: new Date().getTime()
-				}); // Кешируем данные
+				}); 
 				return _showRating(_movieRating);
 			}
 		}
@@ -268,10 +268,9 @@
 
 		function _getCache(movie) {
 			var timestamp = new Date().getTime();
-			var cache = Lampa.Storage.cache('kp_rating', 500, {}); //500 это лимит ключей
+			var cache = Lampa.Storage.cache('kp_rating', 500, {}); 
 			if (cache[movie]) {
 				if ((timestamp - cache[movie].timestamp) > params.cache_time) {
-					// Если кеш истёк, чистим его
 					delete cache[movie];
 					Lampa.Storage.set('kp_rating', cache);
 					return false;
@@ -282,7 +281,7 @@
 
 		function _setCache(movie, data) {
 			var timestamp = new Date().getTime();
-			var cache = Lampa.Storage.cache('kp_rating', 500, {}); //500 это лимит ключей
+			var cache = Lampa.Storage.cache('kp_rating', 500, {}); 
 			if (!cache[movie]) {
 				cache[movie] = data;
 				Lampa.Storage.set('kp_rating', cache);
@@ -308,30 +307,41 @@
 		}
 	}
 
-    // Внедряем CSS стили для прозрачного фона и порядка элементов (Иконка -> Цифра)
+    // Внедряем усиленные и корректные CSS стили
     function injectCustomRatingStyles() {
         if ($('#custom-monochrome-rating-styles').length) return;
         var style = document.createElement('style');
         style.id = 'custom-monochrome-rating-styles';
         style.innerHTML = `
-            .info__rate .rate {
+            body .info__rate .rate {
                 background: transparent !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
                 box-shadow: none !important;
-                padding: 0 12px 0 0 !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 16px 0 0 !important;
                 display: inline-flex !important;
                 align-items: center !important;
-                flex-direction: row-reverse !important; 
+                align-self: center !important; /* Убираем вертикальное растягивание */
+                height: 24px !important;       /* Фиксируем высоту */
                 gap: 6px !important;
             }
-            .info__rate .rate > div:nth-child(1) {
-                font-weight: 500;
-                font-size: 1.1em;
+            body .info__rate .rate::before,
+            body .info__rate .rate::after {
+                display: none !important; /* Отключаем все встроенные фоны Lampa */
             }
-            .info__rate .rate > div:nth-child(2) {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                opacity: 0.9;
+            /* Использование order позволяет поменять элементы местами визуально */
+            body .info__rate .rate > div:nth-child(1) {
+                order: 2 !important; /* Цифра становится справа */
+                font-weight: 600 !important;
+                font-size: 1.15em !important;
+                line-height: 1 !important;
+            }
+            body .info__rate .rate > div:nth-child(2) {
+                order: 1 !important; /* Иконка становится слева */
+                display: flex !important;
+                align-items: center !important;
                 margin: 0 !important;
                 padding: 0 !important;
             }
@@ -349,22 +359,22 @@
 			if (e.type == 'complite') {
 				var render = e.object.activity.render();
                 
-                // Заменяем текст TMDB на SVG-иконку 
+                // TMDB
                 var tmdb = $('.rate--tmdb > div:eq(1)', render);
                 if (tmdb.length && tmdb.find('svg').length === 0) {
-                    tmdb.html('<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-4l-4 4v-4H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><text x="12" y="11" font-size="6.5" font-family="sans-serif" font-weight="bold" text-anchor="middle" fill="currentColor" stroke="none">TM</text><text x="12" y="17" font-size="6.5" font-family="sans-serif" font-weight="bold" text-anchor="middle" fill="currentColor" stroke="none">DB</text></svg>');
+                    tmdb.html('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4 C 4.9 4 4 4.9 4 6 V 17 C 4 18.1 4.9 19 6 19 H 7 V 22 L 11 19 H 18 C 19.1 19 20 18.1 20 17 V 6 C 20 4.9 19.1 4 18 4 Z"/><text x="12" y="11.5" font-size="6.5" font-family="sans-serif" font-weight="900" text-anchor="middle" fill="currentColor" stroke="none">TM</text><text x="12" y="17.5" font-size="6.5" font-family="sans-serif" font-weight="900" text-anchor="middle" fill="currentColor" stroke="none">DB</text></svg>');
                 }
 
-                // Заменяем текст IMDB на SVG-иконку
+                // IMDb
                 var imdb = $('.rate--imdb > div:eq(1)', render);
                 if (imdb.length && imdb.find('svg').length === 0) {
-                    imdb.html('<svg width="34" height="24" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="32" height="14" rx="2"/><text x="18" y="15.5" font-size="8.5" font-family="sans-serif" font-weight="bold" text-anchor="middle" fill="currentColor" stroke="none">IMDb</text></svg>');
+                    imdb.html('<svg width="26" height="20" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="32" height="16" rx="3" ry="3"/><text x="18" y="16.5" font-size="11" font-family="sans-serif" font-weight="900" text-anchor="middle" fill="currentColor" stroke="none">IMDb</text></svg>');
                 }
 
-                // Заменяем текст KP на стилизованную SVG-иконку Кинопоиска (лучи)
+                // Кинопоиск (лучистая 'К')
                 var kp = $('.rate--kp > div:eq(1)', render);
                 if (kp.length && kp.find('svg').length === 0) {
-                    kp.html('<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v18M5 12l14-9M5 12l14 9M5 12l14-4M5 12l14 4M5 12h14"/></svg>');
+                    kp.html('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v18 M4 12l12-9 M4 12l16-3 M4 12l16 3 M4 12l12 9"/></svg>');
                 }
 
 				if ($('.rate--kp', render).hasClass('hide') && !$('.wait_rating', render).length) {
