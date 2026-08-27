@@ -1,8 +1,8 @@
 (function () {
 	'use strict';
 
-	// Версия плагина (сбрасывает кэш при изменении)
-	var PLUGIN_VERSION = 'v1.0.1';
+	// Версия плагина (при изменении сбрасывает кэш)
+	var PLUGIN_VERSION = 'v1_0_2';
 	var CACHE_KEY = 'kp_rating_' + PLUGIN_VERSION;
 
 	function startsWith(str, searchString) {
@@ -311,26 +311,37 @@
 		}
 	}
 
-    // Чистые стили: только убираем фон плашек и немного раздвигаем элементы
+    // Свой независимый класс, чтобы Lampa не применяла фоны и растягивания
     function injectCustomRatingStyles() {
         if ($('#custom-monochrome-rating-styles').length) return;
         var style = document.createElement('style');
         style.id = 'custom-monochrome-rating-styles';
         style.innerHTML = `
-            body .info__rate .rate {
+            .monochrome-rate-custom {
+                display: inline-flex !important;
+                align-items: center !important;
+                align-self: center !important; /* Убивает вертикальное растягивание */
+                margin-right: 15px !important;
                 background: transparent !important;
-                background-color: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
                 backdrop-filter: none !important;
                 -webkit-backdrop-filter: none !important;
-                box-shadow: none !important;
-                border: none !important;
-                padding-left: 0 !important;
-                padding-right: 0 !important;
-                margin-right: 18px !important;
+                padding: 0 !important;
             }
-            body .info__rate .rate::before,
-            body .info__rate .rate::after {
+            .monochrome-rate-custom::before,
+            .monochrome-rate-custom::after {
                 display: none !important;
+            }
+            .monochrome-rate-custom > div:nth-child(1) {
+                font-size: 1.15em;
+                font-weight: 600;
+                margin-right: 4px; /* Идеальный, чуть уменьшенный отступ */
+            }
+            .monochrome-rate-custom > div:nth-child(2) {
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
         `;
         document.head.appendChild(style);
@@ -346,22 +357,34 @@
 			if (e.type == 'complite') {
 				var render = e.object.activity.render();
                 
-                // TMDB - увеличенный размер иконок (28x28)
-                var tmdb = $('.rate--tmdb > div:eq(1)', render);
-                if (tmdb.length && tmdb.find('svg').length === 0) {
-                    tmdb.html('<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 6px;"><path d="M6 4 C 4.9 4 4 4.9 4 6 V 17 C 4 18.1 4.9 19 6 19 H 7 V 22 L 11 19 H 18 C 19.1 19 20 18.1 20 17 V 6 C 20 4.9 19.1 4 18 4 Z"/><text x="12" y="11.5" font-size="6.5" font-family="sans-serif" font-weight="900" text-anchor="middle" fill="currentColor" stroke="none">TM</text><text x="12" y="17.5" font-size="6.5" font-family="sans-serif" font-weight="900" text-anchor="middle" fill="currentColor" stroke="none">DB</text></svg>');
+                // Обрабатываем TMDB
+                var tmdbBlock = $('.rate--tmdb', render);
+                if (tmdbBlock.length) {
+                    tmdbBlock.removeClass('rate').addClass('monochrome-rate-custom'); // Убиваем стандартный класс Lampa
+                    var tmdbIcon = tmdbBlock.find('> div:eq(1)');
+                    if (tmdbIcon.find('svg').length === 0) {
+                        tmdbIcon.html('<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4 C 4.9 4 4 4.9 4 6 V 17 C 4 18.1 4.9 19 6 19 H 7 V 22 L 11 19 H 18 C 19.1 19 20 18.1 20 17 V 6 C 20 4.9 19.1 4 18 4 Z"/><text x="12" y="11.5" font-size="6.5" font-family="sans-serif" font-weight="900" text-anchor="middle" fill="currentColor" stroke="none">TM</text><text x="12" y="17.5" font-size="6.5" font-family="sans-serif" font-weight="900" text-anchor="middle" fill="currentColor" stroke="none">DB</text></svg>');
+                    }
                 }
 
-                // IMDb - увеличенный размер (38x28)
-                var imdb = $('.rate--imdb > div:eq(1)', render);
-                if (imdb.length && imdb.find('svg').length === 0) {
-                    imdb.html('<svg width="38" height="28" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 6px;"><rect x="1" y="3" width="34" height="18" rx="4" ry="4"/><text x="18" y="16.5" font-size="11" font-family="sans-serif" font-weight="900" text-anchor="middle" fill="currentColor" stroke="none">IMDb</text></svg>');
+                // Обрабатываем IMDb
+                var imdbBlock = $('.rate--imdb', render);
+                if (imdbBlock.length) {
+                    imdbBlock.removeClass('rate').addClass('monochrome-rate-custom'); // Убиваем стандартный класс Lampa
+                    var imdbIcon = imdbBlock.find('> div:eq(1)');
+                    if (imdbIcon.find('svg').length === 0) {
+                        imdbIcon.html('<svg width="38" height="28" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="34" height="18" rx="4" ry="4"/><text x="18" y="16.5" font-size="11" font-family="sans-serif" font-weight="900" text-anchor="middle" fill="currentColor" stroke="none">IMDb</text></svg>');
+                    }
                 }
 
-                // Кинопоиск (лучистая 'К') - увеличенный размер (28x28)
-                var kp = $('.rate--kp > div:eq(1)', render);
-                if (kp.length && kp.find('svg').length === 0) {
-                    kp.html('<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 6px;"><path d="M4 2v20 M4 12l12-9 M4 12l18-4 M4 12l18 4 M4 12l12 9"/></svg>');
+                // Обрабатываем Кинопоиск (KP)
+                var kpBlock = $('.rate--kp', render);
+                if (kpBlock.length) {
+                    kpBlock.removeClass('rate').addClass('monochrome-rate-custom'); // Убиваем стандартный класс Lampa
+                    var kpIcon = kpBlock.find('> div:eq(1)');
+                    if (kpIcon.find('svg').length === 0) {
+                        kpIcon.html('<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20 M4 12l12-9 M4 12l18-4 M4 12l18 4 M4 12l12 9"/></svg>');
+                    }
                 }
 
 				if ($('.rate--kp', render).hasClass('hide') && !$('.wait_rating', render).length) {
