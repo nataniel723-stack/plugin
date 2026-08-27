@@ -1,7 +1,7 @@
 (function () {
 	'use strict';
 
-	var PLUGIN_VERSION = 'v1.0.2';
+	var PLUGIN_VERSION = 'v1.0.3';
 	var CACHE_KEY = 'kp_rating_' + PLUGIN_VERSION;
 
 	function startsWith(str, searchString) {
