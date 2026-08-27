@@ -2,7 +2,7 @@
 	'use strict';
 
 	// Версия плагина (при изменении сбрасывает кэш)
-	var PLUGIN_VERSION = 'v1.0.2';
+	var PLUGIN_VERSION = 'v1_0_3';
 	var CACHE_KEY = 'kp_rating_' + PLUGIN_VERSION;
 
 	function startsWith(str, searchString) {
@@ -360,7 +360,7 @@
                 // Обрабатываем TMDB
                 var tmdbBlock = $('.rate--tmdb', render);
                 if (tmdbBlock.length) {
-                    tmdbBlock.removeClass('rate').addClass('monochrome-rate-custom'); // Убиваем стандартный класс Lampa
+                    tmdbBlock.removeClass('rate').addClass('monochrome-rate-custom'); 
                     var tmdbIcon = tmdbBlock.find('> div:eq(1)');
                     if (tmdbIcon.find('svg').length === 0) {
                         tmdbIcon.html('<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4 C 4.9 4 4 4.9 4 6 V 17 C 4 18.1 4.9 19 6 19 H 7 V 22 L 11 19 H 18 C 19.1 19 20 18.1 20 17 V 6 C 20 4.9 19.1 4 18 4 Z"/><text x="12" y="11.5" font-size="6.5" font-family="sans-serif" font-weight="900" text-anchor="middle" fill="currentColor" stroke="none">TM</text><text x="12" y="17.5" font-size="6.5" font-family="sans-serif" font-weight="900" text-anchor="middle" fill="currentColor" stroke="none">DB</text></svg>');
@@ -370,20 +370,20 @@
                 // Обрабатываем IMDb
                 var imdbBlock = $('.rate--imdb', render);
                 if (imdbBlock.length) {
-                    imdbBlock.removeClass('rate').addClass('monochrome-rate-custom'); // Убиваем стандартный класс Lampa
+                    imdbBlock.removeClass('rate').addClass('monochrome-rate-custom'); 
                     var imdbIcon = imdbBlock.find('> div:eq(1)');
                     if (imdbIcon.find('svg').length === 0) {
                         imdbIcon.html('<svg width="38" height="28" viewBox="0 0 36 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="34" height="18" rx="4" ry="4"/><text x="18" y="16.5" font-size="11" font-family="sans-serif" font-weight="900" text-anchor="middle" fill="currentColor" stroke="none">IMDb</text></svg>');
                     }
                 }
 
-                // Обрабатываем Кинопоиск (KP)
+                // Обрабатываем Кинопоиск (KP) - теперь ровно 3 луча в центре (5 всего)
                 var kpBlock = $('.rate--kp', render);
                 if (kpBlock.length) {
-                    kpBlock.removeClass('rate').addClass('monochrome-rate-custom'); // Убиваем стандартный класс Lampa
+                    kpBlock.removeClass('rate').addClass('monochrome-rate-custom'); 
                     var kpIcon = kpBlock.find('> div:eq(1)');
                     if (kpIcon.find('svg').length === 0) {
-                        kpIcon.html('<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20 M4 12l12-9 M4 12l18-4 M4 12l18 4 M4 12l12 9"/></svg>');
+                        kpIcon.html('<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2 L4 22 M4 12 L20 2 M4 12 L20 7 M4 12 L20 12 M4 12 L20 17 M4 12 L20 22"/></svg>');
                     }
                 }
 
