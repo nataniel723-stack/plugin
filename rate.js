@@ -2,7 +2,7 @@
 	'use strict';
 
 	// Версия плагина (при изменении сбрасывает кэш)
-	var PLUGIN_VERSION = 'v1.0.3';
+	var PLUGIN_VERSION = 'v1_0_4';
 	var CACHE_KEY = 'kp_rating_' + PLUGIN_VERSION;
 
 	function startsWith(str, searchString) {
@@ -311,7 +311,6 @@
 		}
 	}
 
-    // Свой независимый класс, чтобы Lampa не применяла фоны и растягивания
     function injectCustomRatingStyles() {
         if ($('#custom-monochrome-rating-styles').length) return;
         var style = document.createElement('style');
@@ -320,7 +319,7 @@
             .monochrome-rate-custom {
                 display: inline-flex !important;
                 align-items: center !important;
-                align-self: center !important; /* Убивает вертикальное растягивание */
+                align-self: center !important;
                 margin-right: 15px !important;
                 background: transparent !important;
                 border: none !important;
@@ -336,7 +335,7 @@
             .monochrome-rate-custom > div:nth-child(1) {
                 font-size: 1.15em;
                 font-weight: 600;
-                margin-right: 4px; /* Идеальный, чуть уменьшенный отступ */
+                margin-right: 4px;
             }
             .monochrome-rate-custom > div:nth-child(2) {
                 display: flex;
@@ -377,13 +376,13 @@
                     }
                 }
 
-                // Обрабатываем Кинопоиск (KP) - теперь ровно 3 луча в центре (5 всего)
+                // Точное лого Кинопоиска: К-буква + 3 внутренних луча вровно в вертикальную линию
                 var kpBlock = $('.rate--kp', render);
                 if (kpBlock.length) {
                     kpBlock.removeClass('rate').addClass('monochrome-rate-custom'); 
                     var kpIcon = kpBlock.find('> div:eq(1)');
                     if (kpIcon.find('svg').length === 0) {
-                        kpIcon.html('<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2 L4 22 M4 12 L20 2 M4 12 L20 7 M4 12 L20 12 M4 12 L20 17 M4 12 L20 22"/></svg>');
+                        kpIcon.html('<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20 M4 12l7-9 M4 12l15-7 M4 12l15 0 M4 12l15 7 M4 12l7 9"/></svg>');
                     }
                 }
 
