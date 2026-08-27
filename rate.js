@@ -2,7 +2,7 @@
 	'use strict';
 
 	// Версия плагина (при изменении сбрасывает кэш)
-	var PLUGIN_VERSION = 'v1.0.7';
+	var PLUGIN_VERSION = 'v1.0.1';
 	var CACHE_KEY = 'kp_rating_' + PLUGIN_VERSION;
 
 	function startsWith(str, searchString) {
@@ -377,12 +377,13 @@
                 }
 
                 // Идеальный Кинопоиск: равный угловой шаг между всеми 5 лучами
+
 var kpBlock = $('.rate--kp', render);
 if (kpBlock.length) {
     kpBlock.removeClass('rate').addClass('monochrome-rate-custom'); 
     var kpIcon = kpBlock.find('> div:eq(1)');
     if (kpIcon.find('svg').length === 0) {
-        kpIcon.html('<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 2.5v19 M4.5 12L11.5 2.8 M4.5 12L18.5 5.1 M4.5 12L18.5 12 M4.5 12L18.5 18.9 M4.5 12L11.5 21.2"/></svg>');
+        kpIcon.html('<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M3 2h3.8v20H3z M7.5 10.8L11.5 2H20v3.2L7.5 10.8z M7.5 11.1L20 6.2v3.2L7.5 11.6z M7.5 11.8L20 10.4v3.2L7.5 12.2z M7.5 12.4L20 14.6v3.2L7.5 12.9z M7.5 13.2L20 18.8V22h-8.5L7.5 13.2z"/></svg>');
     }
 }
 
