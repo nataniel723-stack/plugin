@@ -2,7 +2,7 @@
 	'use strict';
 
 	// Версия плагина (при изменении сбрасывает кэш)
-	var PLUGIN_VERSION = 'v1.0.5';
+	var PLUGIN_VERSION = 'v1_0_6';
 	var CACHE_KEY = 'kp_rating_' + PLUGIN_VERSION;
 
 	function startsWith(str, searchString) {
@@ -376,13 +376,13 @@
                     }
                 }
 
-                // Вектор с точным совпадением горизонталей для верхней и нижней ножек буквы К
+                // Идеальный Кинопоиск: равный угловой шаг между всеми 5 лучами
                 var kpBlock = $('.rate--kp', render);
                 if (kpBlock.length) {
                     kpBlock.removeClass('rate').addClass('monochrome-rate-custom'); 
                     var kpIcon = kpBlock.find('> div:eq(1)');
                     if (kpIcon.find('svg').length === 0) {
-                        kpIcon.html('<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20 M4 12L11 2 M4 12L19 7 M4 12L19 12 M4 12L19 17 M4 12L11 22"/></svg>');
+                        kpIcon.html('<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20 M4 12L11.5 2 M4 12L19 4.5 M4 12L19 12 M4 12L19 19.5 M4 12L11.5 22"/></svg>');
                     }
                 }
 
