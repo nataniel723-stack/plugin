@@ -343,9 +343,9 @@
         window.rating_plugin = true;
         if (isDebug()) return;
 
-        // Добавляем CSS для иконок (только размеры, без изменения цвета)
+        // CSS для иконок
         var style = document.createElement('style');
-        style.textContent = '.rate__icon svg { width: auto; height: 1em; vertical-align: middle; }';
+        style.textContent = '.rate__icon svg { width: auto; height: 1.1em; vertical-align: middle; }';
         document.head.appendChild(style);
 
         Lampa.Listener.follow('full', function (e) {
