@@ -345,7 +345,7 @@
 
         // Добавляем CSS для иконок (только размеры, без изменения цвета)
         var style = document.createElement('style');
-       style.textContent = '.rate__icon svg { width: auto; height: 1em; vertical-align: middle; } .rate--kp .rate__icon svg {  width: 1.2; height: 1.2em; }';
+       style.textContent = '.rate__icon svg { width: auto; height: 1em; vertical-align: middle; } .rate--kp .rate__icon svg {  width: 1.1; height: 1.1m; }';
         document.head.appendChild(style);
 
         Lampa.Listener.follow('full', function (e) {
