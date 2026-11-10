@@ -1,9 +1,3 @@
-/* ReactionIcons Offline for Lampa/Lampac
-   Uses unchanged, verified CUB reaction SVG assets embedded locally.
-   Network and votes remain handled by Lampa; this only replaces image URLs.
-   Original SVG sha256: fire 9abd5c2e..., nice 75cccc57..., think 42e9dedd...,
-   bore d2ffb0d5..., shit 6a4e8f40...
-*/
 (function () {
   'use strict';
   if (window.__arxReactionIconsOfflineV1) return;
